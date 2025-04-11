@@ -1,0 +1,27 @@
+name: norcal_trim_calculator
+description: A simple NorCal Trim Calculator.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/norcal_icon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/norcal_icon.png
