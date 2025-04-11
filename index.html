@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>NorCal Trim Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    input {
+      font-size: 1.2em;
+      padding: 0.5em;
+      margin-top: 1em;
+    }
+    button {
+      background: green;
+      color: white;
+      padding: 0.7em 1.5em;
+      border: none;
+      font-size: 1em;
+      margin-top: 1em;
+    }
+    img {
+      margin-top: 1em;
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h1>NorCal Trim Calculator</h1>
+  <img src="norcal_icon.png" alt="NorCal Logo" />
+  <p>Enter total grams trimmed:</p>
+  <input type="number" id="grams" placeholder="e.g. 1200" />
+  <br>
+  <button onclick="calculate()">Calculate</button>
+  <p id="result"></p>
+
+  <script>
+    function calculate() {
+      const grams = parseFloat(document.getElementById('grams').value);
+      let pay = 0;
+      if (grams > 1587) {
+        pay += (grams - 1587) * 0.11;
+        pay += (1587 - 1134) * 0.05;
+      } else if (grams > 1134) {
+        pay += (grams - 1134) * 0.05;
+      }
+      document.getElementById('result').innerText = isNaN(pay)
+        ? 'Please enter a valid number.'
+        : 'Payment: $' + pay.toFixed(2);
+    }
+  </script>
+</body>
+</html>
