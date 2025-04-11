@@ -1,163 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>NorCal Trim Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      background-color: #f4f4f4;
-    }
-    h1 {
+      background-color: black;
+      color: white;
+      font-family: 'Montserrat', sans-serif;
       text-align: center;
+      padding: 2em;
     }
-    input[type="number"] {
-      padding: 0.5rem;
-      width: 100%;
-      max-width: 300px;
-      margin-bottom: 1rem;
+    input {
+      font-size: 1.2em;
+      padding: 0.5em;
+      margin-top: 1em;
     }
     button {
-      padding: 0.5rem 1rem;
-      margin: 0.5rem 0.25rem;
-      cursor: pointer;
+      background: green;
+      color: white;
+      padding: 0.7em 1.5em;
+      border: none;
+      font-size: 1em;
+      margin-top: 1em;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: center;
-    }
-    .total {
-      font-weight: bold;
-      margin-top: 1rem;
-    }
-    @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-      th {
-        display: none;
-      }
-      td {
-        position: relative;
-        padding-left: 50%;
-        text-align: left;
-      }
-      td::before {
-        position: absolute;
-        left: 0;
-        width: 45%;
-        padding-left: 0.5rem;
-        font-weight: bold;
-      }
-      td:nth-of-type(1)::before { content: "Date"; }
-      td:nth-of-type(2)::before { content: "Day"; }
-      td:nth-of-type(3)::before { content: "Grams"; }
-      td:nth-of-type(4)::before { content: "Pay"; }
-      td:nth-of-type(5)::before { content: "Action"; }
+    img {
+      margin-top: 1em;
+      width: 100px;
     }
   </style>
 </head>
 <body>
   <h1>NorCal Trim Calculator</h1>
-  <input type="number" id="gramsInput" placeholder="Enter grams trimmed" />
-  <br/>
-  <button onclick="addSession()">Add Session</button>
-  <button onclick="resetTable()">Reset Table</button>
-  <table id="sessionTable">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-        <th>Grams</th>
-        <th>Pay</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <div class="total" id="totalPay">Total Pay: $0.00</div>
+  <img src="norcal_icon.png" alt="NorCal Logo" />
+  <p>Enter total grams trimmed:</p>
+  <input type="number" id="grams" placeholder="e.g. 1200" />
+  <br>
+  <button onclick="calculate()">Calculate</button>
+  <p id="result"></p>
 
   <script>
-    let sessions = JSON.parse(localStorage.getItem('sessions')) || [];
-
-    function formatDate(date) {
-      return date.toLocaleDateString();
-    }
-
-    function getDayName(date) {
-      return date.toLocaleDateString(undefined, { weekday: 'long' });
-    }
-
-    function calculatePay(grams) {
-      // Example tiered rate system
-      if (grams <= 100) return grams * 0.5;
-      else if (grams <= 200) return grams * 0.6;
-      else return grams * 0.7;
-    }
-
-    function addSession() {
-      const gramsInput = document.getElementById('gramsInput');
-      const grams = parseFloat(gramsInput.value);
-      if (isNaN(grams) || grams <= 0) {
-        alert('Please enter a valid number of grams.');
-        return;
+    function calculate() {
+      const grams = parseFloat(document.getElementById('grams').value);
+      let pay = 0;
+      if (grams > 1587) {
+        pay += (grams - 1587) * 0.11;
+        pay += (1587 - 1134) * 0.05;
+      } else if (grams > 1134) {
+        pay += (grams - 1134) * 0.05;
       }
-      const date = new Date();
-      const session = {
-        date: formatDate(date),
-        day: getDayName(date),
-        grams: grams,
-        pay: calculatePay(grams)
-      };
-      sessions.push(session);
-      localStorage.setItem('sessions', JSON.stringify(sessions));
-      gramsInput.value = '';
-      renderTable();
+      document.getElementById('result').innerText = isNaN(pay)
+        ? 'Please enter a valid number.'
+        : 'Payment: $' + pay.toFixed(2);
     }
-
-    function deleteSession(index) {
-      sessions.splice(index, 1);
-      localStorage.setItem('sessions', JSON.stringify(sessions));
-      renderTable();
-    }
-
-    function resetTable() {
-      if (confirm('Are you sure you want to reset the table?')) {
-        sessions = [];
-        localStorage.removeItem('sessions');
-        renderTable();
-      }
-    }
-
-    function renderTable() {
-      const tbody = document.querySelector('#sessionTable tbody');
-      tbody.innerHTML = '';
-      let total = 0;
-      sessions.forEach((session, index) => {
-        total += session.pay;
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${session.date}</td>
-          <td>${session.day}</td>
-          <td>${session.grams}</td>
-          <td>$${session.pay.toFixed(2)}</td>
-          <td><button onclick="deleteSession(${index})">Delete</button></td>
-        `;
-        tbody.appendChild(row);
-      });
-      document.getElementById('totalPay').textContent = 'Total Pay: $' + total.toFixed(2);
-    }
-
-    // Initial render
-    renderTable();
   </script>
 </body>
 </html>
