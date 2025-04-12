@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>NorCal Trim Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
   <style>
     body {
       background-color: black;
@@ -43,6 +45,21 @@
       margin-top: 1em;
       font-size: 1.2em;
     }
+    .install-links {
+      margin-top: 2em;
+    }
+    .install-links a {
+      display: inline-block;
+      margin: 0 1em;
+      padding: 0.5em 1em;
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .install-links a:hover {
+      background-color: #666;
+    }
     table {
       margin: 2em auto;
       border-collapse: collapse;
@@ -80,6 +97,11 @@
   <button onclick="calculate()">Calculate</button>
   <p id="result"></p>
 
+  <div class="install-links">
+    <a href="#" onclick="alert('To install the app, tap the Share icon in Safari and choose “Add to Home Screen.”'); return false;">iOS Install Instructions</a>
+    <a href="#" onclick="alert('To install the app, tap the browser menu (three dots) and choose “Add to Home screen.”'); return false;">Android Install Instructions</a>
+  </div>
+
   <table id="sessionTable">
     <thead>
       <tr>
@@ -89,9 +111,7 @@
         <th>Action</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- Session rows will be added here -->
-    </tbody>
+    <tbody></tbody>
     <tfoot>
       <tr>
         <td colspan="2"><strong>Total</strong></td>
@@ -119,39 +139,25 @@
         document.getElementById('result').innerText = 'Please enter a valid number of grams.';
         return;
       }
-
       const bonusPay = calculateBonus(grams);
-
       document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
-
       const now = new Date();
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const dateStr = now.toLocaleDateString(undefined, options);
-
-      const entry = {
-        date: dateStr,
-        grams: grams,
-        bonusPay: bonusPay.toFixed(2)
-      };
-
+      const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
       let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       history.push(entry);
       localStorage.setItem('trimHistory', JSON.stringify(history));
-
       updateSessionTable();
     }
 
     function updateSessionTable() {
       const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
-      tbody.innerHTML = ''; // Clear existing rows
-
+      tbody.innerHTML = '';
       let totalBonusPay = 0;
-
       history.forEach((entry, index) => {
         const row = document.createElement('tr');
-
-        // Date & Day cell
         const dateCell = document.createElement('td');
         dateCell.textContent = entry.date;
         dateCell.contentEditable = true;
@@ -163,8 +169,6 @@
           }
         });
         row.appendChild(dateCell);
-
-        // Grams cell (editable)
         const gramsCell = document.createElement('td');
         gramsCell.textContent = entry.grams;
         gramsCell.contentEditable = true;
@@ -176,34 +180,26 @@
             const newBonus = calculateBonus(newGrams);
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
-            updateSessionTable(); // Refresh table
+            updateSessionTable();
           } else {
             alert("Please enter a valid number of grams.");
-            updateSessionTable(); // Revert to saved value
+            updateSessionTable();
           }
         });
         row.appendChild(gramsCell);
-
-        // Bonus Pay cell
         const bonusPayCell = document.createElement('td');
         bonusPayCell.textContent = '$' + entry.bonusPay;
         row.appendChild(bonusPayCell);
-
-        // Action cell with Delete button
         const actionCell = document.createElement('td');
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
         deleteBtn.className = 'delete-button';
-        deleteBtn.onclick = function () {
-          deleteEntry(index);
-        };
+        deleteBtn.onclick = function () { deleteEntry(index); };
         actionCell.appendChild(deleteBtn);
         row.appendChild(actionCell);
-
         tbody.appendChild(row);
         totalBonusPay += parseFloat(entry.bonusPay);
       });
-
       document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
     }
 
@@ -214,7 +210,6 @@
       updateSessionTable();
     }
 
-    // Initialize table on page load
     window.onload = updateSessionTable;
   </script>
 </body>
