@@ -46,8 +46,7 @@
     table {
       margin: 2em auto;
       border-collapse: collapse;
-      width: 90%;
-      max-width: 700px;
+      width: 80%;
     }
     th, td {
       border: 1px solid #555;
@@ -56,20 +55,16 @@
     th {
       background-color: #333;
     }
-    td {
+    td[contenteditable="true"] {
       background-color: #222;
-    }
-    tfoot td {
-      font-weight: bold;
-      background-color: #111;
     }
     .delete-button {
       background-color: red;
       color: white;
       border: none;
       padding: 0.3em 0.6em;
-      border-radius: 4px;
       cursor: pointer;
+      border-radius: 4px;
     }
     .delete-button:hover {
       background-color: darkred;
@@ -85,7 +80,6 @@
   <button onclick="calculate()">Calculate</button>
   <p id="result"></p>
 
-  <h2>Session History</h2>
   <table id="sessionTable">
     <thead>
       <tr>
@@ -96,20 +90,20 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Entries will be added here -->
+      <!-- Session rows will be added here -->
     </tbody>
     <tfoot>
       <tr>
-        <td colspan="3">Total</td>
+        <td colspan="2"><strong>Total</strong></td>
         <td id="totalPayment">$0.00</td>
+        <td></td>
       </tr>
     </tfoot>
   </table>
 
   <script>
     function calculate() {
-      const gramsInput = document.getElementById('grams');
-      const grams = parseFloat(gramsInput.value);
+      const grams = parseFloat(document.getElementById('grams').value);
       let pay = 0;
 
       if (isNaN(grams) || grams <= 0) {
@@ -124,26 +118,27 @@
         pay += (grams - 1134) * 0.05;
       }
 
-      const paymentText = 'Payment: $' + pay.toFixed(2);
-      document.getElementById('result').innerText = paymentText;
+      document.getElementById('result').innerText = 'Payment: $' + pay.toFixed(2);
 
-      // Get current date and day
       const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
-      const dateString = now.toLocaleDateString('en-US', options);
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString(undefined, options);
 
-      // Store the entry in sessionStorage
-      const entry = { date: dateString, grams: grams, payment: pay.toFixed(2) };
-      let history = JSON.parse(sessionStorage.getItem('trimHistory')) || [];
+      const entry = {
+        date: dateStr,
+        grams: grams,
+        payment: pay.toFixed(2)
+      };
+
+      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       history.push(entry);
-      sessionStorage.setItem('trimHistory', JSON.stringify(history));
+      localStorage.setItem('trimHistory', JSON.stringify(history));
 
-      // Update the session table
       updateSessionTable();
     }
 
     function updateSessionTable() {
-      const history = JSON.parse(sessionStorage.getItem('trimHistory')) || [];
+      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
       tbody.innerHTML = ''; // Clear existing rows
 
@@ -152,18 +147,30 @@
       history.forEach((entry, index) => {
         const row = document.createElement('tr');
 
+        // Date & Day cell
         const dateCell = document.createElement('td');
         dateCell.textContent = entry.date;
+        dateCell.contentEditable = true;
+        dateCell.addEventListener('blur', function () {
+          const updatedDate = this.textContent.trim();
+          if (updatedDate) {
+            history[index].date = updatedDate;
+            localStorage.setItem('trimHistory', JSON.stringify(history));
+          }
+        });
         row.appendChild(dateCell);
 
+        // Grams cell
         const gramsCell = document.createElement('td');
         gramsCell.textContent = entry.grams;
         row.appendChild(gramsCell);
 
+        // Payment cell
         const paymentCell = document.createElement('td');
         paymentCell.textContent = '$' + entry.payment;
         row.appendChild(paymentCell);
 
+        // Action cell with Delete button
         const actionCell = document.createElement('td');
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
@@ -183,15 +190,13 @@
     }
 
     function deleteEntry(index) {
-      let history = JSON.parse(sessionStorage.getItem('trimHistory')) || [];
-      if (index >= 0 && index < history.length) {
-        history.splice(index, 1);
-        sessionStorage.setItem('trimHistory', JSON.stringify(history));
-        updateSessionTable();
-      }
+      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      history.splice(index, 1);
+      localStorage.setItem('trimHistory', JSON.stringify(history));
+      updateSessionTable();
     }
 
-    // Initialize the session table on page load
+    // Initialize table on page load
     window.onload = updateSessionTable;
   </script>
 </body>
