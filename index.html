@@ -85,7 +85,7 @@
       <tr>
         <th>Date & Day</th>
         <th>Grams</th>
-        <th>Payment</th>
+        <th>Bonus Pay</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -95,7 +95,7 @@
     <tfoot>
       <tr>
         <td colspan="2"><strong>Total</strong></td>
-        <td id="totalPayment">$0.00</td>
+        <td id="totalBonusPay">$0.00</td>
         <td></td>
       </tr>
     </tfoot>
@@ -104,7 +104,7 @@
   <script>
     function calculate() {
       const grams = parseFloat(document.getElementById('grams').value);
-      let pay = 0;
+      let bonusPay = 0;
 
       if (isNaN(grams) || grams <= 0) {
         document.getElementById('result').innerText = 'Please enter a valid number of grams.';
@@ -112,13 +112,13 @@
       }
 
       if (grams > 1587) {
-        pay += (grams - 1587) * 0.11;
-        pay += (1587 - 1134) * 0.05;
+        bonusPay += (grams - 1587) * 0.11;
+        bonusPay += (1587 - 1134) * 0.05;
       } else if (grams > 1134) {
-        pay += (grams - 1134) * 0.05;
+        bonusPay += (grams - 1134) * 0.05;
       }
 
-      document.getElementById('result').innerText = 'Payment: $' + pay.toFixed(2);
+      document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
 
       const now = new Date();
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -127,7 +127,7 @@
       const entry = {
         date: dateStr,
         grams: grams,
-        payment: pay.toFixed(2)
+        bonusPay: bonusPay.toFixed(2)
       };
 
       let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
@@ -142,7 +142,7 @@
       const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
       tbody.innerHTML = ''; // Clear existing rows
 
-      let totalPay = 0;
+      let totalBonusPay = 0;
 
       history.forEach((entry, index) => {
         const row = document.createElement('tr');
@@ -165,10 +165,10 @@
         gramsCell.textContent = entry.grams;
         row.appendChild(gramsCell);
 
-        // Payment cell
-        const paymentCell = document.createElement('td');
-        paymentCell.textContent = '$' + entry.payment;
-        row.appendChild(paymentCell);
+        // Bonus Pay cell
+        const bonusPayCell = document.createElement('td');
+        bonusPayCell.textContent = '$' + entry.bonusPay;
+        row.appendChild(bonusPayCell);
 
         // Action cell with Delete button
         const actionCell = document.createElement('td');
@@ -183,10 +183,10 @@
 
         tbody.appendChild(row);
 
-        totalPay += parseFloat(entry.payment);
+        totalBonusPay += parseFloat(entry.bonusPay);
       });
 
-      document.getElementById('totalPayment').textContent = '$' + totalPay.toFixed(2);
+      document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
     }
 
     function deleteEntry(index) {
