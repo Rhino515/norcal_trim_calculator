@@ -4,11 +4,6 @@
   <meta charset="UTF-8">
   <title>NorCal Trim Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- PWA Support -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
-
   <style>
     body {
       background-color: black;
@@ -78,10 +73,6 @@
 </head>
 <body>
   <h1>NorCal Trim Calculator</h1>
-  <div id="installPrompt" style="background-color: #111; padding: 1em; margin: 1em auto; max-width: 400px; border-radius: 8px; display: none;">
-    <p id="installText" style="margin-bottom: 1em;"></p>
-    <button id="installBtn" style="display:none;">Install App</button>
-  </div>
   <img src="norcal_icon.png" alt="NorCal Logo" />
   <p>Enter total grams trimmed:</p>
   <input type="number" id="grams" placeholder="e.g. 1200" />
@@ -99,6 +90,7 @@
       </tr>
     </thead>
     <tbody>
+      <!-- Session rows will be added here -->
     </tbody>
     <tfoot>
       <tr>
@@ -152,13 +144,14 @@
     function updateSessionTable() {
       const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
-      tbody.innerHTML = '';
+      tbody.innerHTML = ''; // Clear existing rows
 
       let totalBonusPay = 0;
 
       history.forEach((entry, index) => {
         const row = document.createElement('tr');
 
+        // Date & Day cell
         const dateCell = document.createElement('td');
         dateCell.textContent = entry.date;
         dateCell.contentEditable = true;
@@ -171,6 +164,7 @@
         });
         row.appendChild(dateCell);
 
+        // Grams cell (editable)
         const gramsCell = document.createElement('td');
         gramsCell.textContent = entry.grams;
         gramsCell.contentEditable = true;
@@ -182,18 +176,20 @@
             const newBonus = calculateBonus(newGrams);
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
-            updateSessionTable();
+            updateSessionTable(); // Refresh table
           } else {
             alert("Please enter a valid number of grams.");
-            updateSessionTable();
+            updateSessionTable(); // Revert to saved value
           }
         });
         row.appendChild(gramsCell);
 
+        // Bonus Pay cell
         const bonusPayCell = document.createElement('td');
         bonusPayCell.textContent = '$' + entry.bonusPay;
         row.appendChild(bonusPayCell);
 
+        // Action cell with Delete button
         const actionCell = document.createElement('td');
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
@@ -220,43 +216,6 @@
 
     // Initialize table on page load
     window.onload = updateSessionTable;
-
-    // PWA install prompt logic
-    let deferredPrompt;
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-
-      const installPrompt = document.getElementById('installPrompt');
-      const installBtn = document.getElementById('installBtn');
-      const installText = document.getElementById('installText');
-
-      installText.textContent = "Install NorCal Trim Calculator to your device?";
-      installPrompt.style.display = 'block';
-      installBtn.style.display = 'inline-block';
-
-      installBtn.addEventListener('click', () => {
-        installPrompt.style.display = 'none';
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-          deferredPrompt = null;
-        });
-      });
-    });
-
-    window.addEventListener('load', () => {
-      const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-      const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
-
-      if (isIos && !isInStandaloneMode) {
-        const installPrompt = document.getElementById('installPrompt');
-        const installText = document.getElementById('installText');
-
-        installText.innerHTML = "To install this app, tap the <strong>Share</strong> icon in Safari, then choose <strong>‘Add to Home Screen’</strong>.";
-        installPrompt.style.display = 'block';
-      }
-    });
   </script>
 </body>
 </html>
