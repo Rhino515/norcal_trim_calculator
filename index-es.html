@@ -1,9 +1,9 @@
 
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Calculadora de NorCal Trim</title>
+  <title>NorCal Trim Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#000000">
@@ -40,7 +40,7 @@
     }
     img {
       margin-top: 1em;
-      width: 100px;
+      width: 200px;
     }
     #result {
       margin-top: 1em;
@@ -101,21 +101,20 @@
 </head>
 <body>
   <div class="language-toggle">
-    <a href="index.html">English</a>
+    <a href="index.html">Inglés</a>
     <a href="index-es.html">Español</a>
   </div>
 
-  <h1>Calculadora de NorCal Trim</h1>
-  <img src="norcal_icon.png" alt="Logo de NorCal" />
-  <p>Ingresa el total de gramos recortados:</p>
-  <input type="number" id="grams" placeholder="ej. 1200" />
+  <img src="norcal_icon.png" alt="NorCal Logo" />
+  <p>Ingrese el total de gramos recortados:</p>
+  <input type="number" id="grams" placeholder="e.g. 1200" />
   <br>
   <button onclick="calculate()">Calcular</button>
   <p id="result"></p>
 
   <div class="install-links">
-    <a href="#" onclick="alert('Para instalar la app, toca el icono de Compartir en Safari y selecciona “Agregar a la pantalla de inicio”.'); return false;">Instrucciones para iOS</a>
-    <a href="#" onclick="alert('Para instalar la app, toca el menú del navegador (tres puntos) y selecciona “Agregar a la pantalla de inicio”.'); return false;">Instrucciones para Android</a>
+    <a href="#" onclick="alert('To install the app, tap the Share icon in Safari and choose “Add to Home Screen.”'); return false;">Instrucciones de instalación para iOS</a>
+    <a href="#" onclick="alert('To install the app, tap the browser menu (three dots) and choose “Add to Home screen.”'); return false;">Instrucciones de instalación para Android</a>
   </div>
 
   <table id="sessionTable">
@@ -123,7 +122,7 @@
       <tr>
         <th>Fecha y Día</th>
         <th>Gramos</th>
-        <th>Pago Extra</th>
+        <th>Pago de Bonificación</th>
         <th>Acción</th>
       </tr>
     </thead>
@@ -137,17 +136,15 @@
     </tfoot>
   </table>
 
-  <!-- Sobre mí -->
   <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-    <h2 style="color: #0f0;">Sobre mí</h2>
+    <h2 style="color: #0f0;">Sobre Mí</h2>
     <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
-      Hola, me llamo Andrew y trabajo como recortador profesional en NorCal Cannabis.
-      Creé la Calculadora de Recorte de NorCal para simplificar los cálculos de pago por bonificación
-      y facilitar el seguimiento del progreso diario de los recortadores.
+      Hola, mi nombre es Andrew y trabajo como recortador profesional en NorCal Cannabis.
+      I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers
+      to track their daily progress.
       <br><br>
-      Esta herramienta fue diseñada para ser práctica, fácil de usar y eficiente, ayudando a los trabajadores
-      a mantenerse organizados e informados. Mi objetivo es apoyar a la comunidad de recortadores
-      con soluciones tecnológicas simples que marquen una verdadera diferencia en el trabajo.
+      Esta herramienta fue diseñada para ser práctica, fácil de usar y eficiente — ayudando a los trabajadores a mantenerse organizados e informados.
+      Mi objetivo es apoyar a la comunidad de recortadores con soluciones tecnológicas simples que marquen una verdadera diferencia en el trabajo.
     </p>
   </div>
 
@@ -166,11 +163,11 @@
     function calculate() {
       const grams = parseFloat(document.getElementById('grams').value);
       if (isNaN(grams) || grams <= 0) {
-        document.getElementById('result').innerText = 'Por favor ingresa un número válido de gramos.';
+        document.getElementById('result').innerText = 'Please enter a valid number of grams.';
         return;
       }
       const bonusPay = calculateBonus(grams);
-      document.getElementById('result').innerText = 'Pago Extra: $' + bonusPay.toFixed(2);
+      document.getElementById('result').innerText = 'Pago de bonificación: $' + bonusPay.toFixed(2);
       const now = new Date();
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const dateStr = now.toLocaleDateString(undefined, options);
@@ -206,15 +203,15 @@
         gramsCell.contentEditable = true;
         gramsCell.style.backgroundColor = '#222';
         gramsCell.addEventListener('blur', function () {
-          const newGrams = parseFloat(this.textContent.trim());
-          if (!isNaN(newGrams) && newGrams > 0) {
-            history[index].grams = newGrams;
-            const newBonus = calculateBonus(newGrams);
+          const newGramos = parseFloat(this.textContent.trim());
+          if (!isNaN(newGramos) && newGramos > 0) {
+            history[index].grams = newGramos;
+            const newBonus = calculateBonus(newGramos);
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
             updateSessionTable();
           } else {
-            alert("Por favor ingresa un número válido de gramos.");
+            alert("Please enter a valid number of grams.");
             updateSessionTable();
           }
         });
