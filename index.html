@@ -86,9 +86,24 @@
     .delete-button:hover {
       background-color: darkred;
     }
+    .language-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .language-toggle a {
+      color: white;
+      text-decoration: none;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
+  <div class="language-toggle">
+    <a href="index.html">English</a>
+    <a href="index-es.html">Español</a>
+  </div>
+
   <h1>NorCal Trim Calculator</h1>
   <img src="norcal_icon.png" alt="NorCal Logo" />
   <p>Enter total grams trimmed:</p>
@@ -158,6 +173,7 @@
       let totalBonusPay = 0;
       history.forEach((entry, index) => {
         const row = document.createElement('tr');
+
         const dateCell = document.createElement('td');
         dateCell.textContent = entry.date;
         dateCell.contentEditable = true;
@@ -169,6 +185,7 @@
           }
         });
         row.appendChild(dateCell);
+
         const gramsCell = document.createElement('td');
         gramsCell.textContent = entry.grams;
         gramsCell.contentEditable = true;
@@ -187,9 +204,11 @@
           }
         });
         row.appendChild(gramsCell);
+
         const bonusPayCell = document.createElement('td');
         bonusPayCell.textContent = '$' + entry.bonusPay;
         row.appendChild(bonusPayCell);
+
         const actionCell = document.createElement('td');
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
@@ -197,7 +216,9 @@
         deleteBtn.onclick = function () { deleteEntry(index); };
         actionCell.appendChild(deleteBtn);
         row.appendChild(actionCell);
+
         tbody.appendChild(row);
+
         totalBonusPay += parseFloat(entry.bonusPay);
       });
       document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
