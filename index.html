@@ -102,21 +102,25 @@
   </table>
 
   <script>
-    function calculate() {
-      const grams = parseFloat(document.getElementById('grams').value);
+    function calculateBonus(grams) {
       let bonusPay = 0;
-
-      if (isNaN(grams) || grams <= 0) {
-        document.getElementById('result').innerText = 'Please enter a valid number of grams.';
-        return;
-      }
-
       if (grams > 1587) {
         bonusPay += (grams - 1587) * 0.11;
         bonusPay += (1587 - 1134) * 0.05;
       } else if (grams > 1134) {
         bonusPay += (grams - 1134) * 0.05;
       }
+      return bonusPay;
+    }
+
+    function calculate() {
+      const grams = parseFloat(document.getElementById('grams').value);
+      if (isNaN(grams) || grams <= 0) {
+        document.getElementById('result').innerText = 'Please enter a valid number of grams.';
+        return;
+      }
+
+      const bonusPay = calculateBonus(grams);
 
       document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
 
@@ -160,9 +164,24 @@
         });
         row.appendChild(dateCell);
 
-        // Grams cell
+        // Grams cell (editable)
         const gramsCell = document.createElement('td');
         gramsCell.textContent = entry.grams;
+        gramsCell.contentEditable = true;
+        gramsCell.style.backgroundColor = '#222';
+        gramsCell.addEventListener('blur', function () {
+          const newGrams = parseFloat(this.textContent.trim());
+          if (!isNaN(newGrams) && newGrams > 0) {
+            history[index].grams = newGrams;
+            const newBonus = calculateBonus(newGrams);
+            history[index].bonusPay = newBonus.toFixed(2);
+            localStorage.setItem('trimHistory', JSON.stringify(history));
+            updateSessionTable(); // Refresh table
+          } else {
+            alert("Please enter a valid number of grams.");
+            updateSessionTable(); // Revert to saved value
+          }
+        });
         row.appendChild(gramsCell);
 
         // Bonus Pay cell
@@ -175,14 +194,13 @@
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
         deleteBtn.className = 'delete-button';
-        deleteBtn.onclick = function() {
+        deleteBtn.onclick = function () {
           deleteEntry(index);
         };
         actionCell.appendChild(deleteBtn);
         row.appendChild(actionCell);
 
         tbody.appendChild(row);
-
         totalBonusPay += parseFloat(entry.bonusPay);
       });
 
