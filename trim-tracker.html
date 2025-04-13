@@ -127,20 +127,6 @@
 
   <script>
     const lang = document.documentElement.lang;
-    const storageKey = lang === 'es' ? 'trimTrackerData-es' : 'trimTrackerData-en';
-
-    let saveTimeout;
-
-    function debounceSave() {
-      clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => {
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(saveData);
-        } else {
-          saveData();
-        }
-      }, 300);
-    }
 
     function createGramInput(onChangeFunc, value = '') {
       const input = document.createElement('input');
@@ -322,5 +308,22 @@
     loadData();
   </script>
 
+  <!-- Unified storageKey + debounceSave block -->
+  <script>
+    const storageKey = 'trimTrackerData'; // Unified key for both languages
+
+    let saveTimeout;
+
+    function debounceSave() {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(saveData);
+        } else {
+          saveData();
+        }
+      }, 300);
+    }
+  </script>
 </body>
 </html>
