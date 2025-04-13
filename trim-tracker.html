@@ -94,18 +94,13 @@
 </head>
 <body>
 
-  <!-- Language Toggle -->
   <button class="lang-toggle" onclick="window.location.href='trim-tracker-es.html'">Español</button>
-
-  <!-- Banner -->
   <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
 
-  <!-- Professional Note -->
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
     <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or use a different device or browser. While this tool is designed to assist with tracking, we strongly recommend that you also write down or back up your information separately to prevent any potential data loss.
   </p>
 
-  <!-- Table -->
   <table id="sessionTable">
     <thead>
       <tr>
@@ -116,14 +111,18 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody id="tableBody">
-    </tbody>
+    <tbody id="tableBody"></tbody>
   </table>
 
   <button onclick="addRow()">Add Row</button>
   <button class="clear-all" onclick="clearAllRows()">Clear All</button>
   <button onclick="exportCSV()">Export CSV</button>
   <a href="index.html" class="back-link">← Back to Trim Calculator</a>
+
+  <div id="dailyTotals" style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+    <h3>Daily Totals</h3>
+    <ul id="totalsList" style="list-style: none; padding: 0;"></ul>
+  </div>
 
   <script>
     let saveTimeout;
@@ -161,7 +160,7 @@
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
       dateInput.value = data.date || '';
-      dateInput.oninput = debounceSave;
+      dateInput.oninput = () => { debounceSave(); updateDailyTotals(); };
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
 
@@ -179,6 +178,8 @@
       gramsWrapper.style.flexWrap = 'wrap';
       gramsWrapper.style.gap = '4px';
 
+      const totalCell = document.createElement('td');
+
       const updateTotal = () => {
         const inputs = gramsWrapper.querySelectorAll('input');
         let sum = 0;
@@ -187,6 +188,7 @@
           if (!isNaN(val)) sum += val;
         });
         totalCell.innerText = sum.toFixed(2);
+        updateDailyTotals();
       };
 
       (data.grams || ['', '', '']).forEach(g => {
@@ -199,11 +201,11 @@
         gramsWrapper.appendChild(createGramInput(updateTotal));
         debounceSave();
       };
+
       gramsCell.appendChild(gramsWrapper);
       gramsCell.appendChild(addGramBtn);
       row.appendChild(gramsCell);
 
-      const totalCell = document.createElement('td');
       totalCell.innerText = '0.00';
       row.appendChild(totalCell);
       updateTotal();
@@ -216,6 +218,7 @@
         if (confirm('Are you sure you want to delete this row?')) {
           row.remove();
           debounceSave();
+          updateDailyTotals();
         }
       };
       actionCell.appendChild(delBtn);
@@ -229,6 +232,7 @@
         document.getElementById('tableBody').innerHTML = '';
         addRow();
         debounceSave();
+        updateDailyTotals();
       }
     }
 
@@ -276,6 +280,29 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    function updateDailyTotals() {
+      const rows = document.querySelectorAll('#tableBody tr');
+      const totalsMap = {};
+
+      rows.forEach(row => {
+        const date = row.querySelector('td input[type="date"]').value;
+        const total = parseFloat(row.querySelector('td:nth-child(4)').innerText) || 0;
+        if (date) {
+          if (!totalsMap[date]) totalsMap[date] = 0;
+          totalsMap[date] += total;
+        }
+      });
+
+      const totalsList = document.getElementById('totalsList');
+      totalsList.innerHTML = '';
+
+      Object.entries(totalsMap).forEach(([date, total]) => {
+        const li = document.createElement('li');
+        li.textContent = `${date}: ${total.toFixed(2)}g`;
+        totalsList.appendChild(li);
+      });
     }
 
     loadData();
