@@ -40,7 +40,6 @@
       padding: 12px;
       text-align: center;
       transition: background-color 0.2s ease;
-      font-weight: bold;
     }
     tbody tr:nth-child(even) {
       background-color: #1a1a1a;
@@ -94,7 +93,7 @@
 </head>
 <body>
 
-  <button class="lang-toggle" onclick="window.location.href='trim-tracker.html'">English</button>
+  <button class="lang-toggle" onclick="toggleLanguage()">English</button>
   <img src="trim-tracker-banner.PNG" alt="Banner de Registro de Recorte" class="banner" />
 
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
@@ -123,7 +122,11 @@
     <h3>Totales Diarios</h3>
     <ul id="totalsList" style="list-style: none; padding: 0;"></ul>
   </div>
+
   <script>
+    const lang = document.documentElement.lang;
+    const storageKey = `trimTrackerData-${lang}`;
+
     let saveTimeout;
 
     function debounceSave() {
@@ -244,12 +247,11 @@
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
         return { date, strain, grams };
       });
-      localStorage.setItem('trimTrackerData-es', JSON.stringify(data));
-      localStorage.setItem('trimTrackerData', JSON.stringify(data)); // <-- newly added
+      localStorage.setItem(storageKey, JSON.stringify(data));
     }
 
     function loadData() {
-      const stored = localStorage.getItem('trimTrackerData-es');
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         parsed.forEach(entry => addRow(entry));
@@ -305,10 +307,13 @@
       });
     }
 
-    document.getElementById('backLink').href = document.documentElement.lang === 'es' ? 'index-es.html' : 'index.html';
+    function toggleLanguage() {
+      window.location.href = 'trim-tracker.html';
+    }
+
+    document.getElementById('backLink').href = 'index-es.html';
 
     loadData();
   </script>
-
 </body>
 </html>
