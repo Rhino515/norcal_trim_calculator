@@ -306,10 +306,8 @@
       });
     }
 
-    // Dynamic back link
-    const backLink = document.getElementById('backLink');
-    const currentLang = document.documentElement.lang;
-    backLink.href = currentLang === 'es' ? 'index-es.html' : 'index.html';
+    // Set the back link based on page language
+    document.getElementById('backLink').href = document.documentElement.lang === 'es' ? 'index-es.html' : 'index.html';
 
     loadData();
   </script>
