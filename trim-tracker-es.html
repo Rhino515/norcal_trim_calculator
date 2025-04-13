@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registro de Poda</title>
+  <title>Seguimiento de Recorte</title>
   <style>
     body {
       background-color: #111;
@@ -95,15 +94,15 @@
 </head>
 <body>
 
-  <!-- Language Toggle -->
+  <!-- Cambiar idioma -->
   <button class="lang-toggle" onclick="window.location.href='trim-tracker.html'">English</button>
 
   <!-- Banner -->
-  <img src="trim-tracker-banner.PNG" alt="Banner de Registro de Poda" class="banner" />
+  <img src="trim-tracker-banner.PNG" alt="Banner de Seguimiento de Recorte" class="banner" />
 
-  <!-- Nota Profesional -->
+  <!-- Nota profesional -->
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres la caché o uses otro dispositivo o navegador. Aunque esta herramienta está diseñada para ayudarte a llevar el control, te recomendamos encarecidamente que también anotes o respaldes tu información para evitar cualquier pérdida de datos.
+    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres tu caché o uses un dispositivo o navegador diferente. Aunque esta herramienta está diseñada para ayudarte a realizar un seguimiento, te recomendamos encarecidamente que también anotes o respaldes tu información por separado para evitar cualquier posible pérdida de datos.
   </p>
 
   <!-- Tabla -->
@@ -117,16 +116,13 @@
         <th>Acciones</th>
       </tr>
     </thead>
-    <tbody id="tableBody">
-    </tbody>
+    <tbody id="tableBody"></tbody>
   </table>
 
   <button onclick="addRow()">Agregar Fila</button>
-  <br />
-  <p style="color: #ccc;">¿Necesitas una copia? Exporta tu sesión como archivo CSV para Excel o Google Sheets.</p>
   <button class="clear-all" onclick="clearAllRows()">Borrar Todo</button>
   <button onclick="exportCSV()">Exportar CSV</button>
-  <a href="index.html" class="back-link">← Volver al Calculador de Poda</a>
+  <a href="index.html" class="back-link">← Volver al Calculador de Recorte</a>
 
   <script>
     let saveTimeout;
@@ -259,8 +255,7 @@
 
     function exportCSV() {
       const rows = document.querySelectorAll('#tableBody tr');
-      let csvContent = "Fecha,Cepa,Gramos (separados por punto y coma),Total
-";
+      let csvContent = "Fecha,Cepa,Gramos (separados por punto y coma),Total\n";
 
       rows.forEach(row => {
         const cells = row.querySelectorAll('td');
@@ -269,15 +264,14 @@
         const gramInputs = cells[2].querySelectorAll('input');
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
-        csvContent += `"${date}","${strain}","${grams}","${total}"
-`;
+        csvContent += `"${date}","${strain}","${grams}","${total}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'registro-poda.csv');
+      link.setAttribute('download', 'sesion-seguimiento-recorte.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
