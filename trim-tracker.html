@@ -12,6 +12,16 @@
       padding: 20px;
       text-align: center;
     }
+    .lang-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #777;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
     img.banner {
       width: 100%;
       max-width: 800px;
@@ -55,6 +65,9 @@
   </style>
 </head>
 <body>
+
+  <!-- Language Toggle -->
+  <button class="lang-toggle" onclick="window.location.href='trim-tracker-es.html'">Español</button>
 
   <!-- Banner -->
   <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
@@ -101,7 +114,6 @@
       const tbody = document.getElementById('tableBody');
       const row = document.createElement('tr');
 
-      // Date
       const dateCell = document.createElement('td');
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
@@ -110,7 +122,6 @@
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
 
-      // Strain
       const strainCell = document.createElement('td');
       const strainInput = document.createElement('input');
       strainInput.type = 'text';
@@ -119,7 +130,6 @@
       strainCell.appendChild(strainInput);
       row.appendChild(strainCell);
 
-      // Grams
       const gramsCell = document.createElement('td');
       const gramsWrapper = document.createElement('div');
       gramsWrapper.style.display = 'flex';
@@ -150,13 +160,11 @@
       gramsCell.appendChild(addGramBtn);
       row.appendChild(gramsCell);
 
-      // Total
       const totalCell = document.createElement('td');
       totalCell.innerText = '0.00';
       row.appendChild(totalCell);
       updateTotal();
 
-      // Delete Button
       const actionCell = document.createElement('td');
       const delBtn = document.createElement('button');
       delBtn.textContent = 'Delete';
