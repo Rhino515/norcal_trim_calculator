@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trim Tracker</title>
+  <title>Registro de Trim</title>
   <style>
     body {
       background-color: #111;
@@ -94,18 +94,18 @@
 </head>
 <body>
 
-  <!-- Language Toggle -->
+  <!-- Botón de idioma -->
   <button class="lang-toggle" onclick="window.location.href='trim-tracker.html'">English</button>
 
   <!-- Banner -->
-  <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
+  <img src="trim-tracker-banner.PNG" alt="Banner de Trim Tracker" class="banner" />
 
-  <!-- Professional Note -->
+  <!-- Nota profesional -->
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres tu caché o uses otro dispositivo o navegador. Aunque esta herramienta está diseñada para ayudarte con el seguimiento, recomendamos que también respaldes tu información por separado para evitar pérdidas.
+    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres la caché o uses otro dispositivo o navegador. Aunque esta herramienta está diseñada para ayudarte a llevar un registro, recomendamos encarecidamente que también anotes o respaldes tu información para evitar cualquier posible pérdida de datos.
   </p>
 
-  <!-- Table -->
+  <!-- Tabla -->
   <table id="sessionTable">
     <thead>
       <tr>
@@ -122,7 +122,8 @@
 
   <button onclick="addRow()">Agregar Fila</button>
   <button class="clear-all" onclick="clearAllRows()">Borrar Todo</button>
-  <a href="index.html" class="back-link">← Volver al Calculador de Trim</a>
+  <button onclick="exportCSV()">Exportar CSV</button>
+  <a href="index.html" class="back-link">← Volver al Calculador</a>
 
   <script>
     let saveTimeout;
@@ -212,7 +213,7 @@
       delBtn.textContent = 'Borrar';
       delBtn.className = 'delete-row';
       delBtn.onclick = () => {
-        if (confirm('¿Estás seguro de que deseas borrar esta fila?')) {
+        if (confirm('¿Estás seguro de que deseas eliminar esta fila?')) {
           row.remove();
           debounceSave();
         }
@@ -224,7 +225,7 @@
     }
 
     function clearAllRows() {
-      if (confirm('¿Estás seguro de que deseas borrar todas las filas? Esta acción no se puede deshacer.')) {
+      if (confirm('¿Estás seguro de que deseas borrar todas las filas? Esto no se puede deshacer.')) {
         document.getElementById('tableBody').innerHTML = '';
         addRow();
         debounceSave();
@@ -251,6 +252,30 @@
       } else {
         addRow();
       }
+    }
+
+    function exportCSV() {
+      const rows = document.querySelectorAll('#tableBody tr');
+      let csvContent = "Fecha,Cepa,Gramos (separados por punto y coma),Total\n";
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const date = cells[0].querySelector('input').value;
+        const strain = cells[1].querySelector('input').value;
+        const gramInputs = cells[2].querySelectorAll('input');
+        const grams = Array.from(gramInputs).map(input => input.value).join(';');
+        const total = cells[3].innerText;
+        csvContent += `"${date}","${strain}","${grams}","${total}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'registro-trim.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     loadData();
