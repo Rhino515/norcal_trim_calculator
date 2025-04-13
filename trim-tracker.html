@@ -1,253 +1,170 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>NorCal Trim Calculator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trim Tracker</title>
   <style>
     body {
-      background-color: black;
-      color: white;
-      font-family: 'Montserrat', sans-serif;
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
       text-align: center;
-      padding: 2em;
     }
-    input {
-      font-size: 1.2em;
-      padding: 0.5em;
-      margin-top: 1em;
-      width: 150px;
+    img.banner {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: center;
+    }
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
       background-color: #222;
       color: #fff;
       border: 1px solid #555;
-      border-radius: 4px;
     }
     button {
-      background-color: green;
-      color: white;
-      padding: 0.7em 1.5em;
+      padding: 8px 12px;
+      margin: 10px;
+      background-color: #28a745;
       border: none;
-      font-size: 1em;
-      margin-top: 1em;
-      border-radius: 4px;
+      color: white;
       cursor: pointer;
     }
-    button:hover {
-      background-color: darkgreen;
+    button.delete-row {
+      background-color: #dc3545;
     }
-    img {
-      margin-top: 1em;
-      width: 200px;
-    }
-    #result {
-      margin-top: 1em;
-      font-size: 1.2em;
-    }
-    .install-links {
-      margin-top: 2em;
-    }
-    .install-links a {
+    a.back-link {
       display: inline-block;
-      margin: 0.5em;
-      padding: 0.5em 1em;
-      color: white;
-      background-color: #444;
+      margin-top: 30px;
+      color: #0af;
       text-decoration: none;
-      border-radius: 4px;
-    }
-    .install-links a:hover {
-      background-color: #666;
-    }
-    table {
-      margin: 2em auto;
-      border-collapse: collapse;
-      width: 80%;
-    }
-    th, td {
-      border: 1px solid #555;
-      padding: 0.5em;
-    }
-    th {
-      background-color: #333;
-    }
-    td[contenteditable="true"] {
-      background-color: #222;
-    }
-    .delete-button {
-      background-color: red;
-      color: white;
-      border: none;
-      padding: 0.3em 0.6em;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    .delete-button:hover {
-      background-color: darkred;
-    }
-    .language-toggle {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
-    .language-toggle a {
-      color: white;
-      text-decoration: none;
-      margin-left: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="language-toggle">
-    <a href="index.html">English</a>
-    <a href="index-es.html">Español</a>
-  </div>
 
-  <img src="norcal_icon.png" alt="NorCal Logo" />
-  <p>Enter total grams trimmed:</p>
-  <input type="number" id="grams" placeholder="e.g. 1200" />
-  <br>
-  <button onclick="calculate()">Calculate</button>
-  <p id="result"></p>
+  <!-- Banner -->
+  <img src="A_logo_design_displays_the_words_%22TRIM_TRACKER%22_in.png" alt="Trim Tracker Banner" class="banner" />
 
-  <!-- New Trim Tracker Link -->
-  <div class="install-links" style="margin-top: 1em;">
-    <a href="trim-tracker.html">Go to Trim Tracker</a>
-  </div>
+  <!-- Professional Note -->
+  <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
+    <strong>Note:</strong> While this tool is designed to assist with tracking, please make sure to record your data elsewhere as well. We cannot guarantee that your information will be saved.
+  </p>
 
-  <div class="install-links">
-    <a href="#" onclick="alert('To install the app, tap the Share icon in Safari and choose “Add to Home Screen.”'); return false;">iOS Install Instructions</a>
-    <a href="#" onclick="alert('To install the app, tap the browser menu (three dots) and choose “Add to Home screen.”'); return false;">Android Install Instructions</a>
-  </div>
-
+  <!-- Table -->
   <table id="sessionTable">
     <thead>
       <tr>
-        <th>Date & Day</th>
+        <th>Date</th>
+        <th>Strain</th>
         <th>Grams</th>
-        <th>Bonus Pay</th>
-        <th>Action</th>
+        <th>Total</th>
+        <th>Actions</th>
       </tr>
     </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr>
-        <td colspan="2"><strong>Total</strong></td>
-        <td id="totalBonusPay">$0.00</td>
-        <td></td>
-      </tr>
-    </tfoot>
+    <tbody id="tableBody">
+      <!-- Rows will be generated here -->
+    </tbody>
   </table>
 
-  <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-    <h2 style="color: #0f0;">About Me</h2>
-    <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
-      Hi, my name is Andrew, and I work as a professional trimmer at NorCal Cannabis.
-      I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers
-      to track their daily progress.
-      <br><br>
-      This tool was designed to be practical, user-friendly, and efficient — helping workers stay organized and informed.
-      My goal is to support the trimming community with simple tech solutions that make a real difference on the job.
-    </p>
-  </div>
+  <button onclick="addRow()">Add Row</button>
+
+  <a href="index.html" class="back-link">← Back to Trim Calculator</a>
 
   <script>
-    function calculateBonus(grams) {
-      let bonusPay = 0;
-      if (grams > 1587) {
-        bonusPay += (grams - 1587) * 0.11;
-        bonusPay += (1587 - 1134) * 0.05;
-      } else if (grams > 1134) {
-        bonusPay += (grams - 1134) * 0.05;
-      }
-      return bonusPay;
+    function createGramInput(onChangeFunc) {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.step = '0.01';
+      input.placeholder = 'g';
+      input.oninput = onChangeFunc;
+      return input;
     }
 
-    function calculate() {
-      const grams = parseFloat(document.getElementById('grams').value);
-      if (isNaN(grams) || grams <= 0) {
-        document.getElementById('result').innerText = 'Please enter a valid number of grams.';
-        return;
-      }
-      const bonusPay = calculateBonus(grams);
-      document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateStr = now.toLocaleDateString(undefined, options);
-      const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
-      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-      history.push(entry);
-      localStorage.setItem('trimHistory', JSON.stringify(history));
-      updateSessionTable();
-    }
+    function addRow() {
+      const tbody = document.getElementById('tableBody');
+      const row = document.createElement('tr');
 
-    function updateSessionTable() {
-      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-      const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
-      tbody.innerHTML = '';
-      let totalBonusPay = 0;
-      history.forEach((entry, index) => {
-        const row = document.createElement('tr');
+      // Date
+      const dateCell = document.createElement('td');
+      const dateInput = document.createElement('input');
+      dateInput.type = 'date';
+      dateCell.appendChild(dateInput);
+      row.appendChild(dateCell);
 
-        const dateCell = document.createElement('td');
-        dateCell.textContent = entry.date;
-        dateCell.contentEditable = true;
-        dateCell.addEventListener('blur', function () {
-          const updatedDate = this.textContent.trim();
-          if (updatedDate) {
-            history[index].date = updatedDate;
-            localStorage.setItem('trimHistory', JSON.stringify(history));
-          }
+      // Strain
+      const strainCell = document.createElement('td');
+      const strainInput = document.createElement('input');
+      strainInput.type = 'text';
+      strainCell.appendChild(strainInput);
+      row.appendChild(strainCell);
+
+      // Grams
+      const gramsCell = document.createElement('td');
+      const gramsWrapper = document.createElement('div');
+      gramsWrapper.style.display = 'flex';
+      gramsWrapper.style.flexWrap = 'wrap';
+      gramsWrapper.style.gap = '4px';
+
+      const updateTotal = () => {
+        const inputs = gramsWrapper.querySelectorAll('input');
+        let sum = 0;
+        inputs.forEach(input => {
+          const val = parseFloat(input.value);
+          if (!isNaN(val)) sum += val;
         });
-        row.appendChild(dateCell);
+        totalCell.innerText = sum.toFixed(2);
+      };
 
-        const gramsCell = document.createElement('td');
-        gramsCell.textContent = entry.grams;
-        gramsCell.contentEditable = true;
-        gramsCell.style.backgroundColor = '#222';
-        gramsCell.addEventListener('blur', function () {
-          const newGrams = parseFloat(this.textContent.trim());
-          if (!isNaN(newGrams) && newGrams > 0) {
-            history[index].grams = newGrams;
-            const newBonus = calculateBonus(newGrams);
-            history[index].bonusPay = newBonus.toFixed(2);
-            localStorage.setItem('trimHistory', JSON.stringify(history));
-            updateSessionTable();
-          } else {
-            alert("Please enter a valid number of grams.");
-            updateSessionTable();
-          }
-        });
-        row.appendChild(gramsCell);
+      for (let i = 0; i < 3; i++) {
+        gramsWrapper.appendChild(createGramInput(updateTotal));
+      }
 
-        const bonusPayCell = document.createElement('td');
-        bonusPayCell.textContent = '$' + entry.bonusPay;
-        row.appendChild(bonusPayCell);
+      const addGramBtn = document.createElement('button');
+      addGramBtn.textContent = '+';
+      addGramBtn.onclick = () => {
+        gramsWrapper.appendChild(createGramInput(updateTotal));
+      };
+      gramsCell.appendChild(gramsWrapper);
+      gramsCell.appendChild(addGramBtn);
+      row.appendChild(gramsCell);
 
-        const actionCell = document.createElement('td');
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.className = 'delete-button';
-        deleteBtn.onclick = function () { deleteEntry(index); };
-        actionCell.appendChild(deleteBtn);
-        row.appendChild(actionCell);
+      // Total
+      const totalCell = document.createElement('td');
+      totalCell.innerText = '0.00';
+      row.appendChild(totalCell);
 
-        tbody.appendChild(row);
+      // Delete Button
+      const actionCell = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.className = 'delete-row';
+      delBtn.onclick = () => row.remove();
+      actionCell.appendChild(delBtn);
+      row.appendChild(actionCell);
 
-        totalBonusPay += parseFloat(entry.bonusPay);
-      });
-      document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+      tbody.appendChild(row);
     }
 
-    function deleteEntry(index) {
-      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-      history.splice(index, 1);
-      localStorage.setItem('trimHistory', JSON.stringify(history));
-      updateSessionTable();
+    // Initialize 10 rows
+    for (let i = 0; i < 10; i++) {
+      addRow();
     }
-
-    window.onload = updateSessionTable;
   </script>
+
 </body>
 </html>
