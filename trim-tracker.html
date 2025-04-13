@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trim Tracker</title>
   <style>
+    /* Same styles from original (unchanged for consistency) */
     body {
       background-color: #111;
       color: #fff;
@@ -98,7 +99,7 @@
   <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
 
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or use a different device or browser. While this tool is designed to assist with tracking, we strongly recommend that you also write down or back up your information separately to prevent any potential data loss.
+    <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or use a different device or browser. While this tool is designed to assist with tracking, we recommend that you also write down or back up your information separately to prevent any potential data loss.
   </p>
 
   <table id="sessionTable">
@@ -228,7 +229,7 @@
     }
 
     function clearAllRows() {
-      if (confirm('Are you sure you want to clear all rows? This cannot be undone.')) {
+      if (confirm('Are you sure you want to clear all rows? This action cannot be undone.')) {
         document.getElementById('tableBody').innerHTML = '';
         addRow();
         debounceSave();
@@ -260,7 +261,7 @@
 
     function exportCSV() {
       const rows = document.querySelectorAll('#tableBody tr');
-      let csvContent = "Date,Strain,Grams (semicolon-separated),Total\n";
+      let csvContent = "Date,Strain,Grams (semicolon separated),Total\n";
 
       rows.forEach(row => {
         const cells = row.querySelectorAll('td');
@@ -276,7 +277,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'trim-tracker-session.csv');
+      link.setAttribute('download', 'trim-tracker.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
