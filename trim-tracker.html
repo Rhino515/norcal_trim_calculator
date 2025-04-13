@@ -57,11 +57,11 @@
 <body>
 
   <!-- Banner -->
-  <img src="A_logo_design_displays_the_words_%22TRIM_TRACKER%22_in.png" alt="Trim Tracker Banner" class="banner" />
+  <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
 
   <!-- Professional Note -->
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Note:</strong> While this tool is designed to assist with tracking, please make sure to record your data elsewhere as well. We cannot guarantee that your information will be saved.
+    <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or use a different device/browser.
   </p>
 
   <!-- Table -->
@@ -76,26 +76,28 @@
       </tr>
     </thead>
     <tbody id="tableBody">
-      <!-- Rows will be generated here -->
     </tbody>
   </table>
 
   <button onclick="addRow()">Add Row</button>
-
   <a href="index.html" class="back-link">← Back to Trim Calculator</a>
 
   <script>
-    function createGramInput(onChangeFunc) {
+    function createGramInput(onChangeFunc, value = '') {
       const input = document.createElement('input');
       input.type = 'number';
       input.min = '0';
       input.step = '0.01';
       input.placeholder = 'g';
-      input.oninput = onChangeFunc;
+      input.value = value;
+      input.oninput = () => {
+        onChangeFunc();
+        saveData();
+      };
       return input;
     }
 
-    function addRow() {
+    function addRow(data = {}) {
       const tbody = document.getElementById('tableBody');
       const row = document.createElement('tr');
 
@@ -103,6 +105,8 @@
       const dateCell = document.createElement('td');
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
+      dateInput.value = data.date || '';
+      dateInput.oninput = saveData;
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
 
@@ -110,6 +114,8 @@
       const strainCell = document.createElement('td');
       const strainInput = document.createElement('input');
       strainInput.type = 'text';
+      strainInput.value = data.strain || '';
+      strainInput.oninput = saveData;
       strainCell.appendChild(strainInput);
       row.appendChild(strainCell);
 
@@ -130,14 +136,15 @@
         totalCell.innerText = sum.toFixed(2);
       };
 
-      for (let i = 0; i < 3; i++) {
-        gramsWrapper.appendChild(createGramInput(updateTotal));
-      }
+      (data.grams || ['', '', '']).forEach(g => {
+        gramsWrapper.appendChild(createGramInput(updateTotal, g));
+      });
 
       const addGramBtn = document.createElement('button');
       addGramBtn.textContent = '+';
       addGramBtn.onclick = () => {
         gramsWrapper.appendChild(createGramInput(updateTotal));
+        saveData();
       };
       gramsCell.appendChild(gramsWrapper);
       gramsCell.appendChild(addGramBtn);
@@ -147,23 +154,46 @@
       const totalCell = document.createElement('td');
       totalCell.innerText = '0.00';
       row.appendChild(totalCell);
+      updateTotal();
 
       // Delete Button
       const actionCell = document.createElement('td');
       const delBtn = document.createElement('button');
       delBtn.textContent = 'Delete';
       delBtn.className = 'delete-row';
-      delBtn.onclick = () => row.remove();
+      delBtn.onclick = () => {
+        row.remove();
+        saveData();
+      };
       actionCell.appendChild(delBtn);
       row.appendChild(actionCell);
 
       tbody.appendChild(row);
     }
 
-    // Initialize 10 rows
-    for (let i = 0; i < 10; i++) {
-      addRow();
+    function saveData() {
+      const rows = document.querySelectorAll('#tableBody tr');
+      const data = Array.from(rows).map(row => {
+        const [dateCell, strainCell, gramsCell] = row.querySelectorAll('td');
+        const date = dateCell.querySelector('input').value;
+        const strain = strainCell.querySelector('input').value;
+        const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
+        return { date, strain, grams };
+      });
+      localStorage.setItem('trimTrackerData', JSON.stringify(data));
     }
+
+    function loadData() {
+      const stored = localStorage.getItem('trimTrackerData');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        parsed.forEach(entry => addRow(entry));
+      } else {
+        addRow();
+      }
+    }
+
+    loadData();
   </script>
 
 </body>
