@@ -122,6 +122,7 @@
 
   <button onclick="addRow()">Add Row</button>
   <button class="clear-all" onclick="clearAllRows()">Clear All</button>
+  <button onclick="exportCSV()">Export CSV</button>
   <a href="index.html" class="back-link">← Back to Trim Calculator</a>
 
   <script>
@@ -253,8 +254,32 @@
       }
     }
 
+    function exportCSV() {
+      const rows = document.querySelectorAll('#tableBody tr');
+      let csvContent = "Date,Strain,Grams (semicolon-separated),Total\n";
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const date = cells[0].querySelector('input').value;
+        const strain = cells[1].querySelector('input').value;
+        const gramInputs = cells[2].querySelectorAll('input');
+        const grams = Array.from(gramInputs).map(input => input.value).join(';');
+        const total = cells[3].innerText;
+        csvContent += `"${date}","${strain}","${grams}","${total}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'trim-tracker-session.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     loadData();
   </script>
 
 </body>
-</html
+</html>
