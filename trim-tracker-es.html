@@ -1,15 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registro de Recorte</title>
+  <title>Trim Tracker</title>
   <style>
     body {
       background-color: #111;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 20px;
       text-align: center;
     }
@@ -32,15 +31,29 @@
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
+      font-size: 16px;
+      line-height: 1.5;
+      font-weight: bold;
     }
     th, td {
       border: 1px solid #444;
-      padding: 10px;
+      padding: 12px;
       text-align: center;
+      transition: background-color 0.2s ease;
+      font-weight: bold;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #1a1a1a;
+    }
+    tbody tr:hover {
+      background-color: #2a2a2a;
     }
     input[type="text"], input[type="number"], input[type="date"] {
       width: 100%;
-      padding: 5px;
+      padding: 6px;
+      font-size: 16px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-weight: bold;
       box-sizing: border-box;
       background-color: #222;
       color: #fff;
@@ -48,14 +61,28 @@
     }
     button {
       padding: 8px 12px;
-      margin: 10px;
+      margin: 10px 5px;
       background-color: #28a745;
       border: none;
       color: white;
       cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #218838;
     }
     button.delete-row {
       background-color: #dc3545;
+    }
+    button.delete-row:hover {
+      background-color: #c82333;
+    }
+    button.clear-all {
+      background-color: #ffc107;
+      color: #111;
+    }
+    button.clear-all:hover {
+      background-color: #e0a800;
     }
     a.back-link {
       display: inline-block;
@@ -71,11 +98,11 @@
   <button class="lang-toggle" onclick="window.location.href='trim-tracker.html'">English</button>
 
   <!-- Banner -->
-  <img src="trim-tracker-banner.PNG" alt="Banner de Registro de Recorte" class="banner" />
+  <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
 
   <!-- Professional Note -->
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres la caché o uses un dispositivo o navegador diferente. Aunque esta herramienta está diseñada para ayudarte a realizar un seguimiento, te recomendamos encarecidamente que también anotes o respaldes tu información por separado para evitar cualquier posible pérdida de datos.
+    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres tu caché o uses otro dispositivo o navegador. Aunque esta herramienta está diseñada para ayudarte con el seguimiento, recomendamos que también respaldes tu información por separado para evitar pérdidas.
   </p>
 
   <!-- Table -->
@@ -94,9 +121,23 @@
   </table>
 
   <button onclick="addRow()">Agregar Fila</button>
-  <a href="index.html" class="back-link">← Volver al Calculador de Recorte</a>
+  <button class="clear-all" onclick="clearAllRows()">Borrar Todo</button>
+  <a href="index.html" class="back-link">← Volver al Calculador de Trim</a>
 
   <script>
+    let saveTimeout;
+
+    function debounceSave() {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(saveData);
+        } else {
+          saveData();
+        }
+      }, 300);
+    }
+
     function createGramInput(onChangeFunc, value = '') {
       const input = document.createElement('input');
       input.type = 'number';
@@ -106,7 +147,7 @@
       input.value = value;
       input.oninput = () => {
         onChangeFunc();
-        saveData();
+        debounceSave();
       };
       return input;
     }
@@ -119,7 +160,7 @@
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
       dateInput.value = data.date || '';
-      dateInput.oninput = saveData;
+      dateInput.oninput = debounceSave;
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
 
@@ -127,7 +168,7 @@
       const strainInput = document.createElement('input');
       strainInput.type = 'text';
       strainInput.value = data.strain || '';
-      strainInput.oninput = saveData;
+      strainInput.oninput = debounceSave;
       strainCell.appendChild(strainInput);
       row.appendChild(strainCell);
 
@@ -155,7 +196,7 @@
       addGramBtn.textContent = '+';
       addGramBtn.onclick = () => {
         gramsWrapper.appendChild(createGramInput(updateTotal));
-        saveData();
+        debounceSave();
       };
       gramsCell.appendChild(gramsWrapper);
       gramsCell.appendChild(addGramBtn);
@@ -168,16 +209,26 @@
 
       const actionCell = document.createElement('td');
       const delBtn = document.createElement('button');
-      delBtn.textContent = 'Eliminar';
+      delBtn.textContent = 'Borrar';
       delBtn.className = 'delete-row';
       delBtn.onclick = () => {
-        row.remove();
-        saveData();
+        if (confirm('¿Estás seguro de que deseas borrar esta fila?')) {
+          row.remove();
+          debounceSave();
+        }
       };
       actionCell.appendChild(delBtn);
       row.appendChild(actionCell);
 
       tbody.appendChild(row);
+    }
+
+    function clearAllRows() {
+      if (confirm('¿Estás seguro de que deseas borrar todas las filas? Esta acción no se puede deshacer.')) {
+        document.getElementById('tableBody').innerHTML = '';
+        addRow();
+        debounceSave();
+      }
     }
 
     function saveData() {
