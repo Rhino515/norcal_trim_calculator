@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Registro de Recorte</title>
   <style>
-    /* Estilos iguales */
     body {
       background-color: #111;
       color: #fff;
@@ -124,7 +123,6 @@
     <h3>Totales Diarios</h3>
     <ul id="totalsList" style="list-style: none; padding: 0;"></ul>
   </div>
-
   <script>
     let saveTimeout;
 
@@ -247,6 +245,7 @@
         return { date, strain, grams };
       });
       localStorage.setItem('trimTrackerData-es', JSON.stringify(data));
+      localStorage.setItem('trimTrackerData', JSON.stringify(data)); // <-- newly added
     }
 
     function loadData() {
