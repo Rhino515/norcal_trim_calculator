@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registro de Poda</title>
+  <title>Rastreador de Corte</title>
   <style>
+    /* Same styles from original (unchanged for consistency) */
     body {
       background-color: #111;
       color: #fff;
@@ -95,10 +96,10 @@
 <body>
 
   <button class="lang-toggle" onclick="window.location.href='trim-tracker.html'">English</button>
-  <img src="trim-tracker-banner.PNG" alt="Banner de Registro de Poda" class="banner" />
+  <img src="trim-tracker-banner.PNG" alt="Banner del Rastreador de Corte" class="banner" />
 
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y estarán disponibles a menos que borres el caché o uses otro dispositivo o navegador. Aunque esta herramienta está diseñada para ayudarte a llevar el seguimiento, te recomendamos anotar o respaldar tu información por separado para evitar la pérdida de datos.
+    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres tu caché o uses un dispositivo o navegador diferente. Aunque esta herramienta está diseñada para ayudarte a hacer seguimiento, te recomendamos que también anotes o respaldes tu información por separado para evitar cualquier pérdida de datos.
   </p>
 
   <table id="sessionTable">
@@ -114,10 +115,10 @@
     <tbody id="tableBody"></tbody>
   </table>
 
-  <button onclick="addRow()">Agregar Fila</button>
-  <button class="clear-all" onclick="clearAllRows()">Borrar Todo</button>
+  <button onclick="addRow()">Añadir fila</button>
+  <button class="clear-all" onclick="clearAllRows()">Borrar todo</button>
   <button onclick="exportCSV()">Exportar CSV</button>
-  <a href="index.html" class="back-link">← Volver a Calculadora</a>
+  <a href="index.html" class="back-link">← Volver al Calculador de Corte</a>
 
   <div id="dailyTotals" style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
     <h3>Totales Diarios</h3>
@@ -212,7 +213,7 @@
 
       const actionCell = document.createElement('td');
       const delBtn = document.createElement('button');
-      delBtn.textContent = 'Eliminar';
+      delBtn.textContent = 'Borrar';
       delBtn.className = 'delete-row';
       delBtn.onclick = () => {
         if (confirm('¿Estás seguro de que deseas eliminar esta fila?')) {
@@ -228,7 +229,7 @@
     }
 
     function clearAllRows() {
-      if (confirm('¿Estás seguro de que deseas borrar todo? Esto no se puede deshacer.')) {
+      if (confirm('¿Estás seguro de que deseas borrar todas las filas? Esta acción no se puede deshacer.')) {
         document.getElementById('tableBody').innerHTML = '';
         addRow();
         debounceSave();
@@ -245,11 +246,11 @@
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
         return { date, strain, grams };
       });
-      localStorage.setItem('trimTrackerDataEs', JSON.stringify(data));
+      localStorage.setItem('trimTrackerDataES', JSON.stringify(data));
     }
 
     function loadData() {
-      const stored = localStorage.getItem('trimTrackerDataEs');
+      const stored = localStorage.getItem('trimTrackerDataES');
       if (stored) {
         const parsed = JSON.parse(stored);
         parsed.forEach(entry => addRow(entry));
@@ -276,7 +277,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'registro-poda.csv');
+      link.setAttribute('download', 'rastreador-corte.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
