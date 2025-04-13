@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Recorte</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    .lang-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #777;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    img.banner {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: center;
+    }
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    button {
+      padding: 8px 12px;
+      margin: 10px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    button.delete-row {
+      background-color: #dc3545;
+    }
+    a.back-link {
+      display: inline-block;
+      margin-top: 30px;
+      color: #0af;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Language Toggle -->
+  <button class="lang-toggle" onclick="window.location.href='trim-tracker.html'">English</button>
+
+  <!-- Banner -->
+  <img src="trim-tracker-banner.PNG" alt="Banner de Registro de Recorte" class="banner" />
+
+  <!-- Professional Note -->
+  <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
+    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres la caché o uses un dispositivo o navegador diferente. Aunque esta herramienta está diseñada para ayudarte a realizar un seguimiento, te recomendamos encarecidamente que también anotes o respaldes tu información por separado para evitar cualquier posible pérdida de datos.
+  </p>
+
+  <!-- Table -->
+  <table id="sessionTable">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Cepa</th>
+        <th>Gramos</th>
+        <th>Total</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+    </tbody>
+  </table>
+
+  <button onclick="addRow()">Agregar Fila</button>
+  <a href="index.html" class="back-link">← Volver al Calculador de Recorte</a>
+
+  <script>
+    function createGramInput(onChangeFunc, value = '') {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.step = '0.01';
+      input.placeholder = 'g';
+      input.value = value;
+      input.oninput = () => {
+        onChangeFunc();
+        saveData();
+      };
+      return input;
+    }
+
+    function addRow(data = {}) {
+      const tbody = document.getElementById('tableBody');
+      const row = document.createElement('tr');
+
+      const dateCell = document.createElement('td');
+      const dateInput = document.createElement('input');
+      dateInput.type = 'date';
+      dateInput.value = data.date || '';
+      dateInput.oninput = saveData;
+      dateCell.appendChild(dateInput);
+      row.appendChild(dateCell);
+
+      const strainCell = document.createElement('td');
+      const strainInput = document.createElement('input');
+      strainInput.type = 'text';
+      strainInput.value = data.strain || '';
+      strainInput.oninput = saveData;
+      strainCell.appendChild(strainInput);
+      row.appendChild(strainCell);
+
+      const gramsCell = document.createElement('td');
+      const gramsWrapper = document.createElement('div');
+      gramsWrapper.style.display = 'flex';
+      gramsWrapper.style.flexWrap = 'wrap';
+      gramsWrapper.style.gap = '4px';
+
+      const updateTotal = () => {
+        const inputs = gramsWrapper.querySelectorAll('input');
+        let sum = 0;
+        inputs.forEach(input => {
+          const val = parseFloat(input.value);
+          if (!isNaN(val)) sum += val;
+        });
+        totalCell.innerText = sum.toFixed(2);
+      };
+
+      (data.grams || ['', '', '']).forEach(g => {
+        gramsWrapper.appendChild(createGramInput(updateTotal, g));
+      });
+
+      const addGramBtn = document.createElement('button');
+      addGramBtn.textContent = '+';
+      addGramBtn.onclick = () => {
+        gramsWrapper.appendChild(createGramInput(updateTotal));
+        saveData();
+      };
+      gramsCell.appendChild(gramsWrapper);
+      gramsCell.appendChild(addGramBtn);
+      row.appendChild(gramsCell);
+
+      const totalCell = document.createElement('td');
+      totalCell.innerText = '0.00';
+      row.appendChild(totalCell);
+      updateTotal();
+
+      const actionCell = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Eliminar';
+      delBtn.className = 'delete-row';
+      delBtn.onclick = () => {
+        row.remove();
+        saveData();
+      };
+      actionCell.appendChild(delBtn);
+      row.appendChild(actionCell);
+
+      tbody.appendChild(row);
+    }
+
+    function saveData() {
+      const rows = document.querySelectorAll('#tableBody tr');
+      const data = Array.from(rows).map(row => {
+        const [dateCell, strainCell, gramsCell] = row.querySelectorAll('td');
+        const date = dateCell.querySelector('input').value;
+        const strain = strainCell.querySelector('input').value;
+        const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
+        return { date, strain, grams };
+      });
+      localStorage.setItem('trimTrackerData', JSON.stringify(data));
+    }
+
+    function loadData() {
+      const stored = localStorage.getItem('trimTrackerData');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        parsed.forEach(entry => addRow(entry));
+      } else {
+        addRow();
+      }
+    }
+
+    loadData();
+  </script>
+
+</body>
+</html>
