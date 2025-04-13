@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rastreador de Corte</title>
+  <title>Registro de Trim</title>
   <style>
-    /* Same styles from original (unchanged for consistency) */
+    /* Mismos estilos (sin cambios) */
     body {
       background-color: #111;
       color: #fff;
@@ -96,10 +96,10 @@
 <body>
 
   <button class="lang-toggle" onclick="window.location.href='trim-tracker.html'">English</button>
-  <img src="trim-tracker-banner.PNG" alt="Banner del Rastreador de Corte" class="banner" />
+  <img src="trim-tracker-banner.PNG" alt="Banner de Trim Tracker" class="banner" />
 
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres tu caché o uses un dispositivo o navegador diferente. Aunque esta herramienta está diseñada para ayudarte a hacer seguimiento, te recomendamos que también anotes o respaldes tu información por separado para evitar cualquier pérdida de datos.
+    <strong>Nota:</strong> Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres la caché o uses otro dispositivo o navegador. Aunque esta herramienta ayuda a llevar un registro, te recomendamos que también anotes o respaldes tu información por separado para evitar cualquier pérdida de datos.
   </p>
 
   <table id="sessionTable">
@@ -118,10 +118,10 @@
   <button onclick="addRow()">Añadir fila</button>
   <button class="clear-all" onclick="clearAllRows()">Borrar todo</button>
   <button onclick="exportCSV()">Exportar CSV</button>
-  <a href="index.html" class="back-link">← Volver al Calculador de Corte</a>
+  <a id="backLink" class="back-link">← Volver al Calculador de Trim</a>
 
   <div id="dailyTotals" style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
-    <h3>Totales Diarios</h3>
+    <h3>Totales diarios</h3>
     <ul id="totalsList" style="list-style: none; padding: 0;"></ul>
   </div>
 
@@ -213,10 +213,10 @@
 
       const actionCell = document.createElement('td');
       const delBtn = document.createElement('button');
-      delBtn.textContent = 'Borrar';
+      delBtn.textContent = 'Eliminar';
       delBtn.className = 'delete-row';
       delBtn.onclick = () => {
-        if (confirm('¿Estás seguro de que deseas eliminar esta fila?')) {
+        if (confirm('¿Estás seguro de que quieres eliminar esta fila?')) {
           row.remove();
           debounceSave();
           updateDailyTotals();
@@ -229,7 +229,7 @@
     }
 
     function clearAllRows() {
-      if (confirm('¿Estás seguro de que deseas borrar todas las filas? Esta acción no se puede deshacer.')) {
+      if (confirm('¿Estás seguro de que quieres borrar todas las filas? Esta acción no se puede deshacer.')) {
         document.getElementById('tableBody').innerHTML = '';
         addRow();
         debounceSave();
@@ -246,11 +246,11 @@
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
         return { date, strain, grams };
       });
-      localStorage.setItem('trimTrackerDataES', JSON.stringify(data));
+      localStorage.setItem('trimTrackerData-es', JSON.stringify(data));
     }
 
     function loadData() {
-      const stored = localStorage.getItem('trimTrackerDataES');
+      const stored = localStorage.getItem('trimTrackerData-es');
       if (stored) {
         const parsed = JSON.parse(stored);
         parsed.forEach(entry => addRow(entry));
@@ -277,7 +277,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'rastreador-corte.csv');
+      link.setAttribute('download', 'registro-trim.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -305,6 +305,11 @@
         totalsList.appendChild(li);
       });
     }
+
+    // Enlace dinámico de regreso
+    const backLink = document.getElementById('backLink');
+    const currentLang = document.documentElement.lang;
+    backLink.href = currentLang === 'es' ? 'index-es.html' : 'index.html';
 
     loadData();
   </script>
