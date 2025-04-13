@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trim Tracker</title>
   <style>
-    /* (Same CSS as you provided) */
     body {
       background-color: #111;
       color: #fff;
@@ -126,9 +125,8 @@
   </div>
 
   <script>
+    const storageKey = 'trimTrackerData';
     const lang = document.documentElement.lang;
-    const storageKey = `trimTrackerData-${lang}`; // Language-specific storage
-
     let saveTimeout;
 
     function debounceSave() {
@@ -312,8 +310,8 @@
     function toggleLanguage() {
       const currentLang = document.documentElement.lang;
       const newLang = currentLang === 'en' ? 'es' : 'en';
-      const newPage = newLang === 'en' ? 'trim-tracker.html' : 'trim-tracker-es.html';
-      window.location.href = newPage;
+      document.documentElement.lang = newLang;
+      document.querySelector('.lang-toggle').textContent = newLang === 'en' ? 'Español' : 'English';
     }
 
     document.getElementById('backLink').href = lang === 'es' ? 'index-es.html' : 'index.html';
