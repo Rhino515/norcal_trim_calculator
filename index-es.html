@@ -115,20 +115,20 @@
     <a href="index-es.html">Español</a>
   </div>
 
-  <img src="norcal_icon.png" alt="Logo NorCal" />
-  <p>Ingresa gramos totales cortados:</p>
+  <img src="norcal_icon.png" alt="NorCal Logo" />
+  <p>Ingresa los gramos totales recortados:</p>
   <input type="number" id="grams" placeholder="ej. 1200" />
   <br>
   <button onclick="calculate()">Calcular</button>
   <p id="result"></p>
 
   <div class="install-links">
-    <a href="trim-tracker.html">Ir al Rastreador de Trim</a>
+    <a href="trim-tracker-es.html">Ir al Rastreador de Trim</a>
   </div>
 
   <div class="install-links">
-    <a href="#" onclick="alert('Para instalar la app, toca el ícono de compartir en Safari y elige “Agregar a pantalla de inicio.”'); return false;">Instrucciones para iOS</a>
-    <a href="#" onclick="alert('Para instalar la app, abre el menú del navegador (tres puntos) y selecciona “Agregar a pantalla de inicio.”'); return false;">Instrucciones para Android</a>
+    <a href="#" onclick="alert('Para instalar la app, toca el icono de compartir en Safari y selecciona “Agregar a la pantalla de inicio.”'); return false;">Instrucciones para iOS</a>
+    <a href="#" onclick="alert('Para instalar la app, toca el menú del navegador (tres puntos) y selecciona “Agregar a pantalla de inicio.”'); return false;">Instrucciones para Android</a>
   </div>
 
   <table id="sessionTable">
@@ -150,15 +150,19 @@
     </tfoot>
   </table>
 
+  <div style="margin-top: 1em;">
+    <button class="clear-all-button" onclick="exportCSV()">Exportar CSV</button>
+  </div>
+
   <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-    <h2 style="color: #0f0;">Sobre Mí</h2>
+    <h2 style="color: #0f0;">Sobre mí</h2>
     <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
-      Hola, me llamo Andrew y trabajo como recortador profesional en NorCal Cannabis.
-      Creé la Calculadora de Trim NorCal para simplificar los cálculos de pago extra y ayudar a los recortadores
-      a llevar un seguimiento de su progreso diario.
+      Hola, mi nombre es Andrew y trabajo como recortador profesional en NorCal Cannabis.
+      Creé la Calculadora de Trim NorCal para ayudar a simplificar los cálculos de pago extra y facilitar que los recortadores
+      registren su progreso diario.
       <br><br>
       Esta herramienta fue diseñada para ser práctica, fácil de usar y eficiente — ayudando a los trabajadores a mantenerse organizados e informados.
-      Mi objetivo es apoyar a la comunidad de recortadores con soluciones tecnológicas simples que marquen una diferencia real en el trabajo.
+      Mi objetivo es apoyar a la comunidad de recortadores con soluciones tecnológicas simples que marquen una verdadera diferencia en el trabajo.
     </p>
   </div>
 
@@ -177,7 +181,7 @@
     function calculate() {
       const grams = parseFloat(document.getElementById('grams').value);
       if (isNaN(grams) || grams <= 0) {
-        document.getElementById('result').innerText = 'Por favor, ingresa un número válido de gramos.';
+        document.getElementById('result').innerText = 'Por favor ingresa una cantidad válida de gramos.';
         return;
       }
       const bonusPay = calculateBonus(grams);
@@ -225,7 +229,7 @@
             localStorage.setItem('trimHistory', JSON.stringify(history));
             updateSessionTable();
           } else {
-            alert("Por favor ingresa un número válido de gramos.");
+            alert("Por favor ingresa una cantidad válida de gramos.");
             updateSessionTable();
           }
         });
@@ -237,10 +241,10 @@
 
         const actionCell = document.createElement('td');
         const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Eliminar';
+        deleteBtn.textContent = 'Borrar';
         deleteBtn.className = 'delete-button';
         deleteBtn.onclick = function () {
-          if (confirm('¿Estás seguro de que deseas eliminar esta entrada?')) {
+          if (confirm('¿Estás seguro de que deseas borrar esta entrada?')) {
             deleteEntry(index);
           }
         };
@@ -267,7 +271,30 @@
       }
     }
 
+    function exportCSV() {
+      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      if (history.length === 0) {
+        alert("No hay entradas para exportar.");
+        return;
+      }
+
+      const csvRows = [['Fecha', 'Gramos', 'Pago Extra']];
+      history.forEach(entry => {
+        csvRows.push([entry.date, entry.grams, '$' + entry.bonusPay]);
+      });
+
+      const csvContent = csvRows.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'historial_trim.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     window.onload = updateSessionTable;
   </script>
 </body>
-</htmld>
+</html>
