@@ -40,7 +40,6 @@
       padding: 12px;
       text-align: center;
       transition: background-color 0.2s ease;
-      font-weight: bold;
     }
     tbody tr:nth-child(even) {
       background-color: #1a1a1a;
@@ -98,7 +97,7 @@
   <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
 
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers. While this tool helps track data, we recommend backing up your info separately to avoid data loss.
+    <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers. While this tool helps track data, we recommend backing up your information to avoid loss.
   </p>
 
   <table id="sessionTable">
@@ -117,7 +116,7 @@
   <button onclick="addRow()">Add Row</button>
   <button class="clear-all" onclick="clearAllRows()">Clear All</button>
   <button onclick="exportCSV()">Export CSV</button>
-  <a id="backLink" class="back-link">← Back to Trim Calculator</a>
+  <a id="backLink" class="back-link">← Back to Calculator</a>
 
   <div id="dailyTotals" style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
     <h3>Daily Totals</h3>
@@ -125,8 +124,9 @@
   </div>
 
   <script>
-    const storageKey = 'trimTrackerData';
     const lang = document.documentElement.lang;
+    const storageKey = `trimTrackerData-${lang}`;
+
     let saveTimeout;
 
     function debounceSave() {
@@ -230,7 +230,7 @@
     }
 
     function clearAllRows() {
-      if (confirm('Are you sure you want to clear all rows? This cannot be undone.')) {
+      if (confirm('Are you sure you want to delete all rows? This cannot be undone.')) {
         document.getElementById('tableBody').innerHTML = '';
         addRow();
         debounceSave();
@@ -262,7 +262,7 @@
 
     function exportCSV() {
       const rows = document.querySelectorAll('#tableBody tr');
-      let csvContent = "Date,Strain,Grams (semicolon-separated),Total\n";
+      let csvContent = "Date,Strain,Grams (semicolon separated),Total\n";
 
       rows.forEach(row => {
         const cells = row.querySelectorAll('td');
@@ -308,13 +308,10 @@
     }
 
     function toggleLanguage() {
-      const currentLang = document.documentElement.lang;
-      const newLang = currentLang === 'en' ? 'es' : 'en';
-      document.documentElement.lang = newLang;
-      document.querySelector('.lang-toggle').textContent = newLang === 'en' ? 'Español' : 'English';
+      window.location.href = 'trim-tracker-es.html';
     }
 
-    document.getElementById('backLink').href = lang === 'es' ? 'index-es.html' : 'index.html';
+    document.getElementById('backLink').href = 'index.html';
 
     loadData();
   </script>
