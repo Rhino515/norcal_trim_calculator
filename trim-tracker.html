@@ -95,7 +95,7 @@
 </head>
 <body>
 
-  <button class="lang-toggle" onclick="window.location.href='trim-tracker-es.html'">Español</button>
+  <button class="lang-toggle" onclick="toggleLanguage()">Español</button>
   <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
 
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
@@ -126,6 +126,9 @@
   </div>
 
   <script>
+    const lang = document.documentElement.lang;
+    const storageKey = lang === 'es' ? 'trimTrackerData-es' : 'trimTrackerData-en';
+
     let saveTimeout;
 
     function debounceSave() {
@@ -246,11 +249,11 @@
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
         return { date, strain, grams };
       });
-      localStorage.setItem('trimTrackerData-en', JSON.stringify(data));
+      localStorage.setItem(storageKey, JSON.stringify(data));
     }
 
     function loadData() {
-      const stored = localStorage.getItem('trimTrackerData-en');
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         parsed.forEach(entry => addRow(entry));
@@ -306,8 +309,15 @@
       });
     }
 
-    // Set the back link based on page language
-    document.getElementById('backLink').href = document.documentElement.lang === 'es' ? 'index-es.html' : 'index.html';
+    function toggleLanguage() {
+      const currentLang = document.documentElement.lang;
+      const newLang = currentLang === 'en' ? 'es' : 'en';
+      const newPage = newLang === 'en' ? 'trim-tracker.html' : 'trim-tracker-es.html';
+      window.location.href = newPage;
+    }
+
+    // Set back link
+    document.getElementById('backLink').href = lang === 'es' ? 'index-es.html' : 'index.html';
 
     loadData();
   </script>
