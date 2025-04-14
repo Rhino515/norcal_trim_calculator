@@ -324,11 +324,8 @@
     document.getElementById('backLink').href = 'index.html';
 
     loadData();
+    setTimeout(updateDailyTotals, 100);
   </script>
 </body>
 </html>
 
-<script>
-    // Update totals whenever any input changes
-    document.addEventListener('input', updateDailyTotals);
-</script>
