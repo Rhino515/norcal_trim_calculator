@@ -119,6 +119,8 @@
   <p>Ingresa los gramos totales recortados:</p>
   <input type="number" id="grams" placeholder="ej. 1200" />
   <br>
+  <button id="import-tracker-total">Agregar Total Diario del Rastreador</button>
+  <br>
   <button onclick="calculate()">Calcular</button>
   <p id="result"></p>
 
@@ -295,6 +297,17 @@
     }
 
     window.onload = updateSessionTable;
+
+    document.getElementById('import-tracker-total').addEventListener('click', () => {
+      const trackerTotal = localStorage.getItem('trimTrackerDailyTotal');
+      if (trackerTotal) {
+        document.getElementById('grams').value = trackerTotal;
+        alert(`Importado ${trackerTotal}g desde el Rastreador de Trim.`);
+      } else {
+        alert("No se encontró un total diario del rastreador para hoy.");
+      }
+    });
+
   </script>
 </body>
 </html>
