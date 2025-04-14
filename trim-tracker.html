@@ -300,6 +300,16 @@
       const totalsList = document.getElementById('totalsList');
       totalsList.innerHTML = '';
 
+      
+      // Save today's total to localStorage for use in Calculator
+      const today = new Date().toISOString().split('T')[0];
+      if (totalsMap[today]) {
+        localStorage.setItem('trimTrackerDailyTotal', totalsMap[today].toFixed(2));
+      } else {
+        localStorage.removeItem('trimTrackerDailyTotal');
+      }
+
+
       Object.entries(totalsMap).forEach(([date, total]) => {
         const li = document.createElement('li');
         li.textContent = `${date}: ${total.toFixed(2)}g`;

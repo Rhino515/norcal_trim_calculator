@@ -119,6 +119,8 @@
   <p>Enter total grams trimmed:</p>
   <input type="number" id="grams" placeholder="e.g. 1200" />
   <br>
+  <button id="import-tracker-total">Add Today’s Trim Tracker Total</button>
+  <br>
   <button onclick="calculate()">Calculate</button>
   <p id="result"></p>
 
@@ -296,6 +298,17 @@
     }
 
     window.onload = updateSessionTable;
+
+    document.getElementById('import-tracker-total').addEventListener('click', () => {
+      const trackerTotal = localStorage.getItem('trimTrackerDailyTotal');
+      if (trackerTotal) {
+        document.getElementById('grams').value = trackerTotal;
+        alert(`Imported ${trackerTotal}g from Trim Tracker.`);
+      } else {
+        alert("No trim tracker total found for today.");
+      }
+    });
+
   </script>
 </body>
 </html>
