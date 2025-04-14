@@ -323,12 +323,10 @@
 
     document.getElementById('backLink').href = 'index-es.html';
 
+    document.addEventListener('input', updateDailyTotals);
+
     loadData();
   </script>
 </body>
 </html>
 
-<script>
-    // Update totals whenever any input changes
-    document.addEventListener('input', updateDailyTotals);
-</script>
