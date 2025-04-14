@@ -201,6 +201,7 @@
       history.push(entry);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+      document.getElementById('grams').value = '';
     }
 
     function updateSessionTable() {
@@ -235,9 +236,11 @@
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
             updateSessionTable();
+      document.getElementById('grams').value = '';
           } else {
             alert("Por favor ingresa una cantidad válida de gramos.");
             updateSessionTable();
+      document.getElementById('grams').value = '';
           }
         });
         row.appendChild(gramsCell);
@@ -269,12 +272,14 @@
       history.splice(index, 1);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+      document.getElementById('grams').value = '';
     }
 
     function clearAllEntries() {
       if (confirm('¿Estás seguro de que deseas borrar todas las entradas?')) {
         localStorage.removeItem('trimHistory');
         updateSessionTable();
+      document.getElementById('grams').value = '';
       }
     }
 
