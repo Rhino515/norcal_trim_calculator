@@ -97,7 +97,7 @@
   <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
 
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers. Please make sure to use the app in your preferred language, as data is stored separately for each language version. While this tool helps track data, we recommend backing up your information to avoid loss.
+    <strong>Note:</strong>Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers. Please make sure to use the app in your preferred language, as data is stored separately for each language version. While this tool helps track data, we recommend backing up your information to avoid loss.
   </p>
 
   <table id="sessionTable">
@@ -161,7 +161,7 @@
       const dateCell = document.createElement('td');
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
-      dateInput.value = data.date || new Date().toISOString().split('T')[0];
+      dateInput.value = data.date || new Date().toISOString().split("T")[0];
       dateInput.oninput = () => { debounceSave(); updateDailyTotals(); };
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
@@ -248,7 +248,6 @@
         return { date, strain, grams };
       });
       localStorage.setItem(storageKey, JSON.stringify(data));
-      updateDailyTotals();
     }
 
     function loadData() {
@@ -272,7 +271,7 @@
         const gramInputs = cells[2].querySelectorAll('input');
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
-        csvContent += `"\${date}","\${strain}","\${grams}","\${total}"\n`;
+        csvContent += `"${date}","${strain}","${grams}","${total}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -298,17 +297,19 @@
         }
       });
 
+      const totalsList = document.getElementById('totalsList');
+      totalsList.innerHTML = '';
+
+      
+      // Save today's total to localStorage for use in Calculator
       const today = new Date().toISOString().split('T')[0];
-      const todayTotal = totalsMap[today] ? totalsMap[today].toFixed(2) : null;
-      if (todayTotal) {
-        const trackerData = { date: today, total: todayTotal };
-        localStorage.setItem('trimTrackerDailyTotal', JSON.stringify(trackerData));
+      if (totalsMap[today]) {
+        localStorage.setItem('trimTrackerDailyTotal', totalsMap[today].toFixed(2));
       } else {
         localStorage.removeItem('trimTrackerDailyTotal');
       }
 
-      const totalsList = document.getElementById('totalsList');
-      totalsList.innerHTML = '';
+
       Object.entries(totalsMap).forEach(([date, total]) => {
         const li = document.createElement('li');
         li.textContent = `${date}: ${total.toFixed(2)}g`;
@@ -323,7 +324,11 @@
     document.getElementById('backLink').href = 'index.html';
 
     loadData();
-    setTimeout(updateDailyTotals, 100);
   </script>
 </body>
 </html>
+
+<script>
+    // Update totals whenever any input changes
+    document.addEventListener('input', updateDailyTotals);
+</script>
