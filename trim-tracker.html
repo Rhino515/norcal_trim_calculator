@@ -301,7 +301,8 @@
       const today = new Date().toISOString().split('T')[0];
       const todayTotal = totalsMap[today] ? totalsMap[today].toFixed(2) : null;
       if (todayTotal) {
-        localStorage.setItem('trimTrackerDailyTotal', JSON.stringify({ date: today, total: todayTotal }));
+        const trackerData = { date: today, total: todayTotal };
+        localStorage.setItem('trimTrackerDailyTotal', JSON.stringify(trackerData));
       } else {
         localStorage.removeItem('trimTrackerDailyTotal');
       }
