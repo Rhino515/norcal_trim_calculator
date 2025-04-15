@@ -207,7 +207,20 @@
       row.appendChild(totalCell);
       updateTotal();
 
-      const actionCell = document.createElement('td');
+      
+      const noteCell = document.createElement('td');
+      const noteInput = document.createElement('input');
+      noteInput.type = 'text';
+      noteInput.value = data.note || '';
+      noteInput.placeholder = 'Notas';
+      noteInput.style.width = '100%';
+      noteInput.style.fontSize = '14px';
+      noteInput.style.padding = '6px';
+      noteInput.oninput = debounceSave;
+      noteCell.appendChild(noteInput);
+      row.insertBefore(noteCell, row.children[row.children.length - 1]); // Insert before action cell
+    
+const actionCell = document.createElement('td');
       const delBtn = document.createElement('button');
       delBtn.textContent = 'Eliminar';
       delBtn.className = 'delete-row';
@@ -268,7 +281,7 @@
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
         
-        const note = cells[3].querySelector('input')?.value || '';
+        const note = cells[4].querySelector('input')?.value || '';
         csvContent += `"\${date}","\${strain}","\${grams}","\${note}","\${total}"\n`;
     
       });
