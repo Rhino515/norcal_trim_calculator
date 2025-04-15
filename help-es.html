@@ -1,74 +1,133 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Help / How to Use</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ayuda | Herramientas NorCal Trim</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      background-color: black;
-      color: white;
-      font-family: 'Montserrat', sans-serif;
-      text-align: center;
-      padding: 2em;
-    }
-    img {
-      max-width: 90%;
-      margin: 1em auto;
-      display: block;
-      border: 2px solid #444;
-      border-radius: 8px;
-    }
-    h2 {
-      color: #0f0;
-      margin-top: 2em;
-    }
-    p {
-      max-width: 700px;
-      margin: 1em auto;
-      font-size: 1.1em;
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
       line-height: 1.6;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #0f0;
     }
     a {
+      color: #0af;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .faq-item {
+      margin-bottom: 1em;
+    }
+    .faq-question {
+      width: 100%;
+      background-color: #222;
       color: #0f0;
-      text-decoration: underline;
+      border: none;
+      padding: 0.75em;
+      font-size: 1em;
+      text-align: left;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .faq-answer {
+      display: none;
+      padding: 0.5em 1em;
+      background-color: #333;
+      color: #fff;
+      border-left: 3px solid #0f0;
+      margin-top: 0.25em;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <h1>Help / How to Use</h1>
+  <h1>Ayuda y Cómo Usar</h1>
 
-  <h2>1. Ingresa la cantidad total de gramos recortados</h2>
-  <p>Escribe la cantidad total de gramos que recortaste en el campo de entrada. Este es tu punto de partida para calcular tu bono.</p>
-  
+  <h2>Resumen</h2>
+  <p>La Calculadora de Recorte NorCal y el Rastreador de Recorte son herramientas diseñadas para ayudar a los recortadores a registrar su peso diario y calcular su bono. Todos los datos se guardan localmente en tu navegador.</p>
 
-  <h2>2. Toca 'Calcular' para ver el bono</h2>
-  <p>Haz clic en el botón verde "Calcular" para ver instantáneamente tu bono según las tarifas actuales de recorte de NorCal.</p>
-  
+  <h2>Cómo usar la Calculadora de Recorte</h2>
+  <ul>
+    <li>Ingresa la cantidad total de gramos que recortaste durante el día en el campo de entrada.</li>
+    <li>Haz clic en <strong>"Agregar total del Rastreador de hoy"</strong> para importar automáticamente tu peso del Rastreador si ya lo registraste hoy.</li>
+    <li>Haz clic en <strong>"Calcular"</strong> para obtener tu bono según la tarifa actual.</li>
+    <li>Tu resultado aparecerá en la tabla de sesión, incluyendo el monto del bono.</li>
+    <li>Usa los botones <strong>"Eliminar"</strong> o <strong>"Borrar todo"</strong> para administrar tus registros.</li>
+    <li>También puedes hacer clic en <strong>"Exportar CSV"</strong> para guardar tus registros como respaldo.</li>
+  </ul>
 
-  <h2>3. Agrega el total diario del Rastreador</h2>
-  <p>Si registraste tu trabajo de recorte en el Rastreador, puedes importar ese total directamente en la calculadora.</p>
-  
+  <h2>Cómo usar el Rastreador de Recorte</h2>
+  <ul>
+    <li>Usa esta página para registrar cada variedad que recortes junto con la cantidad (en gramos).</li>
+    <li>Puedes ingresar hasta tres cantidades de gramos por fila y hacer clic en <strong>"+"</strong> para agregar más campos si es necesario.</li>
+    <li>El rastreador calcula automáticamente tu total diario y lo guarda bajo la fecha actual.</li>
+    <li>Regresa a la calculadora y haz clic en <strong>"Agregar total del Rastreador de hoy"</strong> para importar tu total y calcular tu bono.</li>
+  </ul>
 
-  <h2>4. Revisa tu historial de sesiones History</h2>
-  <p>Each calculation is saved in the session table below. You can edit, delete, or export your history anytime.</p>
-  
+  <h2>Consejos y Preguntas Frecuentes</h2>
+  <ul>
+    <li><strong>Los datos se guardan localmente:</strong> Tus registros se almacenan en tu navegador a menos que borres la caché o uses otro dispositivo.</li>
+    <li><strong>El idioma importa:</strong> Usa la app de forma consistente en inglés o español — mezclar idiomas puede guardar los datos por separado.</li>
+    <li><strong>Respaldo:</strong> Usa la opción Exportar CSV en cualquier página para guardar una copia de tus datos manualmente.</li>
+    <li><strong>Sincronización de fechas:</strong> La calculadora solo importa datos del Rastreador guardados bajo la fecha de hoy. Si no se encuentra nada, verifica que la fecha coincida.</li>
+  </ul>
 
-  <h2>5. Export or Clear Data</h2>
-  <p>Use the buttons at the bottom to export your session history as a CSV file or clear all entries if starting fresh.</p>
-
-  <h2>6. Install the App</h2>
-  <p>You can add NorCal Trim Calculator to your home screen on mobile. Look for 'Add to Home Screen' in your browser menu.</p>
+  <h2>¿Necesitas más ayuda?</h2>
+  <p>Si algo no funciona, intenta recargar la página o volver a ingresar tus datos. También puedes contactar directamente al creador para obtener ayuda.</p>
 
   <p><a href="index.html">← Volver a la Calculadora</a></p>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log("Service Worker registered:", reg))
-      .catch(err => console.error("Service Worker registration failed:", err));
-  }
-</script>
+  <hr>
+  <h2>Preguntas Frecuentes</h2>
+  <div class="faq-item">
+    <button class="faq-question">¿Por qué no puedo importar mi total del Rastreador?</button>
+    <div class="faq-answer">
+      <p>Asegúrate de haber guardado una entrada con la fecha de hoy. La calculadora solo importa el total del día actual desde localStorage.</p>
+    </div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-question">¿Dónde se guardan mis datos?</button>
+    <div class="faq-answer">
+      <p>Todos los datos se almacenan en tu navegador usando localStorage. Es privado y no se envía a internet.</p>
+    </div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-question">¿Funciona esta app sin conexión?</button>
+    <div class="faq-answer">
+      <p>Sí. Una vez cargada por primera vez, funcionará sin conexión gracias al soporte de service worker.</p>
+    </div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-question">¿Cómo instalo esta app?</button>
+    <div class="faq-answer">
+      <p>En Android o Chrome, verás una opción para instalar. En iOS, toca el icono de compartir y selecciona “Agregar a pantalla de inicio.”</p>
+    </div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-question">¿Qué pasa si borro los datos del navegador?</button>
+    <div class="faq-answer">
+      <p>Perderás tus datos si limpias la caché o almacenamiento local. Exporta tu CSV como respaldo antes de hacerlo.</p>
+    </div>
+  </div>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.faq-question').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const answer = btn.nextElementSibling;
+          answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+        });
+      });
+    });
+  </script>
 </body>
 </html>
