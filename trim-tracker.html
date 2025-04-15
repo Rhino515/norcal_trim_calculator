@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  const userLang = navigator.language || navigator.userLanguage;
+  if (userLang.startsWith('es') && !window.location.href.includes('index-es.html') && !window.location.href.includes('trim-tracker-es.html')) {
+    if (window.location.href.includes('trim-tracker')) {
+      window.location.href = 'trim-tracker-es.html';
+    } else {
+      window.location.href = 'index-es.html';
+    }
+  }
+</script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trim Tracker</title>
