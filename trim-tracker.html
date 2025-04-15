@@ -161,7 +161,7 @@
       const dateCell = document.createElement('td');
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
-      dateInput.value = data.date || '';
+      dateInput.value = data.date || new Date().toISOString().split('T')[0];
       dateInput.oninput = () => { debounceSave(); updateDailyTotals(); };
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
