@@ -1,7 +1,7 @@
 {
   "name": "NorCal Trim Calculator",
   "short_name": "TrimCalc",
-  "start_url": ".",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
@@ -9,6 +9,11 @@
     {
       "src": "norcal_icon.png",
       "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "norcal_icon.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
