@@ -133,7 +133,6 @@
     <a href="#" onclick="alert('To install the app, tap the browser menu (three dots) and choose “Add to Home screen.”'); return false;">Android Install Instructions</a>
   </div>
 
-  
   <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
     <strong>Note:</strong> For the Trim Tracker import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
   </div>
@@ -157,7 +156,6 @@
     </tfoot>
   </table>
 
-  <!-- Export CSV Button -->
   <div style="margin-top: 1em;">
     <button class="clear-all-button" onclick="exportCSV()">Export CSV</button>
   </div>
@@ -237,11 +235,9 @@
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
             updateSessionTable();
-      document.getElementById('grams').value = '';
           } else {
             alert("Please enter a valid number of grams.");
             updateSessionTable();
-      document.getElementById('grams').value = '';
           }
         });
         row.appendChild(gramsCell);
@@ -273,14 +269,12 @@
       history.splice(index, 1);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
-      document.getElementById('grams').value = '';
     }
 
     function clearAllEntries() {
       if (confirm('Are you sure you want to clear all entries?')) {
         localStorage.removeItem('trimHistory');
         updateSessionTable();
-      document.getElementById('grams').value = '';
       }
     }
 
@@ -307,18 +301,22 @@
       document.body.removeChild(link);
     }
 
-    window.onload = updateSessionTable;
-
     document.getElementById('import-tracker-total').addEventListener('click', () => {
-      const trackerTotal = localStorage.getItem('trimTrackerDailyTotal');
-      if (trackerTotal) {
-        document.getElementById('grams').value = trackerTotal;
-        alert(`Imported ${trackerTotal}g from Trim Tracker.`);
+      const trackerData = JSON.parse(localStorage.getItem('trimTrackerDailyTotal'));
+      if (trackerData && trackerData.date && trackerData.total) {
+        const todayStr = new Date().toLocaleDateString();
+        if (trackerData.date === todayStr) {
+          document.getElementById('grams').value = trackerData.total;
+          alert(`Imported ${trackerData.total}g from Trim Tracker.`);
+        } else {
+          alert("No trim tracker total found for today.");
+        }
       } else {
         alert("No trim tracker total found for today.");
       }
     });
 
+    window.onload = updateSessionTable;
   </script>
 </body>
 </html>
