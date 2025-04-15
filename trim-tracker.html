@@ -161,7 +161,7 @@
       const dateCell = document.createElement('td');
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
-      dateInput.value = data.date || new Date().toISOString().split('T')[0];
+      dateInput.value = data.date || new Date().toLocaleDateString('en-CA');
       dateInput.oninput = () => { debounceSave(); updateDailyTotals(); };
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
@@ -302,7 +302,7 @@
 
       
       // Save today's total to localStorage for use in Calculator
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toLocaleDateString('en-CA');
       if (totalsMap[today]) {
         localStorage.setItem('trimTrackerDailyTotal', totalsMap[today].toFixed(2));
       } else {
