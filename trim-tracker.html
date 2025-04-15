@@ -111,7 +111,6 @@
   color: white;
 }
 </style>
-        
 </head>
 <body>
 <button class="lang-toggle" onclick="toggleLanguage()">Español</button>
@@ -237,7 +236,7 @@
       noteInput.className = 'note-input';
       noteInput.oninput = debounceSave;
       noteCell.appendChild(noteInput);
-      row.insertBefore(noteCell, row.children[row.children.length - 2]);
+      row.insertBefore(noteCell, row.children[4]); // Insert after Grams before Total
     
 
 const actionCell = document.createElement('td');
@@ -301,7 +300,7 @@ const actionCell = document.createElement('td');
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
         
-        const note = cells[4].querySelector('input')?.value || '';
+        const note = cells[3].querySelector('input')?.value || '';
         csvContent += `"\${date}","\${strain}","\${grams}","\${note}","\${total}"\n`;
     
       });
