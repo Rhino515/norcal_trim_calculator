@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registro de Recorte</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registro de Recorte</title>
+<style>
     body {
       background-color: #111;
       color: #fff;
@@ -92,38 +93,32 @@
   </style>
 </head>
 <body>
-
-  <button class="lang-toggle" onclick="toggleLanguage()">English</button>
-  <img src="trim-tracker-banner.PNG" alt="Registro de Recorte Banner" class="banner" />
-
-  <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Nota:</strong>Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres la caché o cambies de dispositivo o navegador. Asegúrate de usar la aplicación en tu idioma preferido, ya que los datos se almacenan por separado para cada versión del idioma. Aunque esta herramienta ayuda a rastrear datos, recomendamos hacer una copia de seguridad para evitar pérdidas.
+<button class="lang-toggle" onclick="toggleLanguage()">English</button>
+<img alt="Registro de Recorte Banner" class="banner" src="trim-tracker-banner.PNG"/>
+<p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
+<strong>Nota:</strong>Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres la caché o cambies de dispositivo o navegador. Asegúrate de usar la aplicación en tu idioma preferido, ya que los datos se almacenan por separado para cada versión del idioma. Aunque esta herramienta ayuda a rastrear datos, recomendamos hacer una copia de seguridad para evitar pérdidas.
   </p>
-
-  <table id="sessionTable">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Variedad</th>
-        <th>Gramos</th>
-        <th>Total</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-
-  <button onclick="addRow()">Agregar Fila</button>
-  <button class="clear-all" onclick="clearAllRows()">Borrar Todo</button>
-  <button onclick="exportCSV()">Exportar CSV</button>
-  <a id="backLink" class="back-link">← ← Volver a la Calculadora</a>
-
-  <div id="dailyTotals" style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
-    <h3>Daily Totals</h3>
-    <ul id="totalsList" style="list-style: none; padding: 0;"></ul>
-  </div>
-
-  <script>
+<table id="sessionTable">
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Variedad</th>
+<th>Gramos</th>
+<th>Total</th>
+<th>Acciones</th>
+<th>Nota</th></tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+<button onclick="addRow()">Agregar Fila</button>
+<button class="clear-all" onclick="clearAllRows()">Borrar Todo</button>
+<button onclick="exportCSV()">Exportar CSV</button>
+<a class="back-link" id="backLink">← ← Volver a la Calculadora</a>
+<div id="dailyTotals" style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+<h3>Daily Totals</h3>
+<ul id="totalsList" style="list-style: none; padding: 0;"></ul>
+</div>
+<script>
     const lang = document.documentElement.lang;
     const storageKey = `trimTrackerData-${lang}`;
 
@@ -241,11 +236,14 @@
     function saveData() {
       const rows = document.querySelectorAll('#tableBody tr');
       const data = Array.from(rows).map(row => {
-        const [dateCell, strainCell, gramsCell] = row.querySelectorAll('td');
+        const [dateCell, strainCell, gramsCell, totalCell, noteCell] = row.querySelectorAll('td');
         const date = dateCell.querySelector('input').value;
         const strain = strainCell.querySelector('input').value;
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
-        return { date, strain, grams };
+        
+        const note = noteCell.querySelector('input').value;
+        return { date, strain, grams, note };
+    
       });
       localStorage.setItem(storageKey, JSON.stringify(data));
     }
@@ -262,7 +260,7 @@
 
     function exportCSV() {
       const rows = document.querySelectorAll('#tableBody tr');
-      let csvContent = "Fecha,Variedad,Gramos (semicolon separated),Total\n";
+      let csvContent = "Fecha,Variedad,Gramos (semicolon separated),Total,Nota\n";
 
       rows.forEach(row => {
         const cells = row.querySelectorAll('td');
@@ -271,7 +269,10 @@
         const gramInputs = cells[2].querySelectorAll('input');
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
-        csvContent += `"${date}","${strain}","${grams}","${total}"\n`;
+        
+        const note = cells[4].querySelector('input')?.value || '';
+        csvContent += `"\${date}","\${strain}","\${grams}","\${total}","\${note}"\n`;
+    
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -327,18 +328,8 @@
 loadData();
 setTimeout(updateDailyTotals, 200);  // Force save today's total after loading
   </script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log("Service Worker registered:", reg))
-      .catch(err => console.error("Service Worker registration failed:", err));
-  }
-</script>
-
 </body>
 </html>
-
 <script>
     // Update totals whenever any input changes
     document.addEventListener('input', updateDailyTotals);
