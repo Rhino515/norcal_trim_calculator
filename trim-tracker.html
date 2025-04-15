@@ -126,7 +126,6 @@
   <script>
     const lang = document.documentElement.lang;
     const storageKey = `trimTrackerData-${lang}`;
-
     let saveTimeout;
 
     function debounceSave() {
@@ -289,11 +288,8 @@
       const totalsMap = {};
 
       rows.forEach(row => {
-        const dateInput = row.querySelector('td input[type="date"]');
-        const date = dateInput ? dateInput.value : '';
-        const totalCell = row.querySelector('td:nth-child(4)');
-        const total = parseFloat(totalCell?.innerText) || 0;
-
+        const date = row.querySelector('td input[type="date"]').value;
+        const total = parseFloat(row.querySelector('td:nth-child(4)').innerText) || 0;
         if (date) {
           if (!totalsMap[date]) totalsMap[date] = 0;
           totalsMap[date] += total;
@@ -303,18 +299,19 @@
       const totalsList = document.getElementById('totalsList');
       totalsList.innerHTML = '';
 
-      const today = new Date().toISOString().split('T')[0];
-      if (totalsMap[today]) {
-        localStorage.setItem('trimTrackerDailyTotal', totalsMap[today].toFixed(2));
-      } else {
-        localStorage.removeItem('trimTrackerDailyTotal');
-      }
-
       Object.entries(totalsMap).forEach(([date, total]) => {
         const li = document.createElement('li');
         li.textContent = `${date}: ${total.toFixed(2)}g`;
         totalsList.appendChild(li);
       });
+
+      const today = new Date().toISOString().split('T')[0];
+      const todayTotal = totalsMap[today];
+      if (todayTotal !== undefined) {
+        localStorage.setItem('trimTrackerDailyTotal', todayTotal.toFixed(2));
+      } else {
+        localStorage.removeItem('trimTrackerDailyTotal');
+      }
     }
 
     function toggleLanguage() {
@@ -324,7 +321,7 @@
     document.getElementById('backLink').href = 'index.html';
 
     loadData();
-    setTimeout(updateDailyTotals, 100);
+    setTimeout(updateDailyTotals, 200);
   </script>
 </body>
 </html>
