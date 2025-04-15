@@ -100,7 +100,18 @@
       color: #0af;
       text-decoration: none;
     }
-  </style>
+  
+.note-input {
+  width: 96%;
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #888;
+  background-color: #222;
+  color: white;
+}
+</style>
+        
 </head>
 <body>
 <button class="lang-toggle" onclick="toggleLanguage()">Español</button>
@@ -217,7 +228,19 @@
       row.appendChild(totalCell);
       updateTotal();
 
-      const actionCell = document.createElement('td');
+      
+      const noteCell = document.createElement('td');
+      const noteInput = document.createElement('input');
+      noteInput.type = 'text';
+      noteInput.placeholder = 'Notes';
+      noteInput.value = data.note || '';
+      noteInput.className = 'note-input';
+      noteInput.oninput = debounceSave;
+      noteCell.appendChild(noteInput);
+      row.insertBefore(noteCell, row.children[row.children.length - 2]);
+    
+
+const actionCell = document.createElement('td');
       const delBtn = document.createElement('button');
       delBtn.textContent = 'Delete';
       delBtn.className = 'delete-row';
@@ -246,7 +269,7 @@
     function saveData() {
       const rows = document.querySelectorAll('#tableBody tr');
       const data = Array.from(rows).map(row => {
-        const [dateCell, strainCell, gramsCell, noteCell] = row.querySelectorAll('td');
+        const [dateCell, strainCell, gramsCell, noteCell, totalCell, actionCell] = row.querySelectorAll('td');
         const date = dateCell.querySelector('input').value;
         const strain = strainCell.querySelector('input').value;
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
@@ -278,7 +301,7 @@
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
         
-        const note = cells[3].querySelector('input')?.value || '';
+        const note = cells[4].querySelector('input')?.value || '';
         csvContent += `"\${date}","\${strain}","\${grams}","\${note}","\${total}"\n`;
     
       });
