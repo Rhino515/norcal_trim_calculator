@@ -163,7 +163,7 @@
   </div>
 
   <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-    <h2 style="color: #0f0;">About Me</h2>
+    <h2 style="color: #0f0;">About the Creator</h2>
     <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
       Hi, my name is Andrew, and I work as a professional trimmer at NorCal Cannabis.
       I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers
@@ -202,6 +202,7 @@
       history.push(entry);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+      document.getElementById('grams').value = '';
     }
 
     function updateSessionTable() {
@@ -236,9 +237,11 @@
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
             updateSessionTable();
+      document.getElementById('grams').value = '';
           } else {
             alert("Please enter a valid number of grams.");
             updateSessionTable();
+      document.getElementById('grams').value = '';
           }
         });
         row.appendChild(gramsCell);
@@ -270,12 +273,14 @@
       history.splice(index, 1);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+      document.getElementById('grams').value = '';
     }
 
     function clearAllEntries() {
       if (confirm('Are you sure you want to clear all entries?')) {
         localStorage.removeItem('trimHistory');
         updateSessionTable();
+      document.getElementById('grams').value = '';
       }
     }
 

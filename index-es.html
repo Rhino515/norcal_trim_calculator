@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Calculadora de Trim NorCal</title>
+  <title>Calculadora de Recorte NorCal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#000000">
@@ -116,26 +116,26 @@
   </div>
 
   <img src="norcal_icon.png" alt="NorCal Logo" />
-  <p>Ingresa los gramos totales recortados:</p>
-  <input type="number" id="grams" placeholder="ej. 1200" />
+  <p>Ingresa el total de gramos recortados:</p>
+  <input type="number" id="grams" placeholder="e.g. 1200" />
   <br>
-  <button id="import-tracker-total">Agregar Total Diario del Rastreador</button>
+  <button id="import-tracker-total">Agregar total del Registro de Recorte de hoy</button>
   <br>
   <button onclick="calculate()">Calcular</button>
   <p id="result"></p>
 
   <div class="install-links">
-    <a href="trim-tracker-es.html">Ir al Rastreador de Trim</a>
+    <a href="trim-tracker.html">Ir al Registro de Recorte</a>
   </div>
 
   <div class="install-links">
-    <a href="#" onclick="alert('Para instalar la app, toca el icono de compartir en Safari y selecciona “Agregar a la pantalla de inicio.”'); return false;">Instrucciones para iOS</a>
-    <a href="#" onclick="alert('Para instalar la app, toca el menú del navegador (tres puntos) y selecciona “Agregar a pantalla de inicio.”'); return false;">Instrucciones para Android</a>
+    <a href="#" onclick="alert('To install the app, tap the Share icon in Safari and choose “Add to Home Screen.”'); return false;">Instrucciones para instalar en iOS</a>
+    <a href="#" onclick="alert('To install the app, tap the browser menu (three dots) and choose “Add to Home screen.”'); return false;">Instrucciones para instalar en Android</a>
   </div>
 
   
   <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <strong>Nota:</strong> Para que la función de importación del Rastreador de Trim funcione correctamente, utiliza la calculadora y el rastreador solo en tu idioma preferido. Mezclar idiomas puede causar problemas de sincronización.
+    <strong>Nota:</strong> Para que la función de importación del Registro de Recorte funcione correctamente, usa la calculadora y el registro en tu idioma preferido. Mezclar idiomas puede causar errores de sincronización de datos.
   </div>
 
   <table id="sessionTable">
@@ -157,6 +157,7 @@
     </tfoot>
   </table>
 
+  <!-- Exportar CSV Button -->
   <div style="margin-top: 1em;">
     <button class="clear-all-button" onclick="exportCSV()">Exportar CSV</button>
   </div>
@@ -164,12 +165,12 @@
   <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
     <h2 style="color: #0f0;">Sobre el Creador</h2>
     <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
-      Hola, mi nombre es Andrew y trabajo como recortador profesional en NorCal Cannabis.
-      Creé la Calculadora de Trim NorCal para ayudar a simplificar los cálculos de pago extra y facilitar que los recortadores
-      registren su progreso diario.
+      Hola, me llamo Andrew y trabajo como recortador profesional en NorCal Cannabis.
+      I created the Calculadora de Recorte NorCal to help simplify bonus pay calculations and make it easier for trimmers
+      to track their daily progress.
       <br><br>
       Esta herramienta fue diseñada para ser práctica, fácil de usar y eficiente — ayudando a los trabajadores a mantenerse organizados e informados.
-      Mi objetivo es apoyar a la comunidad de recortadores con soluciones tecnológicas simples que marquen una verdadera diferencia en el trabajo.
+      Mi objetivo es apoyar a la comunidad de recorte con soluciones tecnológicas simples que marquen una diferencia real en el trabajo.
     </p>
   </div>
 
@@ -188,20 +189,19 @@
     function calculate() {
       const grams = parseFloat(document.getElementById('grams').value);
       if (isNaN(grams) || grams <= 0) {
-        document.getElementById('result').innerText = 'Por favor ingresa una cantidad válida de gramos.';
+        document.getElementById('result').innerText = 'Please enter a valid number of grams.';
         return;
       }
       const bonusPay = calculateBonus(grams);
       document.getElementById('result').innerText = 'Pago Extra: $' + bonusPay.toFixed(2);
       const now = new Date();
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateStr = now.toLocaleDateString('es-ES', options);
+      const dateStr = now.toLocaleDateString(undefined, options);
       const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
       let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       history.push(entry);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
-      document.getElementById('grams').value = '';
     }
 
     function updateSessionTable() {
@@ -229,18 +229,16 @@
         gramsCell.contentEditable = true;
         gramsCell.style.backgroundColor = '#222';
         gramsCell.addEventListener('blur', function () {
-          const newGrams = parseFloat(this.textContent.trim());
-          if (!isNaN(newGrams) && newGrams > 0) {
-            history[index].grams = newGrams;
-            const newBonus = calculateBonus(newGrams);
+          const newGramos = parseFloat(this.textContent.trim());
+          if (!isNaN(newGramos) && newGramos > 0) {
+            history[index].grams = newGramos;
+            const newBonus = calculateBonus(newGramos);
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
             updateSessionTable();
-      document.getElementById('grams').value = '';
           } else {
-            alert("Por favor ingresa una cantidad válida de gramos.");
+            alert("Please enter a valid number of grams.");
             updateSessionTable();
-      document.getElementById('grams').value = '';
           }
         });
         row.appendChild(gramsCell);
@@ -251,10 +249,10 @@
 
         const actionCell = document.createElement('td');
         const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Borrar';
+        deleteBtn.textContent = 'Eliminar';
         deleteBtn.className = 'delete-button';
         deleteBtn.onclick = function () {
-          if (confirm('¿Estás seguro de que deseas borrar esta entrada?')) {
+          if (confirm('Are you sure you want to delete this entry?')) {
             deleteEntry(index);
           }
         };
@@ -272,25 +270,23 @@
       history.splice(index, 1);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
-      document.getElementById('grams').value = '';
     }
 
     function clearAllEntries() {
-      if (confirm('¿Estás seguro de que deseas borrar todas las entradas?')) {
+      if (confirm('Are you sure you want to clear all entries?')) {
         localStorage.removeItem('trimHistory');
         updateSessionTable();
-      document.getElementById('grams').value = '';
       }
     }
 
     function exportCSV() {
       const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       if (history.length === 0) {
-        alert("No hay entradas para exportar.");
+        alert("No entries to export.");
         return;
       }
 
-      const csvRows = [['Fecha', 'Gramos', 'Pago Extra']];
+      const csvRows = [['Date', 'Gramos', 'Pago Extra']];
       history.forEach(entry => {
         csvRows.push([entry.date, entry.grams, '$' + entry.bonusPay]);
       });
@@ -300,7 +296,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'historial_trim.csv';
+      link.download = 'trim_history.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -312,9 +308,9 @@
       const trackerTotal = localStorage.getItem('trimTrackerDailyTotal');
       if (trackerTotal) {
         document.getElementById('grams').value = trackerTotal;
-        alert(`Importado ${trackerTotal}g desde el Rastreador de Trim.`);
+        alert(`Imported ${trackerTotal}g from Trim Tracker.`);
       } else {
-        alert("No se encontró un total diario del rastreador para hoy.");
+        alert("No trim tracker total found for today.");
       }
     });
 
