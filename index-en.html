@@ -214,6 +214,10 @@
       history.push(entry);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
       document.getElementById('grams').value = '';
     }
 
@@ -249,10 +253,18 @@
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
             updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
       document.getElementById('grams').value = '';
           } else {
             alert("Please enter a valid number of grams.");
             updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
       document.getElementById('grams').value = '';
           }
         });
@@ -285,6 +297,10 @@
       history.splice(index, 1);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
       document.getElementById('grams').value = '';
     }
 
@@ -292,6 +308,10 @@
       if (confirm('Are you sure you want to clear all entries?')) {
         localStorage.removeItem('trimHistory');
         updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
       document.getElementById('grams').value = '';
       }
     }
@@ -332,14 +352,5 @@
     });
 
   </script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log("Service Worker registered:", reg))
-      .catch(err => console.error("Service Worker registration failed:", err));
-  }
-</script>
-
 </body>
 </html>
