@@ -161,7 +161,7 @@
       const dateCell = document.createElement('td');
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
-      dateInput.value = data.date || new Date().toISOString().split("T")[0];
+      dateInput.value = data.date || new Date().toISOString().split('T')[0];
       dateInput.oninput = () => { debounceSave(); updateDailyTotals(); };
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
@@ -323,7 +323,9 @@
 
     document.getElementById('backLink').href = 'index.html';
 
-    loadData();
+    localStorage.removeItem('trimTrackerDailyTotal');  // Clear old total
+loadData();
+setTimeout(updateDailyTotals, 200);  // Force save today's total after loading
   </script>
 </body>
 </html>
