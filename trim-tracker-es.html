@@ -240,7 +240,7 @@
         const date = dateCell.querySelector('input').value;
         const strain = strainCell.querySelector('input').value;
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
-        const note = noteCell.querySelector('input').value;
+        const note = noteCell.querySelector('input')?.value || '';
         return { date, strain, grams, note };
       });
       localStorage.setItem(storageKey, JSON.stringify(data));
