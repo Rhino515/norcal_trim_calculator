@@ -105,8 +105,8 @@
 <th>Variedad</th>
 <th>Gramos</th>
 <th>Total</th>
-<th>Acciones</th>
-<th>Nota</th></tr>
+<th>Notas</th><th>Acciones</th>
+</tr>
 </thead>
 <tbody id="tableBody"></tbody>
 </table>
@@ -236,14 +236,12 @@
     function saveData() {
       const rows = document.querySelectorAll('#tableBody tr');
       const data = Array.from(rows).map(row => {
-        const [dateCell, strainCell, gramsCell, totalCell, noteCell] = row.querySelectorAll('td');
+        const [dateCell, strainCell, gramsCell, noteCell] = row.querySelectorAll('td');
         const date = dateCell.querySelector('input').value;
         const strain = strainCell.querySelector('input').value;
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
-        
         const note = noteCell.querySelector('input').value;
         return { date, strain, grams, note };
-    
       });
       localStorage.setItem(storageKey, JSON.stringify(data));
     }
@@ -260,7 +258,7 @@
 
     function exportCSV() {
       const rows = document.querySelectorAll('#tableBody tr');
-      let csvContent = "Fecha,Variedad,Gramos (semicolon separated),Total,Nota\n";
+      let csvContent = "Fecha,Variedad,Gramos (semicolon separated),Nota,Total\n";
 
       rows.forEach(row => {
         const cells = row.querySelectorAll('td');
@@ -270,8 +268,8 @@
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
         
-        const note = cells[4].querySelector('input')?.value || '';
-        csvContent += `"\${date}","\${strain}","\${grams}","\${total}","\${note}"\n`;
+        const note = cells[3].querySelector('input')?.value || '';
+        csvContent += `"\${date}","\${strain}","\${grams}","\${note}","\${total}"\n`;
     
       });
 
