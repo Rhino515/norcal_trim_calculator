@@ -304,7 +304,7 @@
     document.getElementById('import-tracker-total').addEventListener('click', () => {
       const trackerData = JSON.parse(localStorage.getItem('trimTrackerDailyTotal'));
       if (trackerData && trackerData.date && trackerData.total) {
-        const todayStr = new Date().toLocaleDateString();
+        const todayStr = new Date().toISOString().split("T")[0];
         if (trackerData.date === todayStr) {
           document.getElementById('grams').value = trackerData.total;
           alert(`Imported ${trackerData.total}g from Trim Tracker.`);
