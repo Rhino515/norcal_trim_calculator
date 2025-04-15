@@ -97,7 +97,7 @@
   <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
 
   <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Note:</strong>Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers. Please make sure to use the app in your preferred language, as data is stored separately for each language version. While this tool helps track data, we recommend backing up your information to avoid loss.
+    <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers. Please make sure to use the app in your preferred language, as data is stored separately for each language version. While this tool helps track data, we recommend backing up your information to avoid loss.
   </p>
 
   <table id="sessionTable">
@@ -289,8 +289,11 @@
       const totalsMap = {};
 
       rows.forEach(row => {
-        const date = row.querySelector('td input[type="date"]').value;
-        const total = parseFloat(row.querySelector('td:nth-child(4)').innerText) || 0;
+        const dateInput = row.querySelector('td input[type="date"]');
+        const date = dateInput ? dateInput.value : '';
+        const totalCell = row.querySelector('td:nth-child(4)');
+        const total = parseFloat(totalCell?.innerText) || 0;
+
         if (date) {
           if (!totalsMap[date]) totalsMap[date] = 0;
           totalsMap[date] += total;
@@ -300,15 +303,12 @@
       const totalsList = document.getElementById('totalsList');
       totalsList.innerHTML = '';
 
-      
-      // Save today's total to localStorage for use in Calculator
       const today = new Date().toISOString().split('T')[0];
       if (totalsMap[today]) {
         localStorage.setItem('trimTrackerDailyTotal', totalsMap[today].toFixed(2));
       } else {
         localStorage.removeItem('trimTrackerDailyTotal');
       }
-
 
       Object.entries(totalsMap).forEach(([date, total]) => {
         const li = document.createElement('li');
@@ -328,4 +328,3 @@
   </script>
 </body>
 </html>
-
