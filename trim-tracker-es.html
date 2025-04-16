@@ -270,11 +270,11 @@ const actionCell = document.createElement('td');
     function saveData() {
       const rows = document.querySelectorAll('#tableBody tr');
       const data = Array.from(rows).map(row => {
-        const [dateCell, strainCell, gramsCell, totalCell, noteCell, actionCell] = row.querySelectorAll('td');
+        const [dateCell, strainCell, gramsCell, noteCell, totalCell, actionCell] = row.querySelectorAll('td');
         const date = dateCell.querySelector('input').value;
         const strain = strainCell.querySelector('input').value;
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
-        
+        const note = noteCell.querySelector('input')?.value || '';
         return { date, strain, grams, note: noteCell.querySelector('textarea')?.value || '' };
       });
       localStorage.setItem(storageKey, JSON.stringify(data));

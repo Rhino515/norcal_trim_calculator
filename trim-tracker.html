@@ -310,7 +310,7 @@ const actionCell = document.createElement('td');
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
         
-        const note = cells[3].querySelector('input')?.value || '';
+        const note = cells[4].querySelector('textarea')?.value || '';
         csvContent += `"\${date}","\${strain}","\${grams}","\${note}","\${total}"\n`;
     
       });
