@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <script>
@@ -11,13 +12,12 @@
     }
   }
 </script>
-
-  <meta charset="UTF-8">
-  <title>NorCal Trim Calculator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
-  <style>
+<meta charset="utf-8"/>
+<title>NorCal Trim Calculator</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="manifest.json" rel="manifest"/>
+<meta content="#000000" name="theme-color"/>
+<style>
     body {
       background-color: black;
       color: white;
@@ -121,73 +121,74 @@
   </style>
 </head>
 <body>
-  <div class="language-toggle">
-    <a href="index.html">English</a>
-    <a href="index-es.html">Español</a>
+<div class="language-toggle">
+<a href="index.html">English</a>
+<a href="index-es.html">Español</a>
+</div>
+<img alt="NorCal Logo" src="norcal_icon.png"/>
+<p>Enter total grams trimmed:</p>
+<input id="grams" placeholder="e.g. 1200" type="number"/>
+<br/>
+<button id="import-tracker-total">Add Today’s Trim Tracker Total</button>
+<br/>
+<button onclick="calculate()">Calculate</button>
+<p id="result"></p>
+<div class="install-links">
+<a href="trim-tracker.html">Go to Trim Tracker</a>
+<a class="nav-button" href="help.html">How to Use the App</a>
+</div>
+<div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
+<strong>Note:</strong> For the Trim Tracker import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
   </div>
-
-  <img src="norcal_icon.png" alt="NorCal Logo" />
-  <p>Enter total grams trimmed:</p>
-  <input type="number" id="grams" placeholder="e.g. 1200" />
-  <br>
-  <button id="import-tracker-total">Add Today’s Trim Tracker Total</button>
-  <br>
-  <button onclick="calculate()">Calculate</button>
-  <p id="result"></p>
-
-  <div class="install-links">
-    <a href="trim-tracker.html">Go to Trim Tracker</a>
-    <a href="help.html" class="nav-button">How to Use the App</a>
-
-  </div>
-
-  
-
-  <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <strong>Note:</strong> For the Trim Tracker import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
-  </div>
-
-  <table id="sessionTable">
-    <thead>
-      <tr>
-        <th>Date & Day</th>
-        <th>Grams</th>
-        <th>Bonus Pay</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr>
-        <td colspan="2"><strong>Total</strong></td>
-        <td id="totalBonusPay">$0.00</td>
-        <td><button class="clear-all-button" onclick="clearAllEntries()">Clear All</button></td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <!-- 
+<table id="sessionTable">
+<thead>
+<tr>
+<th>Date &amp; Day</th>
+<th>Grams</th>
+<th>Bonus Pay</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr>
+<td colspan="2"><strong>Total</strong></td>
+<td id="totalBonusPay">$0.00</td>
+<td><button class="clear-all-button" onclick="clearAllEntries()">Clear All</button></td>
+</tr>
+</tfoot>
+</table>
+<!-- 
 
     Export CSV Button -->
-  <div style="margin-top: 1em;">
-    <button class="clear-all-button" onclick="exportCSV()">
+<div style="margin-top: 1em;">
+<button class="clear-all-button" onclick="exportCSV()">
 
     Export CSV</button>
-  </div>
-
-  <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-    <h2 style="color: #0f0;">About the Creator</h2>
-    <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
+</div>
+<div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
+<h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Hourly &amp; Pay Averages ▼</h2>
+<div id="payCalcSection" style="display:none;">
+<p>Enter your hourly pay and hours worked, then choose a date range:</p>
+<label>Hourly Rate: <input id="hourlyRate" step="0.01" type="number"/></label><br/>
+<label>Total Hours Worked: <input id="totalHours" step="0.1" type="number"/></label><br/>
+<label>Start Date: <input id="startDate" type="date"/></label><br/>
+<label>End Date: <input id="endDate" type="date"/></label><br/>
+<button onclick="calculateAverages()">Calculate Averages</button>
+<div id="averageResults" style="margin-top: 1em; text-align: left;"></div>
+</div>
+</div><div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
+<h2 style="color: #0f0;">About the Creator</h2>
+<p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
       Hi, my name is Andrew, and I work as a professional trimmer at NorCal Cannabis.
       I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers
       to track their daily progress.
-      <br><br>
+      <br/><br/>
       This tool was designed to be practical, user-friendly, and efficient — helping workers stay organized and informed.
       My goal is to support the trimming community with simple tech solutions that make a real difference on the job.
     </p>
-  </div>
-
-  <script>
+</div>
+<script>
     function calculateBonus(grams) {
       let bonusPay = 0;
       if (grams > 1587) {
@@ -353,5 +354,41 @@
     });
 
   </script>
+
+<script>
+function togglePayCalc() {
+  const section = document.getElementById("payCalcSection");
+  section.style.display = section.style.display === "none" ? "block" : "none";
+}
+function calculateAverages() {
+  const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
+  const totalHours = parseFloat(document.getElementById("totalHours").value);
+  const startDate = new Date(document.getElementById("startDate").value);
+  const endDate = new Date(document.getElementById("endDate").value);
+  if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
+    alert("Please fill out all fields.");
+    return;
+  }
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const filtered = history.filter(entry => {
+    const entryDate = new Date(entry.date);
+    return entryDate >= startDate && entryDate <= endDate;
+  });
+  let bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
+  let hourlyTotal = hourlyRate * totalHours;
+  let totalPay = bonusTotal + hourlyTotal;
+  let dayDiff = Math.max(1, (endDate - startDate) / (1000 * 60 * 60 * 24) + 1);
+  let results = `
+    <p><strong>Total Bonus Pay:</strong> $${bonusTotal.toFixed(2)}</p>
+    <p><strong>Total Hourly Pay:</strong> $${hourlyTotal.toFixed(2)}</p>
+    <p><strong>Total Pay:</strong> $${totalPay.toFixed(2)}</p>
+    <p><strong>Average Daily Pay:</strong> $${(totalPay / dayDiff).toFixed(2)}</p>
+    <p><strong>Average Weekly:</strong> $${(totalPay / 7).toFixed(2)}</p>
+    <p><strong>Average Bi-Weekly:</strong> $${(totalPay / 14).toFixed(2)}</p>
+    <p><strong>Average Hourly Rate (with bonus):</strong> $${(totalPay / totalHours).toFixed(2)}</p>
+  `;
+  document.getElementById("averageResults").innerHTML = results;
+}
+</script>
 </body>
 </html>
