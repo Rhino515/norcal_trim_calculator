@@ -1,73 +1,134 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Help / How to Use</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help | NorCal Trim Tools</title>
   <style>
     body {
-      background-color: black;
-      color: white;
-      font-family: 'Montserrat', sans-serif;
-      text-align: center;
-      padding: 2em;
-    }
-    img {
-      max-width: 90%;
-      margin: 1em auto;
-      display: block;
-      border: 2px solid #444;
-      border-radius: 8px;
-    }
-    h2 {
-      color: #0f0;
-      margin-top: 2em;
-    }
-    p {
-      max-width: 700px;
-      margin: 1em auto;
-      font-size: 1.1em;
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
       line-height: 1.6;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #0f0;
     }
     a {
-      color: #0f0;
-      text-decoration: underline;
+      color: #0af;
+    }
+    ul {
+      padding-left: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Help / How to Use</h1>
+  <h1>Help & How to Use</h1>
+  
+  <h2>Overview</h2>
+  <p>The NorCal Trim Calculator and Trim Tracker are tools designed to help trimmers track their daily weight and calculate bonus pay. All data is stored locally in your browser.</p>
 
-  <h2>1. Enter Total Grams Trimmed</h2>
-  <p>Type the total grams you've trimmed in the input field. This is your main entry point to calculate your bonus pay.</p>
-  <img src="placeholder_1.png" alt="Enter grams input example" />
+  <h2>Using the Trim Calculator</h2>
+  <ul>
+    <li>Enter the total grams you trimmed for the day in the input box.</li>
+    <li>Click <strong>"Add Today's Trim Tracker Total"</strong> to automatically import your weight from the Trim Tracker if you've logged it for today.</li>
+    <li>Click <strong>"Calculate"</strong> to compute your bonus pay based on the current rate.</li>
+    <li>Your result will appear in the session board below, including the bonus amount.</li>
+    <li>Use the <strong>"Delete"</strong> or <strong>"Clear All"</strong> buttons to manage your entries.</li>
+    <li>You can also click <strong>"Export CSV"</strong> to save your records for backup.</li>
+  </ul>
 
-  <h2>2. Tap 'Calculate' to Get Bonus</h2>
-  <p>Click the green "Calculate" button to instantly see your bonus pay amount based on current NorCal trimming rates.</p>
-  <img src="placeholder_2.png" alt="Calculate button and result" />
+  <h2>Using the Trim Tracker</h2>
+  <ul>
+    <li>Use this page to log each strain you trim, along with the amount (in grams).</li>
+    <li>You can enter up to three gram totals per row, and click <strong>"+"</strong> to add more fields as needed.</li>
+    <li>The tracker calculates your daily total automatically and saves it under the current date.</li>
+    <li>Return to the calculator and click the green <strong>"Add Today's Trim Tracker Total"</strong> button to import your total for bonus calculation.</li>
+  </ul>
 
-  <h2>3. Add Daily Total from Trim Tracker</h2>
-  <p>If you’ve logged your trim work in the Trim Tracker, you can import that total directly into the calculator.</p>
-  <img src="placeholder_3.png" alt="Add tracker total example" />
+  <h2>Tips & FAQ</h2>
+  <ul>
+    <li><strong>Data is saved locally:</strong> Your entries stay saved in your browser unless you clear your cache or use a different device.</li>
+    <li><strong>Language matters:</strong> Make sure you use the app consistently in either English or Spanish — mixing them may cause your data to be saved separately.</li>
+    <li><strong>Backing up:</strong> Use the Export CSV option on either page to save a copy of your data manually.</li>
+    <li><strong>Date syncing:</strong> The calculator only imports tracker data saved under today’s date. If no data is found, double-check that the tracker entry date matches today.</li>
+  </ul>
 
-  <h2>4. Review Your Session History</h2>
-  <p>Each calculation is saved in the session table below. You can edit, delete, or export your history anytime.</p>
-  <img src="placeholder_4.png" alt="Session table" />
-
-  <h2>5. Export or Clear Data</h2>
-  <p>Use the buttons at the bottom to export your session history as a CSV file or clear all entries if starting fresh.</p>
-
-  <h2>6. Install the App</h2>
-  <p>You can add NorCal Trim Calculator to your home screen on mobile. Look for 'Add to Home Screen' in your browser menu.</p>
+  <h2>Need More Help?</h2>
+  <p>If something isn’t working, try refreshing the page or re-entering your data. You can also contact the creator directly for support.</p>
 
   <p><a href="index.html">← Back to Calculator</a></p>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log("Service Worker registered:", reg))
-      .catch(err => console.error("Service Worker registration failed:", err));
+<hr>
+<h2>Frequently Asked Questions</h2>
+<div class="faq-item">
+  <button class="faq-question">Why can’t I import my Trim Tracker total?</button>
+  <div class="faq-answer">
+    <p>Make sure you’ve saved a tracker entry for today’s date. The calculator only imports the current day's total from localStorage.</p>
+  </div>
+</div>
+<div class="faq-item">
+  <button class="faq-question">Where is my data saved?</button>
+  <div class="faq-answer">
+    <p>All data is saved in your browser using localStorage. It’s private and doesn’t leave your device.</p>
+  </div>
+</div>
+<div class="faq-item">
+  <button class="faq-question">Does this app work offline?</button>
+  <div class="faq-answer">
+    <p>Yes. Once loaded online once, it works offline thanks to built-in service worker support.</p>
+  </div>
+</div>
+<div class="faq-item">
+  <button class="faq-question">How do I install it like an app?</button>
+  <div class="faq-answer">
+    <p>On Android or desktop Chrome, you’ll see an install prompt or a browser menu option to “Install App.” On iOS, tap the Share icon and select “Add to Home Screen.”</p>
+  </div>
+</div>
+<div class="faq-item">
+  <button class="faq-question">What happens if I clear my browser?</button>
+  <div class="faq-answer">
+    <p>Your data will be lost if you clear localStorage or browser data. Export your CSV first to back up!</p>
+  </div>
+</div>
+<style>
+  .faq-item {
+    margin-bottom: 1em;
   }
+  .faq-question {
+    width: 100%;
+    background-color: #222;
+    color: #0f0;
+    border: none;
+    padding: 0.75em;
+    font-size: 1em;
+    text-align: left;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .faq-answer {
+    display: none;
+    padding: 0.5em 1em;
+    background-color: #333;
+    color: #fff;
+    border-left: 3px solid #0f0;
+    margin-top: 0.25em;
+    border-radius: 4px;
+  }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const answer = btn.nextElementSibling;
+        answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+      });
+    });
+  });
 </script>
 
 </body>
