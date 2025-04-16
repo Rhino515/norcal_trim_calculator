@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<script>
+  const userLang = navigator.language || navigator.userLanguage;
+  if (userLang.startsWith('es') && !window.location.href.includes('index-es.html') && !window.location.href.includes('trim-tracker-es.html')) {
+    if (window.location.href.includes('trim-tracker')) {
+      window.location.href = 'trim-tracker-es.html';
+    } else {
+      window.location.href = 'index-es.html';
+    }
+  }
+</script>
+<meta charset="utf-8"/>
+<title>NorCal Trim Calculator</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="manifest.json" rel="manifest"/>
+<meta content="#000000" name="theme-color"/>
+<style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    input {
+      font-size: 1.2em;
+      padding: 0.5em;
+      margin-top: 1em;
+      width: 150px;
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+    button {
+      background-color: green;
+      color: white;
+      padding: 0.7em 1.5em;
+      border: none;
+      font-size: 1em;
+      margin-top: 1em;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: darkgreen;
+    }
+    img {
+      margin-top: 1em;
+      width: 200px;
+    }
+    #result {
+      margin-top: 1em;
+      font-size: 1.2em;
+    }
+    .install-links {
+      margin-top: 2em;
+    }
+    .install-links a {
+      display: inline-block;
+      margin: 0.5em;
+      padding: 0.5em 1em;
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .install-links a:hover {
+      background-color: #666;
+    }
+    table {
+      margin: 2em auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+    th, td {
+      border: 1px solid #555;
+      padding: 0.5em;
+    }
+    th {
+      background-color: #333;
+    }
+    td[contenteditable="true"] {
+      background-color: #222;
+    }
+    .delete-button {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 0.3em 0.6em;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .delete-button:hover {
+      background-color: darkred;
+    }
+    .clear-all-button {
+      background-color: orange;
+      color: black;
+      border: none;
+      padding: 0.5em 1em;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .clear-all-button:hover {
+      background-color: darkorange;
+    }
+    .language-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .language-toggle a {
+      color: white;
+      text-decoration: none;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="language-toggle">
+<a href="index.html">English</a>
+<a href="index-es.html">Español</a>
+</div>
+<img alt="NorCal Logo" src="norcal_icon.png"/>
+<p>Enter total grams trimmed:</p>
+<input id="grams" placeholder="e.g. 1200" type="number"/>
+<br/>
+<button id="import-tracker-total">Add Today’s Trim Tracker Total</button>
+<br/>
+<button onclick="calculate()">Calculate</button>
+<p id="result"></p>
+<div class="install-links">
+<a href="trim-tracker.html">Go to Trim Tracker</a>
+<a class="nav-button" href="help.html">How to Use the App</a>
+</div>
+<div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
+<strong>Note:</strong> For the Trim Tracker import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
+  </div>
+<table id="sessionTable">
+<thead>
+<tr>
+<th>Date &amp; Day</th>
+<th>Grams</th>
+<th>Bonus Pay</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr>
+<td colspan="2"><strong>Total</strong></td>
+<td id="totalBonusPay">$0.00</td>
+<td><button class="clear-all-button" onclick="clearAllEntries()">Clear All</button></td>
+</tr>
+</tfoot>
+</table>
+<!-- 
+
+    Export CSV Button -->
+<div style="margin-top: 1em;">
+<button class="clear-all-button" onclick="exportCSV()">
+
+    Export CSV</button>
+</div>
+<div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
+<h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Hourly &amp; Pay Averages ▼</h2>
+<div id="payCalcSection" style="display:none;">
+<p>Enter your hourly pay and hours worked, then choose a date range:</p>
+<label>Hourly Rate: <input id="hourlyRate" step="0.01" type="number"/></label><br/>
+<label>Overtime Hours: <input id="overtimeHours" step="0.1" type="number"/></label><br/><label>Total Hours Worked: <input id="totalHours" step="0.1" type="number"/></label><br/>
+<label>Start Date: <input id="startDate" type="date"/></label><br/>
+<label>End Date: <input id="endDate" type="date"/></label><br/>
+<button onclick="calculateAverages()">Calculate Averages</button>
+<div id="averageResults" style="margin-top: 1em; text-align: left;"></div>
+</div>
+</div><div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
+<h2 style="color: #0f0;">About the Creator</h2>
+<p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
+      Hi, my name is Andrew, and I work as a professional trimmer at NorCal Cannabis.
+      I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers
+      to track their daily progress.
+      <br/><br/>
+      This tool was designed to be practical, user-friendly, and efficient — helping workers stay organized and informed.
+      My goal is to support the trimming community with simple tech solutions that make a real difference on the job.
+    </p>
+</div>
+<script>
+    function calculateBonus(grams) {
+      let bonusPay = 0;
+      if (grams > 1587) {
+        bonusPay += (grams - 1587) * 0.11;
+        bonusPay += (1587 - 1134) * 0.05;
+      } else if (grams > 1134) {
+        bonusPay += (grams - 1134) * 0.05;
+      }
+      return bonusPay;
+    }
+
+    function calculate() {
+      const grams = parseFloat(document.getElementById('grams').value);
+      if (isNaN(grams) || grams <= 0) {
+        document.getElementById('result').innerText = 'Please enter a valid number of grams.';
+        return;
+      }
+      const bonusPay = calculateBonus(grams);
+      document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString(undefined, options);
+      const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
+      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      history.push(entry);
+      localStorage.setItem('trimHistory', JSON.stringify(history));
+      updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
+    }
+
+    function updateSessionTable() {
+      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+      let totalBonusPay = 0;
+      history.forEach((entry, index) => {
+        const row = document.createElement('tr');
+
+        const dateCell = document.createElement('td');
+        dateCell.textContent = entry.date;
+        dateCell.contentEditable = true;
+        dateCell.addEventListener('blur', function () {
+          const updatedDate = this.textContent.trim();
+          if (updatedDate) {
+            history[index].date = updatedDate;
+            localStorage.setItem('trimHistory', JSON.stringify(history));
+          }
+        });
+        row.appendChild(dateCell);
+
+        const gramsCell = document.createElement('td');
+        gramsCell.textContent = entry.grams;
+        gramsCell.contentEditable = true;
+        gramsCell.style.backgroundColor = '#222';
+        gramsCell.addEventListener('blur', function () {
+          const newGrams = parseFloat(this.textContent.trim());
+          if (!isNaN(newGrams) && newGrams > 0) {
+            history[index].grams = newGrams;
+            const newBonus = calculateBonus(newGrams);
+            history[index].bonusPay = newBonus.toFixed(2);
+            localStorage.setItem('trimHistory', JSON.stringify(history));
+            updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
+          } else {
+            alert("Please enter a valid number of grams.");
+            updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
+          }
+        });
+        row.appendChild(gramsCell);
+
+        const bonusPayCell = document.createElement('td');
+        bonusPayCell.textContent = '$' + entry.bonusPay;
+        row.appendChild(bonusPayCell);
+
+        const actionCell = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'delete-button';
+        deleteBtn.onclick = function () {
+          if (confirm('Are you sure you want to delete this entry?')) {
+            deleteEntry(index);
+          }
+        };
+        actionCell.appendChild(deleteBtn);
+        row.appendChild(actionCell);
+
+        tbody.appendChild(row);
+        totalBonusPay += parseFloat(entry.bonusPay);
+      });
+      document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+    }
+
+    function deleteEntry(index) {
+      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      history.splice(index, 1);
+      localStorage.setItem('trimHistory', JSON.stringify(history));
+      updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
+    }
+
+    function clearAllEntries() {
+      if (confirm('Are you sure you want to clear all entries?')) {
+        localStorage.removeItem('trimHistory');
+        updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
+      }
+    }
+
+    function exportCSV() {
+      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      if (history.length === 0) {
+        alert("No entries to export.");
+        return;
+      }
+
+      const csvRows = [['Date', 'Grams', 'Bonus Pay']];
+      history.forEach(entry => {
+        csvRows.push([entry.date, entry.grams, '$' + entry.bonusPay]);
+      });
+
+      const csvContent = csvRows.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'trim_history.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.onload = updateSessionTable;
+
+    document.getElementById('import-tracker-total').addEventListener('click', () => {
+      const trackerTotal = localStorage.getItem('trimTrackerDailyTotal');
+      if (trackerTotal) {
+        document.getElementById('grams').value = trackerTotal;
+        alert(`Imported ${trackerTotal}g from Trim Tracker.`);
+      } else {
+        alert("No trim tracker total found for today.");
+      }
+    });
+
+  </script>
+<script>
+function togglePayCalc() {
+  const section = document.getElementById("payCalcSection");
+  section.style.display = section.style.display === "none" ? "block" : "none";
+}
+function calculateAverages() {
+  const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
+  const totalHours = parseFloat(document.getElementById("totalHours").value);
+  const startDate = new Date(document.getElementById("startDate").value);
+  const endDate = new Date(document.getElementById("endDate").value);
+  if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
+    alert("Please fill out all fields.");
+    return;
+  }
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const filtered = history.filter(entry => {
+    const entryDate = new Date(entry.date);
+    return entryDate >= startDate && entryDate <= endDate;
+  });
+  let bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
+  let regularPay = hourlyRate * totalHours;
+  let overtimePay = hourlyRate * 1.5 * overtimeHours;
+  let hourlyTotal = regularPay + overtimePay;
+  let totalPay = bonusTotal + hourlyTotal;
+  let dayDiff = Math.max(1, (endDate - startDate) / (1000 * 60 * 60 * 24) + 1);
+  let results = `
+    <p><strong>Total Bonus Pay:</strong> $${bonusTotal.toFixed(2)}</p>
+    <p><strong>Regular Pay:</strong> $${regularPay.toFixed(2)}</p>
+<p><strong>Overtime Pay:</strong> $${overtimePay.toFixed(2)}</p>
+<p><strong>Total Hourly Pay:</strong> $${hourlyTotal.toFixed(2)}</p>
+    <p><strong>Total Pay:</strong> $${totalPay.toFixed(2)}</p>
+    <p><strong>Average Daily Pay:</strong> $${(totalPay / dayDiff).toFixed(2)}</p>
+    <p><strong>Average Weekly:</strong> $${(totalPay / 7).toFixed(2)}</p>
+    <p><strong>Average Bi-Weekly:</strong> $${(totalPay / 14).toFixed(2)}</p>
+    <p><strong>Average Hourly Rate (with bonus):</strong> $${(totalPay / (totalHours + overtimeHours)).toFixed(2)}</p>
+  `;
+  document.getElementById("averageResults").innerHTML = results;
+}
+</script>
+</body>
+</html>
