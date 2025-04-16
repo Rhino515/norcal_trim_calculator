@@ -278,7 +278,7 @@ const actionCell = document.createElement('td');
     function saveData() {
       const rows = document.querySelectorAll('#tableBody tr');
       const data = Array.from(rows).map(row => {
-        const [dateCell, strainCell, gramsCell, totalCell, noteCell, actionCell] = row.querySelectorAll('td');
+        const [dateCell, strainCell, gramsCell, noteCell, totalCell, actionCell] = row.querySelectorAll('td');
         const date = dateCell.querySelector('input').value;
         const strain = strainCell.querySelector('input').value;
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
@@ -310,7 +310,7 @@ const actionCell = document.createElement('td');
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
         const total = cells[3].innerText;
         
-        const note = cells[4].querySelector('textarea')?.value || '';
+        const note = cells[3].querySelector('input')?.value || '';
         csvContent += `"\${date}","\${strain}","\${grams}","\${note}","\${total}"\n`;
     
       });
