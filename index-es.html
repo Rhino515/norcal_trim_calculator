@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculadora de Recorte NorCal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
-  <style>
+<meta charset="utf-8"/>
+<title>Calculadora de Recorte NorCal</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="manifest.json" rel="manifest"/>
+<meta content="#000000" name="theme-color"/>
+<style>
     body {
       background-color: black;
       color: white;
@@ -110,76 +111,64 @@
   </style>
 </head>
 <body>
-  <div class="language-toggle">
-    <a href="index.html">English</a>
-    <a href="index-es.html">Español</a>
+<div class="language-toggle">
+<a href="index.html">English</a>
+<a href="index-es.html">Español</a>
+</div>
+<img alt="NorCal Logo" src="norcal_icon.png"/>
+<p>Ingresa el total de gramos recortados:</p>
+<input id="grams" placeholder="e.g. 1200" type="number"/>
+<br/>
+<button id="import-tracker-total">Agregar total del Registro de Recorte de hoy</button>
+<br/>
+<button onclick="calculate()">Calcular</button>
+<p id="result"></p>
+<div class="install-links">
+<a href="trim-tracker.html">Ir al Registro de Recorte</a>
+</div>
+<div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
+<strong>Nota:</strong> Para que la función de importación del Registro de Recorte funcione correctamente, usa la calculadora y el registro en tu idioma preferido. Mezclar idiomas puede causar errores de sincronización de datos.
   </div>
-
-  <img src="norcal_icon.png" alt="NorCal Logo" />
-  <p>Ingresa el total de gramos recortados:</p>
-  <input type="number" id="grams" placeholder="e.g. 1200" />
-  <br>
-  <button id="import-tracker-total">Agregar total del Registro de Recorte de hoy</button>
-  <br>
-  <button onclick="calculate()">Calcular</button>
-  <p id="result"></p>
-
-  <div class="install-links">
-    <a href="trim-tracker.html">Ir al Registro de Recorte</a>
-    <a href="trim-graph-live-es.html">Gráfico en Vivo</a>
-  </div>
-
-  
-
-  <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <strong>Nota:</strong> Para que la función de importación del Registro de Recorte funcione correctamente, usa la calculadora y el registro en tu idioma preferido. Mezclar idiomas puede causar errores de sincronización de datos.
-  </div>
-
-  
 <!-- Graph Icon Link -->
 <div style="text-align: center; margin: 1em 0;">
-  <a href="trim-graph-with-summary-bonus.html" title="View Trim Summary">
-    <img src="green-glow-stock-icon.png" alt="Trim Graph Icon" style="width: 60px; border-radius: 10px; box-shadow: 0 0 8px lime;">
-  </a>
+<a href="trim-graph-with-summary-bonus.html" title="View Trim Summary">
+<img alt="Trim Graph Icon" src="green-glow-stock-icon.png" style="width: 60px; border-radius: 10px; box-shadow: 0 0 8px lime;"/>
+</a>
 </div>
-
 <table id="sessionTable">
-    <thead>
-      <tr>
-        <th>Fecha y Día</th>
-        <th>Gramos</th>
-        <th>Pago Extra</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr>
-        <td colspan="2"><strong>Total</strong></td>
-        <td id="totalBonusPay">$0.00</td>
-        <td><button class="clear-all-button" onclick="clearAllEntries()">Borrar Todo</button></td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <!-- Exportar CSV Button -->
-  <div style="margin-top: 1em;">
-    <button class="clear-all-button" onclick="exportCSV()">Exportar CSV</button>
-  </div>
-
-  <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-    <h2 style="color: #0f0;">Sobre el Creador</h2>
-    <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
+<thead>
+<tr>
+<th>Fecha y Día</th>
+<th>Gramos</th>
+<th>Pago Extra</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr>
+<td colspan="2"><strong>Total</strong></td>
+<td id="totalBonusPay">$0.00</td>
+<td><button class="clear-all-button" onclick="clearAllEntries()">Borrar Todo</button></td>
+</tr>
+</tfoot>
+</table>
+<!-- Exportar CSV Button -->
+<div style="margin-top: 1em;">
+<button class="clear-all-button" onclick="exportCSV()">Exportar CSV</button>
+</div>
+<div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
+<h2 style="color: #0f0;">Sobre el Creador</h2>
+<p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
       Hola, me llamo Andrew y trabajo como recortador profesional en NorCal Cannabis.
       I created the Calculadora de Recorte NorCal to help simplify bonus pay calculations and make it easier for trimmers
       to track their daily progress.
-      <br><br>
+      <br/><br/>
       Esta herramienta fue diseñada para ser práctica, fácil de usar y eficiente — ayudando a los trabajadores a mantenerse organizados e informados.
       Mi objetivo es apoyar a la comunidad de recorte con soluciones tecnológicas simples que marquen una diferencia real en el trabajo.
     </p>
-  </div>
-
-  <script>
+</div>
+<script>
     function calculateBonus(grams) {
       let bonusPay = 0;
       if (grams > 1587) {
