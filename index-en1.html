@@ -255,122 +255,7 @@ function updateSessionTable() {
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
     const key = monday.toISOString().split('T')[0];
-    if (!weekMap[key]) {
-      weekMap[key] = { label: "Week of " + formatter.format(monday) + " - " + formatter.format(sunday), entries: [] };
-    }
-    weekMap[key].entries.push([entry, i]);
-  });
-
-  Object.values(weekMap).forEach((week) => {
-    const toggleRow = document.createElement('tr');
-    const toggleCell = document.createElement('td');
-    toggleCell.colSpan = 4;
-    toggleCell.style.cursor = 'pointer';
-    toggleCell.style.background = '#1a1a1a';
-    toggleCell.style.color = '#0f0';
-    toggleCell.style.fontWeight = 'bold';
-    toggleCell.textContent = week.label + " ▼";
-    let collapsed = false;
-    toggleCell.onclick = () => {
-      collapsed = !collapsed;
-      week.entries.forEach(([_, i]) => {
-        const row = document.getElementById('row-' + i);
-        if (row) row.style.display = collapsed ? 'none' : '';
-      });
-      
-if (week.label.includes(currentStart) && week.label.includes(currentEnd)) {
-  toggleCell.style.border = '2px solid lime';
-  toggleCell.style.boxShadow = '0 0 10px lime';
-}
-toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
-    };
-    toggleRow.appendChild(toggleCell);
-    tbody.appendChild(toggleRow);
-
-    week.entries.forEach(([entry, index]) => {
-      const row = document.createElement('tr');
-      row.id = 'row-' + index;
-
-      const dateCell = document.createElement('td');
-      dateCell.textContent = entry.date;
-      dateCell.contentEditable = true;
-      dateCell.addEventListener('blur', function () {
-        const updatedDate = this.textContent.trim();
-        if (updatedDate) {
-          history[index].date = updatedDate;
-          localStorage.setItem('trimHistory', JSON.stringify(history));
-        }
-      });
-      row.appendChild(dateCell);
-
-      const gramsCell = document.createElement('td');
-      gramsCell.textContent = entry.grams;
-      gramsCell.contentEditable = true;
-      gramsCell.style.backgroundColor = '#222';
-      gramsCell.addEventListener('blur', function () {
-        const newGrams = parseFloat(this.textContent.trim());
-        if (!isNaN(newGrams) && newGrams > 0) {
-          history[index].grams = newGrams;
-          const newBonus = calculateBonus(newGrams);
-          history[index].bonusPay = newBonus.toFixed(2);
-          localStorage.setItem('trimHistory', JSON.stringify(history));
-          updateSessionTable();
-        } else {
-          alert("Please enter a valid number of grams.");
-          updateSessionTable();
-        }
-      });
-      row.appendChild(gramsCell);
-
-      const bonusPayCell = document.createElement('td');
-      bonusPayCell.textContent = '$' + entry.bonusPay;
-      row.appendChild(bonusPayCell);
-
-      const actionCell = document.createElement('td');
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.className = 'delete-button';
-      deleteBtn.onclick = function () {
-        if (confirm('Are you sure you want to delete this entry?')) {
-          deleteEntry(index);
-        }
-      };
-      actionCell.appendChild(deleteBtn);
-
-      const upBtn = document.createElement('button');
-      upBtn.textContent = '↑';
-      upBtn.style.marginLeft = '5px';
-      upBtn.style.color = 'lime';
-      upBtn.onclick = function () { moveEntry(index, -1); };
-      actionCell.appendChild(upBtn);
-
-      const downBtn = document.createElement('button');
-      downBtn.textContent = '↓';
-      downBtn.style.marginLeft = '5px';
-      downBtn.style.color = 'lime';
-      downBtn.onclick = function () { moveEntry(index, 1); };
-      actionCell.appendChild(downBtn);
-
-      row.appendChild(actionCell);
-      tbody.appendChild(row);
-      totalBonusPay += parseFloat(entry.bonusPay);
-    });
-  });
-  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
-}
-
-function calculateAverages() {
-  const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
-  const totalHours = parseFloat(document.getElementById("totalHours").value);
-  const overtimeHours = parseFloat(document.getElementById("overtimeHours").value) || 0;
-  const startDate = new Date(document.getElementById("startDate").value);
-  const endDate = new Date(document.getElementById("endDate").value);
-  if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
-    alert("Please fill out all fields.");
-    return;
-  }
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const filtered = history.filter(entry => {
+    if (!  const filtered = history.filter(entry => {
     const entryDate = new Date(entry.date);
     return entryDate >= startDate && entryDate <= endDate;
   });
@@ -483,19 +368,7 @@ function moveEntry(index, direction) {
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
     const key = monday.toISOString().split('T')[0];
-    if (!weekMap[key]) {
-      weekMap[key] = { label: "Week of " + formatter.format(monday) + " - " + formatter.format(sunday), entries: [] };
-    }
-    weekMap[key].entries.push([entry, i]);
-  });
-  return weekMap;
-}
-
-// PATCH updateSessionTable
-const originalUpdateSessionTable = updateSessionTable;
-updateSessionTable = function() {
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
+    if (!  const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
   tbody.innerHTML = '';
   let totalBonusPay = 0;
   const grouped = groupByPayPeriod(history);
@@ -653,24 +526,197 @@ function deleteEntry(index) {
 
 </body>
 </html>
+
+
+
+
 <script>
 function groupByPayPeriod(history) {
   const startStr = localStorage.getItem('payPeriodStart');
   const endStr = localStorage.getItem('payPeriodEnd');
   if (!startStr || !endStr) return {};
-
   const start = new Date(startStr);
   const end = new Date(endStr);
   end.setHours(23, 59, 59, 999);
-
-  const entries = history
-    .map((entry, i) => [entry, i])
-    .filter(([entry]) => {
-      const d = new Date(entry.date);
-      return d >= start && d <= end;
-    });
-
+  const entries = history.map((entry, i) => [entry, i]).filter(([entry]) => {
+    const d = new Date(entry.date);
+    return d >= start && d <= end;
+  });
   const label = "Pay Period: " + startStr + " – " + endStr;
   return { [startStr]: { label, entries } };
+}
+
+function updateSessionTable() {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const grouped = groupByPayPeriod(history);
+  const tbody = document.querySelector("#sessionTable tbody");
+  tbody.innerHTML = '';
+  let totalBonusPay = 0;
+
+  const currentStart = localStorage.getItem('payPeriodStart');
+  const currentEnd = localStorage.getItem('payPeriodEnd');
+
+  Object.values(grouped).forEach((week, groupIndex) => {
+    const toggleRow = document.createElement('tr');
+    const toggleCell = document.createElement('td');
+    toggleCell.colSpan = 4;
+    toggleCell.style.cursor = 'pointer';
+    toggleCell.style.background = '#1a1a1a';
+    toggleCell.style.color = '#0f0';
+    toggleCell.style.fontWeight = 'bold';
+    toggleCell.textContent = week.label + " ▼";
+    if (week.label.includes(currentStart) && week.label.includes(currentEnd)) {
+      toggleCell.style.border = '2px solid lime';
+      toggleCell.style.boxShadow = '0 0 10px lime';
+    }
+    let collapsed = false;
+    toggleCell.onclick = () => {
+      collapsed = !collapsed;
+      week.entries.forEach(([_, i]) => {
+        const row = document.getElementById('row-' + i);
+        if (row) row.style.display = collapsed ? 'none' : '';
+      });
+      toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
+    };
+    toggleRow.appendChild(toggleCell);
+    tbody.appendChild(toggleRow);
+
+    week.entries.forEach(([entry, i]) => {
+      const row = document.createElement('tr');
+      row.id = 'row-' + i;
+
+      const dateCell = document.createElement('td');
+      dateCell.textContent = entry.date;
+      dateCell.contentEditable = true;
+      dateCell.onblur = () => {
+        const updated = dateCell.textContent.trim();
+        if (updated) {
+          history[i].date = updated;
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+        }
+      };
+      row.appendChild(dateCell);
+
+      const gramsCell = document.createElement('td');
+      gramsCell.textContent = entry.grams;
+      gramsCell.contentEditable = true;
+      gramsCell.style.backgroundColor = '#222';
+      gramsCell.onblur = () => {
+        const g = parseFloat(gramsCell.textContent.trim());
+        if (!isNaN(g) && g > 0) {
+          history[i].grams = g;
+          const bonus = calculateBonus(g);
+          history[i].bonusPay = bonus.toFixed(2);
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+          updateSessionTable();
+        }
+      };
+      row.appendChild(gramsCell);
+
+      const bonusCell = document.createElement('td');
+      bonusCell.textContent = '$' + entry.bonusPay;
+      row.appendChild(bonusCell);
+
+      const actionCell = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.className = 'delete-button';
+      delBtn.onclick = () => {
+        history.splice(i, 1);
+        localStorage.setItem('trimHistory', JSON.stringify(history));
+        updateSessionTable();
+      };
+      actionCell.appendChild(delBtn);
+
+      row.appendChild(actionCell);
+      tbody.appendChild(row);
+      totalBonusPay += parseFloat(entry.bonusPay || 0);
+    });
+  });
+  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+}
+
+window.addEventListener('load', () => {
+  const s = document.getElementById('payPeriodStart');
+  const e = document.getElementById('payPeriodEnd');
+  if (s) s.value = localStorage.getItem('payPeriodStart') || "";
+  if (e) e.value = localStorage.getItem('payPeriodEnd') || "";
+  if (s) s.onchange = () => { localStorage.setItem('payPeriodStart', s.value); updateSessionTable(); };
+  if (e) e.onchange = () => { localStorage.setItem('payPeriodEnd', e.value); updateSessionTable(); };
+  updateSessionTable();
+});
+</script>
+
+<script>
+function calculateBonus(grams) {
+  let bonusPay = 0;
+  if (grams > 1587) {
+    bonusPay += (grams - 1587) * 0.11;
+    bonusPay += (1587 - 1134) * 0.05;
+  } else if (grams > 1134) {
+    bonusPay += (grams - 1134) * 0.05;
+  }
+  return bonusPay;
+}
+
+function calculate() {
+  const grams = parseFloat(document.getElementById('grams').value);
+  if (isNaN(grams) || grams <= 0) {
+    document.getElementById('result').innerText = 'Please enter a valid number of grams.';
+    return;
+  }
+  const bonusPay = calculateBonus(grams);
+  document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+  const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
+  let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  history.push(entry);
+  localStorage.setItem('trimHistory', JSON.stringify(history));
+  updateSessionTable();
+  document.getElementById('grams').value = '';
+}
+
+function calculateAverages() {
+  const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+  const overtimeHours = parseFloat(document.getElementById('overtimeHours').value);
+  const totalHours = parseFloat(document.getElementById('totalHours').value);
+  const startDateStr = document.getElementById('startDate').value;
+  const endDateStr = document.getElementById('endDate').value;
+
+  if (!startDateStr || !endDateStr || isNaN(hourlyRate) || isNaN(totalHours)) {
+    alert("Please fill in all fields correctly.");
+    return;
+  }
+
+  const startDate = new Date(startDateStr);
+  const endDate = new Date(endDateStr);
+  endDate.setHours(23, 59, 59, 999);
+
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const filtered = history.filter(entry => {
+    const d = new Date(entry.date);
+    return d >= startDate && d <= endDate;
+  });
+
+  let bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
+  let regularPay = hourlyRate * totalHours;
+  let overtimePay = hourlyRate * 1.5 * (isNaN(overtimeHours) ? 0 : overtimeHours);
+  let hourlyTotal = regularPay + overtimePay;
+  let totalPay = bonusTotal + hourlyTotal;
+  let dayDiff = Math.max(1, (endDate - startDate) / (1000 * 60 * 60 * 24) + 1);
+
+  const results = `
+    <p><strong>Total Bonus Pay:</strong> $${bonusTotal.toFixed(2)}</p>
+    <p><strong>Regular Pay:</strong> $${regularPay.toFixed(2)}</p>
+    <p><strong>Overtime Pay:</strong> $${overtimePay.toFixed(2)}</p>
+    <p><strong>Total Hourly Pay:</strong> $${hourlyTotal.toFixed(2)}</p>
+    <p><strong>Total Pay:</strong> $${totalPay.toFixed(2)}</p>
+    <p><strong>Average Daily Pay:</strong> $${(totalPay / dayDiff).toFixed(2)}</p>
+    <p><strong>Average Weekly:</strong> $${(totalPay / 7).toFixed(2)}</p>
+    <p><strong>Average Bi-Weekly:</strong> $${(totalPay / 14).toFixed(2)}</p>
+    <p><strong>Average Hourly Rate (with bonus):</strong> $${(totalPay / (totalHours + (isNaN(overtimeHours) ? 0 : overtimeHours))).toFixed(2)}</p>
+  `;
+  document.getElementById("averageResults").innerHTML = results;
 }
 </script>
