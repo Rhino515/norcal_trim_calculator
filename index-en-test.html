@@ -682,5 +682,16 @@ function updateWeekRangeLabel() {
 }
 window.addEventListener('load', updateWeekRangeLabel);
 </script>
+
+<script>
+function clearAllEntries() {
+  if (confirm('Are you sure you want to delete all entries?')) {
+    localStorage.removeItem('trimHistory');
+    updateSessionTable();
+    if (typeof updateGoalBars === 'function') updateGoalBars();
+  }
+}
+</script>
+
 </body>
 </html>
