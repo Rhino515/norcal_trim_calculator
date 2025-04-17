@@ -134,6 +134,7 @@
 <ul id="totalsList" style="list-style: none; padding: 0;"></ul>
 </div>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     const lang = document.documentElement.lang;
     const storageKey = `trimTrackerData-${lang}`;
     let saveTimeout;
@@ -315,6 +316,7 @@
     localStorage.removeItem('trimTrackerDailyTotal');
     loadData();
     setTimeout(updateDailyTotals, 200);
+});
 </script>
 </body>
 </html>
