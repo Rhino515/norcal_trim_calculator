@@ -406,22 +406,11 @@ function renderWeeklyProgress() {
       <div style="background:#222; padding: 0.7em; border-radius: 4px;">
         <div style="margin-bottom: 0.3em; font-size: 0.85em; color: #ccc;">Minimum Goal</div>
         <div style="background:#444;height:20px;position:relative;border-radius:4px;overflow:hidden;margin-bottom:10px;">
-          
-<div style="background:#444;height:20px;position:relative;border-radius:4px;overflow:hidden;margin-bottom:10px;">
   <div style="width:${Math.min(100, weekTotal / minGoal * 100)}%;background:green;height:100%;position:absolute;top:0;left:0;">
-    <span style="position:absolute;left:5px;color:white;font-size:0.75em;line-height:20px;">${weekTotal.toFixed(0)}</span>
+    <span style="position:absolute;left:5px;color:white;font-size:0.75em;line-height:20px;">$${weekTotal.toFixed(0)}</span>
   </div>
-  <span style="position:absolute;right:5px;color:#ccc;font-size:0.75em;line-height:20px;top:0;">${minGoal}</span>
+  <span style="position:absolute;right:5px;color:#ccc;font-size:0.75em;line-height:20px;top:0;">$${minGoal}</span>
 </div>
-
-            <span style="position:absolute;left:5px;color:white;font-size:0.75em;line-height:20px;">
-              $${weekTotal.toFixed(0)}
-            </span>
-            <span style="position:absolute;right:5px;color:white;font-size:0.75em;line-height:20px;">
-              $${minGoal}
-            </span>
-          </div>
-        </div>
         <div style="margin-bottom: 0.3em; font-size: 0.85em; color: #ccc;">Target Goal</div>
         <div style="background:#444;height:20px;position:relative;border-radius:4px;overflow:hidden;">
           <div style="width:${Math.min(100, weekTotal / targetGoal * 100)}%;background:limegreen;height:100%;position:absolute;top:0;left:0;">
