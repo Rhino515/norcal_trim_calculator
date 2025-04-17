@@ -165,8 +165,38 @@
 <button class="clear-all-button" onclick="exportCSV()">
 
     Export CSV</button>
+
+<div style="margin-bottom: 1em; font-size: 1.1em; color: #0f0;" id="weekRangeLabel"></div>
+<div id="goalContainer" style="margin-top: 2em; max-width: 600px; margin-left: auto; margin-right: auto;">
+  <label style="color: white;">Minimum Goal: 
+    <input id="minGoalInput" type="number" min="0" style="width: 120px; margin-bottom: 10px;" />
+  </label><br/>
+  <div id="minGoalBar" style="background-color: #003300; height: 25px; border-radius: 6px; margin-bottom: 15px; position: relative;">
+    <div id="minGoalProgress" style="background-color: #00cc00; height: 100%; width: 0%; border-radius: 6px;"></div>
+    <div id="minGoalText" style="position: absolute; left: 10px; top: 2px; color: white; font-weight: bold;"></div>
+  </div>
+
+  <label style="color: white;">Target Goal: 
+    <input id="targetGoalInput" type="number" min="0" style="width: 120px; margin-bottom: 10px;" />
+  </label><br/>
+  <div id="targetGoalBar" style="background-color: #004400; height: 25px; border-radius: 6px; position: relative;">
+    <div id="targetGoalProgress" style="background-color: lime; height: 100%; width: 0%; border-radius: 6px;"></div>
+    <div id="targetGoalText" style="position: absolute; left: 10px; top: 2px; color: black; font-weight: bold;"></div>
+  </div>
 </div>
-<div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
+</div>
+<div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
+<h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Hourly &amp; Pay Averages ▼</h2>
+<div id="payCalcSection" style="display:none;">
+<p>Enter your hourly pay and hours worked, then choose a date range:</p>
+<label>Hourly Rate: <input id="hourlyRate" step="0.01" type="number"/></label><br/>
+<label>Overtime Hours: <input id="overtimeHours" step="0.1" type="number"/></label><br/><label>Total Hours Worked: <input id="totalHours" step="0.1" type="number"/></label><br/>
+<label>Start Date: <input id="startDate" type="date"/></label><br/>
+<label>End Date: <input id="endDate" type="date"/></label><br/>
+<button onclick="calculateAverages()">Calculate Averages</button>
+<div id="averageResults" style="margin-top: 1em; text-align: left;"></div>
+</div>
+</div><div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
 <h2 style="color: #0f0;">About the Creator</h2>
 <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
       Hi, my name is Andrew, and I work as a professional trimmer at NorCal Cannabis.
@@ -198,8 +228,7 @@
       const bonusPay = calculateBonus(grams);
       document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
       const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateStr = now.toLocaleDateString(undefined, options);
+const dateStr = now.toISOString().split('T')[0];
       const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
       let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       history.push(entry);
@@ -212,158 +241,135 @@
       document.getElementById('grams').value = '';
     }
 
-    function updateSessionTable() {
-      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-      const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
-      tbody.innerHTML = '';
-      let totalBonusPay = 0;
-      history.forEach((entry, index) => {
-        const row = document.createElement('tr');
+    
+function updateSessionTable() {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
+  tbody.innerHTML = '';
+  let totalBonusPay = 0;
 
-        const dateCell = document.createElement('td');
-        dateCell.textContent = entry.date;
-        dateCell.contentEditable = true;
-        dateCell.addEventListener('blur', function () {
-          const updatedDate = this.textContent.trim();
-          if (updatedDate) {
-            history[index].date = updatedDate;
-            localStorage.setItem('trimHistory', JSON.stringify(history));
-          }
-        });
-        row.appendChild(dateCell);
+  const weekMap = {};
+  const options = { month: 'long', day: 'numeric' };
+  const formatter = new Intl.DateTimeFormat('en-US', options);
 
-        const gramsCell = document.createElement('td');
-        gramsCell.textContent = entry.grams;
-        gramsCell.contentEditable = true;
-        gramsCell.style.backgroundColor = '#222';
-        gramsCell.addEventListener('blur', function () {
-          const newGrams = parseFloat(this.textContent.trim());
-          if (!isNaN(newGrams) && newGrams > 0) {
-            history[index].grams = newGrams;
-            const newBonus = calculateBonus(newGrams);
-            history[index].bonusPay = newBonus.toFixed(2);
-            localStorage.setItem('trimHistory', JSON.stringify(history));
-            updateSessionTable();
+  history.forEach((entry, i) => {
+    let parsed = new Date(entry.date);
+    if (isNaN(parsed.getTime())) {
+      parsed = new Date(Date.parse(entry.date));
+      if (isNaN(parsed.getTime())) {
+        console.warn("Invalid date in entry", entry.date);
+        return; // skip bad date
+      }
+    }
+    const monday = new Date(parsed);
+    monday.setDate(parsed.getDate() - parsed.getDay());
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const key = monday.toISOString().split('T')[0];
+    if (!weekMap[key]) {
+      weekMap[key] = { label: "Week of " + formatter.format(monday) + " - " + formatter.format(sunday), entries: [] };
+    }
+    weekMap[key].entries.push([entry, i]);
+  });
 
-      const scrollTarget = document.getElementById('sessionTable');
-      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
-
-      document.getElementById('grams').value = '';
-          } else {
-            alert("Please enter a valid number of grams.");
-            updateSessionTable();
-
-      const scrollTarget = document.getElementById('sessionTable');
-      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
-
-      document.getElementById('grams').value = '';
-          }
-        });
-        row.appendChild(gramsCell);
-
-        const bonusPayCell = document.createElement('td');
-        bonusPayCell.textContent = '$' + entry.bonusPay;
-        row.appendChild(bonusPayCell);
-
-        const actionCell = document.createElement('td');
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.className = 'delete-button';
-        deleteBtn.onclick = function () {
-          if (confirm('Are you sure you want to delete this entry?')) {
-            deleteEntry(index);
-          }
-        };
-        actionCell.appendChild(deleteBtn);
-        row.appendChild(actionCell);
-
-        tbody.appendChild(row);
-        totalBonusPay += parseFloat(entry.bonusPay);
+  Object.values(weekMap).forEach((week) => {
+    const toggleRow = document.createElement('tr');
+    const toggleCell = document.createElement('td');
+    toggleCell.colSpan = 4;
+    toggleCell.style.cursor = 'pointer';
+    toggleCell.style.background = '#1a1a1a';
+    toggleCell.style.color = '#0f0';
+    toggleCell.style.fontWeight = 'bold';
+    toggleCell.textContent = week.label + " ▼";
+    let collapsed = false;
+    toggleCell.onclick = () => {
+      collapsed = !collapsed;
+      week.entries.forEach(([_, i]) => {
+        const row = document.getElementById('row-' + i);
+        if (row) row.style.display = collapsed ? 'none' : '';
       });
-      document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
-    }
+      toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
+    };
+    toggleRow.appendChild(toggleCell);
+    tbody.appendChild(toggleRow);
 
-    function deleteEntry(index) {
-      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-      history.splice(index, 1);
-      localStorage.setItem('trimHistory', JSON.stringify(history));
-      updateSessionTable();
+    week.entries.forEach(([entry, index]) => {
+      const row = document.createElement('tr');
+      row.id = 'row-' + index;
 
-      const scrollTarget = document.getElementById('sessionTable');
-      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
-
-      document.getElementById('grams').value = '';
-    }
-
-    function clearAllEntries() {
-      if (confirm('Are you sure you want to clear all entries?')) {
-        localStorage.removeItem('trimHistory');
-        updateSessionTable();
-
-      const scrollTarget = document.getElementById('sessionTable');
-      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
-
-      document.getElementById('grams').value = '';
-      }
-    }
-
-    function exportCSV() {
-      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-      if (history.length === 0) {
-        alert("No entries to export.");
-        return;
-      }
-
-      const csvRows = [['Date', 'Grams', 'Bonus Pay']];
-      history.forEach(entry => {
-        csvRows.push([entry.date, entry.grams, '$' + entry.bonusPay]);
+      const dateCell = document.createElement('td');
+      dateCell.textContent = entry.date;
+      dateCell.contentEditable = true;
+      dateCell.addEventListener('blur', function () {
+        const updatedDate = this.textContent.trim();
+        if (updatedDate) {
+          history[index].date = updatedDate;
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+        }
       });
+      row.appendChild(dateCell);
 
-      const csvContent = csvRows.map(row => row.join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'trim_history.csv';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+      const gramsCell = document.createElement('td');
+      gramsCell.textContent = entry.grams;
+      gramsCell.contentEditable = true;
+      gramsCell.style.backgroundColor = '#222';
+      gramsCell.addEventListener('blur', function () {
+        const newGrams = parseFloat(this.textContent.trim());
+        if (!isNaN(newGrams) && newGrams > 0) {
+          history[index].grams = newGrams;
+          const newBonus = calculateBonus(newGrams);
+          history[index].bonusPay = newBonus.toFixed(2);
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+          updateSessionTable();
+        } else {
+          alert("Please enter a valid number of grams.");
+          updateSessionTable();
+        }
+      });
+      row.appendChild(gramsCell);
 
-    window.onload = updateSessionTable;
+      const bonusPayCell = document.createElement('td');
+      bonusPayCell.textContent = '$' + entry.bonusPay;
+      row.appendChild(bonusPayCell);
 
-    document.getElementById('import-tracker-total').addEventListener('click', () => {
-      const trackerTotal = localStorage.getItem('trimTrackerDailyTotal');
-      if (trackerTotal) {
-        document.getElementById('grams').value = trackerTotal;
-        alert(`Imported ${trackerTotal}g from Trim Tracker.`);
-      } else {
-        alert("No trim tracker total found for today.");
-      }
+      const actionCell = document.createElement('td');
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.className = 'delete-button';
+      deleteBtn.onclick = function () {
+        if (confirm('Are you sure you want to delete this entry?')) {
+          deleteEntry(index);
+        }
+      };
+      actionCell.appendChild(deleteBtn);
+
+      const upBtn = document.createElement('button');
+      upBtn.textContent = '↑';
+      upBtn.style.marginLeft = '5px';
+      upBtn.style.color = 'lime';
+      upBtn.onclick = function () { moveEntry(index, -1); };
+      actionCell.appendChild(upBtn);
+
+      const downBtn = document.createElement('button');
+      downBtn.textContent = '↓';
+      downBtn.style.marginLeft = '5px';
+      downBtn.style.color = 'lime';
+      downBtn.onclick = function () { moveEntry(index, 1); };
+      actionCell.appendChild(downBtn);
+
+      row.appendChild(actionCell);
+      tbody.appendChild(row);
+      totalBonusPay += parseFloat(entry.bonusPay);
     });
-
-  </script>
-
-<div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
-<h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Hourly &amp; Pay Averages ▼</h2>
-<div id="payCalcSection" style="display:none;">
-<p>Enter your hourly pay and hours worked, then choose a date range:</p>
-<label>Hourly Rate: <input id="hourlyRate" step="0.01" type="number"/></label><br/>
-<label>Total Hours Worked: <input id="totalHours" step="0.1" type="number"/></label><br/>
-<label>Start Date: <input id="startDate" type="date"/></label><br/>
-<label>End Date: <input id="endDate" type="date"/></label><br/>
-<button onclick="calculateAverages()">Calculate Averages</button>
-<div id="averageResults" style="margin-top: 1em; text-align: left;"></div>
-</div>
-</div>
-<script>
-function togglePayCalc() {
-  const section = document.getElementById("payCalcSection");
-  section.style.display = section.style.display === "none" ? "block" : "none";
+  });
+  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
 }
+
 function calculateAverages() {
   const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
   const totalHours = parseFloat(document.getElementById("totalHours").value);
+  const overtimeHours = parseFloat(document.getElementById("overtimeHours").value) || 0;
   const startDate = new Date(document.getElementById("startDate").value);
   const endDate = new Date(document.getElementById("endDate").value);
   if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
@@ -376,20 +382,305 @@ function calculateAverages() {
     return entryDate >= startDate && entryDate <= endDate;
   });
   let bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
-  let hourlyTotal = hourlyRate * totalHours;
+  let regularPay = hourlyRate * totalHours;
+  let overtimePay = hourlyRate * 1.5 * overtimeHours;
+  let hourlyTotal = regularPay + overtimePay;
   let totalPay = bonusTotal + hourlyTotal;
   let dayDiff = Math.max(1, (endDate - startDate) / (1000 * 60 * 60 * 24) + 1);
   let results = `
     <p><strong>Total Bonus Pay:</strong> $${bonusTotal.toFixed(2)}</p>
-    <p><strong>Total Hourly Pay:</strong> $${hourlyTotal.toFixed(2)}</p>
+    <p><strong>Regular Pay:</strong> $${regularPay.toFixed(2)}</p>
+<p><strong>Overtime Pay:</strong> $${overtimePay.toFixed(2)}</p>
+<p><strong>Total Hourly Pay:</strong> $${hourlyTotal.toFixed(2)}</p>
     <p><strong>Total Pay:</strong> $${totalPay.toFixed(2)}</p>
     <p><strong>Average Daily Pay:</strong> $${(totalPay / dayDiff).toFixed(2)}</p>
     <p><strong>Average Weekly:</strong> $${(totalPay / 7).toFixed(2)}</p>
     <p><strong>Average Bi-Weekly:</strong> $${(totalPay / 14).toFixed(2)}</p>
-    <p><strong>Average Hourly Rate (with bonus):</strong> $${(totalPay / totalHours).toFixed(2)}</p>
+    <p><strong>Average Hourly Rate (with bonus):</strong> $${(totalPay / (totalHours + overtimeHours)).toFixed(2)}</p>
   `;
   document.getElementById("averageResults").innerHTML = results;
 }
+</script>
+
+<script>
+  
+function updateGoalBars() {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay()); // Monday
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const thisWeekTotal = history
+    .filter(entry => {
+      const d = new Date(entry.date);
+      return d >= startOfWeek && d <= endOfWeek;
+    })
+    .reduce((sum, e) => sum + parseFloat(e.bonusPay || 0), 0);
+
+  const minGoal = parseFloat(localStorage.getItem('minGoal') || 0);
+  const targetGoal = parseFloat(localStorage.getItem('targetGoal') || 0);
+
+  const minPct = minGoal ? Math.min(100, (thisWeekTotal / minGoal) * 100) : 0;
+  const targetPct = targetGoal ? Math.min(100, (thisWeekTotal / targetGoal) * 100) : 0;
+
+  document.getElementById('minGoalProgress').style.width = minPct + '%';
+  document.getElementById('targetGoalProgress').style.width = targetPct + '%';
+  document.getElementById('minGoalText').innerText = `$${thisWeekTotal.toFixed(2)} / $${minGoal}`;
+  document.getElementById('targetGoalText').innerText = `$${thisWeekTotal.toFixed(2)} / $${targetGoal}`;
+}
+
+  function getCurrentWeekRange() {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay() + 1); // Monday
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  }
+
+  document.getElementById('minGoalInput').addEventListener('input', e => {
+    const val = parseFloat(e.target.value) || 0;
+    localStorage.setItem('minGoal', val);
+    updateGoalBars();
+  });
+  document.getElementById('targetGoalInput').addEventListener('input', e => {
+    const val = parseFloat(e.target.value) || 0;
+    localStorage.setItem('targetGoal', val);
+    updateGoalBars();
+  });
+
+  // Load saved goal values
+  window.addEventListener('load', () => {
+    const min = localStorage.getItem('minGoal') || '';
+    const tar = localStorage.getItem('targetGoal') || '';
+    document.getElementById('minGoalInput').value = min;
+    document.getElementById('targetGoalInput').value = tar;
+    updateGoalBars();
+  });
+</script>
+
+
+<script>
+function moveEntry(index, direction) {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= history.length) return;
+  const temp = history[index];
+  history[index] = history[newIndex];
+  history[newIndex] = temp;
+  localStorage.setItem('trimHistory', JSON.stringify(history));
+  updateSessionTable();
+}
+
+function groupByWeek(history) {
+  const weekMap = {};
+  const options = { month: 'long', day: 'numeric' };
+  const formatter = new Intl.DateTimeFormat('en-US', options);
+  history.forEach((entry, i) => {
+    const d = new Date(entry.date);
+    const monday = new Date(d.setDate(d.getDate() - d.getDay()));
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const key = monday.toISOString().split('T')[0];
+    if (!weekMap[key]) {
+      weekMap[key] = { label: "Week of " + formatter.format(monday) + " - " + formatter.format(sunday), entries: [] };
+    }
+    weekMap[key].entries.push([entry, i]);
+  });
+  return weekMap;
+}
+
+// PATCH updateSessionTable
+const originalUpdateSessionTable = updateSessionTable;
+updateSessionTable = function() {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
+  tbody.innerHTML = '';
+  let totalBonusPay = 0;
+  const grouped = groupByWeek(history);
+  Object.values(grouped).forEach((week, groupIndex) => {
+    const toggleRow = document.createElement('tr');
+    const toggleCell = document.createElement('td');
+    toggleCell.colSpan = 4;
+    toggleCell.style.cursor = 'pointer';
+    toggleCell.style.background = '#1a1a1a';
+    toggleCell.style.color = '#0f0';
+    toggleCell.style.fontWeight = 'bold';
+    toggleCell.textContent = week.label + " ▼";
+    let collapsed = false;
+    toggleCell.onclick = () => {
+      collapsed = !collapsed;
+      week.entries.forEach(([_, i]) => {
+        const row = document.getElementById('row-' + i);
+        if (row) row.style.display = collapsed ? 'none' : '';
+      });
+      toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
+    };
+    toggleRow.appendChild(toggleCell);
+    tbody.appendChild(toggleRow);
+    week.entries.forEach(([entry, index]) => {
+      const row = document.createElement('tr');
+      row.id = 'row-' + index;
+
+      const dateCell = document.createElement('td');
+      dateCell.textContent = entry.date;
+      dateCell.contentEditable = true;
+      dateCell.addEventListener('blur', function () {
+        const updatedDate = this.textContent.trim();
+        if (updatedDate) {
+          history[index].date = updatedDate;
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+        }
+      });
+      row.appendChild(dateCell);
+
+      const gramsCell = document.createElement('td');
+      gramsCell.textContent = entry.grams;
+      gramsCell.contentEditable = true;
+      gramsCell.style.backgroundColor = '#222';
+      gramsCell.addEventListener('blur', function () {
+        const newGrams = parseFloat(this.textContent.trim());
+        if (!isNaN(newGrams) && newGrams > 0) {
+          history[index].grams = newGrams;
+          const newBonus = calculateBonus(newGrams);
+          history[index].bonusPay = newBonus.toFixed(2);
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+          updateSessionTable();
+        } else {
+          alert("Please enter a valid number of grams.");
+          updateSessionTable();
+        }
+      });
+      row.appendChild(gramsCell);
+
+      const bonusPayCell = document.createElement('td');
+      bonusPayCell.textContent = '$' + entry.bonusPay;
+      row.appendChild(bonusPayCell);
+
+      const actionCell = document.createElement('td');
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.className = 'delete-button';
+      deleteBtn.onclick = function () {
+        if (confirm('Are you sure you want to delete this entry?')) {
+          deleteEntry(index);
+        }
+      };
+      actionCell.appendChild(deleteBtn);
+
+      const upBtn = document.createElement('button');
+      upBtn.textContent = '↑';
+      upBtn.style.marginLeft = '5px';
+      upBtn.style.color = 'lime';
+      upBtn.onclick = function () { moveEntry(index, -1); };
+      actionCell.appendChild(upBtn);
+
+      const downBtn = document.createElement('button');
+      downBtn.textContent = '↓';
+      downBtn.style.marginLeft = '5px';
+      downBtn.style.color = 'lime';
+      downBtn.onclick = function () { moveEntry(index, 1); };
+      actionCell.appendChild(downBtn);
+
+      row.appendChild(actionCell);
+      tbody.appendChild(row);
+      totalBonusPay += parseFloat(entry.bonusPay);
+    });
+  });
+  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+};
+</script>
+
+<script>
+window.addEventListener('load', () => {
+  let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  let changed = false;
+
+  history.forEach(entry => {
+    const parsed = new Date(entry.date);
+    if (!/\d{4}-\d{2}-\d{2}/.test(entry.date) && !isNaN(parsed.getTime())) {
+      // Convert to YYYY-MM-DD
+      const iso = parsed.toISOString().split('T')[0];
+      entry.date = iso;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    localStorage.setItem('trimHistory', JSON.stringify(history));
+  }
+
+  updateSessionTable();
+});
+</script>
+
+<script>
+document.getElementById('import-tracker-total').addEventListener('click', () => {
+  const todayISO = new Date().toISOString().split('T')[0];
+  const trackerTotal = localStorage.getItem('trimTrackerDailyTotal-' + todayISO);
+  if (trackerTotal) {
+    document.getElementById('grams').value = trackerTotal;
+    alert("Imported " + trackerTotal + "g from Trim Tracker.");
+  } else {
+    alert("No trim tracker total found for today.");
+  }
+});
+</script>
+
+<script>
+function updateWeekRangeLabel() {
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(now.getDate() - now.getDay()); // Monday
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  const formatter = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' });
+  const rangeStr = "This Week: " + formatter.format(start) + " – " + formatter.format(end);
+  const label = document.getElementById("weekRangeLabel");
+  if (label) label.textContent = rangeStr;
+}
+
+window.addEventListener('load', updateWeekRangeLabel);
+</script>
+
+<script>
+function togglePayCalc() {
+  const section = document.getElementById("payCalcSection");
+  if (section) {
+    section.style.display = section.style.display === "none" ? "block" : "none";
+  }
+}
+</script>
+
+<script>
+function deleteEntry(index) {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  history.splice(index, 1);
+  localStorage.setItem('trimHistory', JSON.stringify(history));
+  updateSessionTable();
+}
+</script>
+
+<script>
+function updateWeekRangeLabel() {
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(now.getDate() - now.getDay()); // Monday
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  const formatter = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' });
+  const rangeStr = "Bonus Goal for Week: " + formatter.format(start) + " – " + formatter.format(end);
+  const label = document.getElementById("weekRangeLabel");
+  if (label) label.textContent = rangeStr;
+}
+window.addEventListener('load', updateWeekRangeLabel);
 </script>
 </body>
 </html>
