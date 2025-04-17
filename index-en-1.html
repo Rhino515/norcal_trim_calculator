@@ -140,11 +140,13 @@
 <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
 <strong>Note:</strong> For the Trim Tracker import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
   </div>
+
 <div id="payPeriodInputs" style="margin-top: 1em; font-size: 1em; color: white;">
-<label>Pay Period Start: <input id="payPeriodStart" type="date"/></label>
-<label style="margin-left: 1em;">End: <input id="payPeriodEnd" type="date"/></label>
+  <label>Pay Period Start: <input id="payPeriodStart" type="date" /></label>
+  <label style="margin-left: 1em;">End: <input id="payPeriodEnd" type="date" /></label>
 </div>
 <div id="payPeriodLabel" style="margin-top: 1em; color: #0f0; font-weight: bold;"></div>
+
 <table id="sessionTable">
 <thead>
 <tr>
@@ -171,7 +173,24 @@
 
     Export CSV</button>
 
+<div style="margin-bottom: 1em; font-size: 1.1em; color: #0f0;" id="weekRangeLabel"></div>
+<div id="goalContainer" style="margin-top: 2em; max-width: 600px; margin-left: auto; margin-right: auto;">
+  <label style="color: white;">Minimum Goal: 
+    <input id="minGoalInput" type="number" min="0" style="width: 120px; margin-bottom: 10px;" />
+  </label><br/>
+  <div id="minGoalBar" style="background-color: #003300; height: 25px; border-radius: 6px; margin-bottom: 15px; position: relative;">
+    <div id="minGoalProgress" style="background-color: #00cc00; height: 100%; width: 0%; border-radius: 6px;"></div>
+    <div id="minGoalText" style="position: absolute; left: 10px; top: 2px; color: white; font-weight: bold;"></div>
+  </div>
 
+  <label style="color: white;">Target Goal: 
+    <input id="targetGoalInput" type="number" min="0" style="width: 120px; margin-bottom: 10px;" />
+  </label><br/>
+  <div id="targetGoalBar" style="background-color: #004400; height: 25px; border-radius: 6px; position: relative;">
+    <div id="targetGoalProgress" style="background-color: lime; height: 100%; width: 0%; border-radius: 6px;"></div>
+    <div id="targetGoalText" style="position: absolute; left: 10px; top: 2px; color: black; font-weight: bold;"></div>
+  </div>
+</div>
 </div>
 <div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
 <h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Hourly &amp; Pay Averages ▼</h2>
@@ -396,6 +415,46 @@ function calculateAverages() {
 </script>
 
 <script>
+  
+
+
+        
+}
+
+  function getCurrentWeekRange() {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay() + 1); // Monday
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  }
+
+  document.getElementById('minGoalInput').addEventListener('input', e => {
+    const val = parseFloat(e.target.value) || 0;
+    localStorage.setItem('minGoal', val);
+    updateGoalBars();
+  });
+  document.getElementById('targetGoalInput').addEventListener('input', e => {
+    const val = parseFloat(e.target.value) || 0;
+    localStorage.setItem('targetGoal', val);
+    updateGoalBars();
+  });
+
+  // Load saved goal values
+  window.addEventListener('load', () => {
+    const min = localStorage.getItem('minGoal') || '';
+    const tar = localStorage.getItem('targetGoal') || '';
+    document.getElementById('minGoalInput').value = min;
+    document.getElementById('targetGoalInput').value = tar;
+    updateGoalBars();
+  });
+</script>
+
+
+<script>
 function moveEntry(index, direction) {
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
   const newIndex = index + direction;
@@ -410,26 +469,6 @@ function moveEntry(index, direction) {
 
 
 
-
-function groupByPayPeriod(history) {
-  const startStr = localStorage.getItem('payPeriodStart');
-  const endStr = localStorage.getItem('payPeriodEnd');
-  if (!startStr || !endStr) return {};
-
-  const start = new Date(startStr);
-  const end = new Date(endStr);
-  end.setHours(23, 59, 59, 999);
-
-  const entries = history
-    .map((entry, i) => [entry, i])
-    .filter(([entry]) => {
-      const d = new Date(entry.date);
-      return d >= start && d <= end;
-    });
-
-  const label = "Pay Period: " + startStr + " – " + endStr;
-  return { [startStr]: { label, entries } };
-}
 ;
 
   const sorted = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -619,6 +658,7 @@ toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
   document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
 };
 </script>
+
 <script>
 window.addEventListener('load', () => {
   let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
@@ -641,6 +681,7 @@ window.addEventListener('load', () => {
   updateSessionTable();
 });
 </script>
+
 <script>
 document.getElementById('import-tracker-total').addEventListener('click', () => {
   const todayISO = new Date().toISOString().split('T')[0];
@@ -653,6 +694,9 @@ document.getElementById('import-tracker-total').addEventListener('click', () => 
   }
 });
 </script>
+
+
+
 <script>
 function togglePayCalc() {
   const section = document.getElementById("payCalcSection");
@@ -661,6 +705,7 @@ function togglePayCalc() {
   }
 }
 </script>
+
 <script>
 function deleteEntry(index) {
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
@@ -671,5 +716,129 @@ function deleteEntry(index) {
 </script>
 
 
+
+<script>
+function getStoredPayPeriod() {
+  let startStr = localStorage.getItem('payPeriodStart');
+  let endStr = localStorage.getItem('payPeriodEnd');
+  if (!startStr || !endStr) return { start: null, end: null };
+
+  let start = new Date(startStr);
+  let end = new Date(endStr);
+  let today = new Date();
+
+  if (today > end) {
+    const nextStart = new Date(end);
+    nextStart.setDate(nextStart.getDate() + 1);
+    const nextEnd = new Date(nextStart);
+    nextEnd.setDate(nextStart.getDate() + 13);
+
+    localStorage.setItem('payPeriodStart', nextStart.toISOString().split('T')[0]);
+    localStorage.setItem('payPeriodEnd', nextEnd.toISOString().split('T')[0]);
+
+    start = nextStart;
+    end = nextEnd;
+  }
+
+  return { start, end };
+}
+
+function updatePayPeriodLabel() {
+  const { start, end } = getStoredPayPeriod();
+  if (start && end) {
+    const format = d => d.toISOString().split('T')[0];
+    document.getElementById('payPeriodStart').value = format(start);
+    document.getElementById('payPeriodEnd').value = format(end);
+    document.getElementById('payPeriodLabel').textContent = "Pay Period: " + format(start) + " – " + format(end);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updatePayPeriodLabel();
+
+  document.getElementById('payPeriodStart').addEventListener('change', e => {
+    localStorage.setItem('payPeriodStart', e.target.value);
+    updatePayPeriodLabel();
+    updateSessionTable?.();
+    updateGoalBars?.();
+  });
+
+  document.getElementById('payPeriodEnd').addEventListener('change', e => {
+    localStorage.setItem('payPeriodEnd', e.target.value);
+    updatePayPeriodLabel();
+    updateSessionTable?.();
+    updateGoalBars?.();
+  });
+});
+</script>
+
+
+<script>
+function updateWeekRangeLabel() {
+  const start = localStorage.getItem('payPeriodStart');
+  const end = localStorage.getItem('payPeriodEnd');
+  const label = document.getElementById("weekRangeLabel");
+  if (start && end && label) {
+    label.textContent = "Bonus Goal for Pay Period: " + start + " – " + end;
+  }
+}
+
+function updateGoalBars() {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const startStr = localStorage.getItem('payPeriodStart');
+  const endStr = localStorage.getItem('payPeriodEnd');
+  if (!startStr || !endStr) return;
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  end.setHours(23, 59, 59, 999);
+
+  const total = history
+    .filter(entry => {
+      const d = new Date(entry.date);
+      return d >= start && d <= end;
+    })
+    .reduce((sum, e) => sum + parseFloat(e.bonusPay || 0), 0);
+
+  const minGoal = parseFloat(localStorage.getItem('minGoal') || 0);
+  const targetGoal = parseFloat(localStorage.getItem('targetGoal') || 0);
+
+  const minPct = minGoal ? Math.min(100, (total / minGoal) * 100) : 0;
+  const targetPct = targetGoal ? Math.min(100, (total / targetGoal) * 100) : 0;
+
+  document.getElementById('minGoalProgress').style.width = minPct + '%';
+  document.getElementById('targetGoalProgress').style.width = targetPct + '%';
+  document.getElementById('minGoalText').innerText = `$${total.toFixed(2)} / $${minGoal}`;
+  document.getElementById('targetGoalText').innerText = `$${total.toFixed(2)} / $${targetGoal}`;
+}
+
+window.addEventListener('load', () => {
+  updateWeekRangeLabel();
+  updateGoalBars();
+});
+</script>
+
 </body>
 </html>
+
+<script>
+function groupByPayPeriod(history) {
+  const startStr = localStorage.getItem('payPeriodStart');
+  const endStr = localStorage.getItem('payPeriodEnd');
+  if (!startStr || !endStr) return {};
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  end.setHours(23, 59, 59, 999);
+
+  const entries = history
+    .map((entry, i) => [entry, i])
+    .filter(([entry]) => {
+      const d = new Date(entry.date);
+      return d >= start && d <= end;
+    });
+
+  const label = "Pay Period: " + startStr + " – " + endStr;
+  return { [startStr]: { label, entries } };
+}
+</script>
