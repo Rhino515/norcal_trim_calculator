@@ -262,7 +262,7 @@ function updateSessionTable() {
       }
     }
     const monday = new Date(parsed);
-    monday.setDate(parsed.getDate() - ((parsed.getDay() + 6) % 7));
+    monday.setDate(parsed.getDate() - parsed.getDay());
     monday.setHours(0, 0, 0, 0);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
@@ -408,7 +408,7 @@ function updateGoalBars() {
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
   const now = new Date();
   const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // Monday
+  startOfWeek.setDate(now.getDate() - now.getDay()); // Monday
   startOfWeek.setHours(0, 0, 0, 0);
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 6);
@@ -484,7 +484,7 @@ function groupByWeek(history) {
   const formatter = new Intl.DateTimeFormat('en-US', options);
   history.forEach((entry, i) => {
     const d = new Date(entry.date);
-    const monday = new Date(d.setDate(d.getDate() - ((d.getDay() + 6) % 7)));
+    const monday = new Date(d.setDate(d.getDate() - d.getDay()));
     monday.setHours(0, 0, 0, 0);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
@@ -638,7 +638,7 @@ document.getElementById('import-tracker-total').addEventListener('click', () => 
 function updateWeekRangeLabel() {
   const now = new Date();
   const start = new Date(now);
-  start.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // Monday
+  start.setDate(now.getDate() - now.getDay()); // Monday
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   const formatter = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' });
@@ -672,7 +672,7 @@ function deleteEntry(index) {
 function updateWeekRangeLabel() {
   const now = new Date();
   const start = new Date(now);
-  start.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // Monday
+  start.setDate(now.getDate() - now.getDay()); // Monday
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   const formatter = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' });
