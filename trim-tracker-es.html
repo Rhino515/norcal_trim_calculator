@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -90,10 +90,6 @@
       color: #0af;
       text-decoration: none;
     }
-  
-
-
-
 .note-input {
   width: 120px;
   min-height: 144px;
@@ -109,17 +105,14 @@
   overflow-y: auto;
   white-space: pre-wrap;
 }
-
-
 </style>
-        
 </head>
 <body>
 <button class="lang-toggle" onclick="toggleLanguage()">English</button>
 <img alt="Registro de Recorte Banner" class="banner" src="trim-tracker-banner.PNG"/>
 <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
 <strong>Nota:</strong>Tus datos se guardan localmente en tu navegador y permanecerán disponibles a menos que borres la caché o cambies de dispositivo o navegador. Asegúrate de usar la aplicación en tu idioma preferido, ya que los datos se almacenan por separado para cada versión del idioma. Aunque esta herramienta ayuda a rastrear datos, recomendamos hacer una copia de seguridad para evitar pérdidas.
-  </p>
+</p>
 <table id="sessionTable">
 <thead>
 <tr>
@@ -143,9 +136,7 @@
 <script>
     const lang = document.documentElement.lang;
     const storageKey = `trimTrackerData-${lang}`;
-
     let saveTimeout;
-
     function debounceSave() {
       clearTimeout(saveTimeout);
       saveTimeout = setTimeout(() => {
@@ -156,7 +147,6 @@
         }
       }, 300);
     }
-
     function createGramInput(onChangeFunc, value = '') {
       const input = document.createElement('input');
       input.type = 'number';
@@ -170,11 +160,9 @@
       };
       return input;
     }
-
     function addRow(data = {}) {
       const tbody = document.getElementById('tableBody');
       const row = document.createElement('tr');
-
       const dateCell = document.createElement('td');
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
@@ -182,7 +170,6 @@
       dateInput.oninput = () => { debounceSave(); updateDailyTotals(); };
       dateCell.appendChild(dateInput);
       row.appendChild(dateCell);
-
       const strainCell = document.createElement('td');
       const strainInput = document.createElement('input');
       strainInput.type = 'text';
@@ -190,15 +177,12 @@
       strainInput.oninput = debounceSave;
       strainCell.appendChild(strainInput);
       row.appendChild(strainCell);
-
       const gramsCell = document.createElement('td');
       const gramsWrapper = document.createElement('div');
       gramsWrapper.style.display = 'flex';
       gramsWrapper.style.flexWrap = 'wrap';
       gramsWrapper.style.gap = '4px';
-
       const totalCell = document.createElement('td');
-
       const updateTotal = () => {
         const inputs = gramsWrapper.querySelectorAll('input');
         let sum = 0;
@@ -209,39 +193,29 @@
         totalCell.innerText = sum.toFixed(2);
         updateDailyTotals();
       };
-
       (data.grams || ['', '', '']).forEach(g => {
         gramsWrapper.appendChild(createGramInput(updateTotal, g));
       });
-
       const addGramBtn = document.createElement('button');
       addGramBtn.textContent = '+';
       addGramBtn.onclick = () => {
         gramsWrapper.appendChild(createGramInput(updateTotal));
         debounceSave();
       };
-
       gramsCell.appendChild(gramsWrapper);
       gramsCell.appendChild(addGramBtn);
       row.appendChild(gramsCell);
-
-      totalCell.innerText = '0.00';
-      row.appendChild(totalCell);
-      updateTotal();
-
-      
       const noteCell = document.createElement('td');
       const noteInput = document.createElement('textarea');
-      
       noteInput.placeholder = 'Notas';
       noteInput.value = data.note || '';
       noteInput.className = 'note-input';
       noteInput.oninput = debounceSave;
       noteCell.appendChild(noteInput);
-      row.insertBefore(noteCell, row.children[row.children.length - 2]);
-    
-
-const actionCell = document.createElement('td');
+      row.insertBefore(noteCell, row.children[4]);
+      row.appendChild(totalCell);
+      updateTotal();
+      const actionCell = document.createElement('td');
       const delBtn = document.createElement('button');
       delBtn.textContent = 'Eliminar';
       delBtn.className = 'delete-row';
@@ -254,10 +228,8 @@ const actionCell = document.createElement('td');
       };
       actionCell.appendChild(delBtn);
       row.appendChild(actionCell);
-
       tbody.appendChild(row);
     }
-
     function clearAllRows() {
       if (confirm('Are you sure you want to delete all rows? This cannot be undone.')) {
         document.getElementById('tableBody').innerHTML = '';
@@ -266,20 +238,18 @@ const actionCell = document.createElement('td');
         updateDailyTotals();
       }
     }
-
     function saveData() {
       const rows = document.querySelectorAll('#tableBody tr');
       const data = Array.from(rows).map(row => {
-        const [dateCell, strainCell, gramsCell, noteCell, totalCell, actionCell] = row.querySelectorAll('td');
+        const [dateCell, strainCell, gramsCell, noteCell] = row.querySelectorAll('td');
         const date = dateCell.querySelector('input').value;
         const strain = strainCell.querySelector('input').value;
         const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
-        const note = noteCell.querySelector('input')?.value || '';
-        return { date, strain, grams, note: noteCell.querySelector('textarea')?.value || '' };
+        const note = noteCell.querySelector('textarea')?.value || '';
+        return { date, strain, grams, note };
       });
       localStorage.setItem(storageKey, JSON.stringify(data));
     }
-
     function loadData() {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
@@ -289,24 +259,21 @@ const actionCell = document.createElement('td');
         addRow();
       }
     }
-
     function exportCSV() {
       const rows = document.querySelectorAll('#tableBody tr');
-      let csvContent = "Fecha,Variedad,Gramos (semicolon separated),Nota,Total\n";
-
+      let csvContent = "Fecha,Variedad,Gramos (semicolon separated),Nota,Total
+";
       rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         const date = cells[0].querySelector('input').value;
         const strain = cells[1].querySelector('input').value;
         const gramInputs = cells[2].querySelectorAll('input');
         const grams = Array.from(gramInputs).map(input => input.value).join(';');
-        const total = cells[3].innerText;
-        
-        const note = cells[4].querySelector('input')?.value || '';
-        csvContent += `"${date}","${strain}","${grams}","${note}","${total}"\n`;
-    
+        const note = cells[3].querySelector('textarea')?.value || '';
+        const total = cells[4].innerText;
+        csvContent += `"${date}","${strain}","${grams}","${note}","${total}"
+`;
       });
-
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -316,53 +283,41 @@ const actionCell = document.createElement('td');
       link.click();
       document.body.removeChild(link);
     }
-
     function updateDailyTotals() {
       const rows = document.querySelectorAll('#tableBody tr');
       const totalsMap = {};
-
       rows.forEach(row => {
         const date = row.querySelector('td input[type="date"]').value;
-        const total = parseFloat(row.querySelector('td:nth-child(4)').innerText) || 0;
+        const total = parseFloat(row.querySelector('td:nth-child(5)').innerText) || 0;
         if (date) {
           if (!totalsMap[date]) totalsMap[date] = 0;
           totalsMap[date] += total;
         }
       });
-
       const totalsList = document.getElementById('totalsList');
       totalsList.innerHTML = '';
-
-      
-      // Save today's total to localStorage for use in Calculator
       const today = new Date().toLocaleDateString('en-CA');
       if (totalsMap[today]) {
         localStorage.setItem('trimTrackerDailyTotal', totalsMap[today].toFixed(2));
       } else {
         localStorage.removeItem('trimTrackerDailyTotal');
       }
-
-
       Object.entries(totalsMap).forEach(([date, total]) => {
         const li = document.createElement('li');
         li.textContent = `${date}: ${total.toFixed(2)}g`;
         totalsList.appendChild(li);
       });
     }
-
     function toggleLanguage() {
       window.location.href = 'trim-tracker.html';
     }
-
     document.getElementById('backLink').href = 'index.html';
-
-    localStorage.removeItem('trimTrackerDailyTotal');  // Clear old total
-loadData();
-setTimeout(updateDailyTotals, 200);  // Force save today's total after loading
-  </script>
+    localStorage.removeItem('trimTrackerDailyTotal');
+    loadData();
+    setTimeout(updateDailyTotals, 200);
+</script>
 </body>
 </html>
 <script>
-    // Update totals whenever any input changes
     document.addEventListener('input', updateDailyTotals);
 </script>
