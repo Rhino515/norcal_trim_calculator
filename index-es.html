@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <script>
@@ -11,12 +12,12 @@
     }
   }
 </script>
-  <meta charset="UTF-8">
-  <title>Calculadora de Trim NorCal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
-  <style>
+<meta charset="utf-8"/>
+<title>NorCal Trim Calculator</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="manifest.json" rel="manifest"/>
+<meta content="#000000" name="theme-color"/>
+<style>
     body {
       background-color: black;
       color: white;
@@ -120,75 +121,92 @@
   </style>
 </head>
 <body>
-  <div class="language-toggle">
-    <a href="index.html">English</a>
-    <a href="index-es.html">Español</a>
+<div class="language-toggle">
+<a href="index-es.html">Inglés</a>
+<a href="index-es.html">Español</a>
+</div>
+<img alt="NorCal Logo" src="norcal_icon.png"/>
+<p>Ingresa el total de gramos recortados:</p>
+<input id="grams" placeholder="e.g. 1200" type="number"/>
+<br/>
+<button id="import-tracker-total">Agregar el total del Trim Tracker de hoy</button>
+<br/>
+<button onclick="calculate()">Calcular</button>
+<p id="result"></p>
+<div class="install-links">
+<a href="trim-tracker-es.html">Ir al Trim Tracker</a>
+<a class="nav-button" href="help.html">Cómo usar la aplicación</a>
+</div>
+<div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
+<strong>Nota:</strong> Para que la función de importación del Trim Tracker funcione correctamente, utiliza la calculadora y el rastreador solo en tu idioma preferido. Mezclar idiomas puede causar problemas de sincronización.
   </div>
-  <img src="norcal_icon.png" alt="Logo de NorCal" />
-  <p>Ingresa el total de gramos recortados:</p>
-  <input type="number" id="grams" placeholder="p. ej. 1200" />
-  <br>
-  <button id="import-tracker-total">Agregar el total de hoy del Registro de Trim</button>
-  <br>
-  <button onclick="calculate()">Calcular</button>
-  <p id="result"></p>
-  <div class="install-links">
-    <a href="trim-tracker-es.html">Ir al Registro de Trim</a>
-    <a href="help-es.html" class="nav-button">Cómo usar la aplicación</a>
+<table id="sessionTable">
+<thead>
+<tr>
+<th>Fecha y Día</th>
+<th>Gramos</th>
+<th>Pago Extra</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr>
+<td colspan="2"><strong>Total</strong></td>
+<td id="totalBonusPay">$0.00</td>
+<td><button class="clear-all-button" onclick="clearAllEntries()">Borrar Todo</button></td>
+</tr>
+</tfoot>
+</table>
+<!-- 
+
+    Exportar CSV Button -->
+<div style="margin-top: 1em;">
+<button class="clear-all-button" onclick="exportCSV()">
+
+    Exportar CSV</button>
+
+<div id="goalContainer" style="margin-top: 2em; max-width: 600px; margin-left: auto; margin-right: auto;">
+  <label style="color: white;">Meta Mínima: 
+    <input id="minGoalInput" type="number" min="0" style="width: 120px; margin-bottom: 10px;" />
+  </label><br/>
+  <div id="minGoalBar" style="background-color: #003300; height: 25px; border-radius: 6px; margin-bottom: 15px; position: relative;">
+    <div id="minGoalProgress" style="background-color: #00cc00; height: 100%; width: 0%; border-radius: 6px;"></div>
+    <div id="minGoalText" style="position: absolute; left: 10px; top: 2px; color: white; font-weight: bold;"></div>
   </div>
-  <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <strong>Nota:</strong> Para que la función de importación del Registro de Trim funcione correctamente, usa la calculadora y el registro en tu idioma preferido. Mezclar idiomas puede causar problemas de sincronización.
+
+  <label style="color: white;">Meta Objetivo: 
+    <input id="targetGoalInput" type="number" min="0" style="width: 120px; margin-bottom: 10px;" />
+  </label><br/>
+  <div id="targetGoalBar" style="background-color: #004400; height: 25px; border-radius: 6px; position: relative;">
+    <div id="targetGoalProgress" style="background-color: lime; height: 100%; width: 0%; border-radius: 6px;"></div>
+    <div id="targetGoalText" style="position: absolute; left: 10px; top: 2px; color: black; font-weight: bold;"></div>
   </div>
-  <table id="sessionTable">
-    <thead>
-      <tr>
-        <th>Fecha y Día</th>
-        <th>Gramos</th>
-        <th>Pago Extra</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr>
-        <td colspan="2"><strong>Total</strong></td>
-        <td id="totalBonusPay">$0.00</td>
-        <td><button class="clear-all-button" onclick="clearAllEntries()">Borrar Todo</button></td>
-      </tr>
-    </tfoot>
-  </table>
-  <div style="margin-top: 1em;">
-    <button class="clear-all-button" onclick="exportCSV()">Exportar CSV</button>
-  </div>
-  <div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
-    <h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Pago por Hora y Promedios ▼</h2>
-    <div id="payCalcSection" style="display:none;">
-      <p>Ingresa tu pago por hora y las horas trabajadas, luego elige un rango de fechas:</p>
-      <label>Tarifa por Hora: <input id="hourlyRate" step="0.01" type="number"/></label><br/>
-      <label>Horas Extra: <input id="overtimeHours" step="0.1" type="number"/></label><br/>
-      <label>Total de Horas Trabajadas: <input id="totalHours" step="0.1" type="number"/>
-        <div style="font-size: 0.8em; color: #aaa; margin-bottom: 0.5em;">(Solo horas regulares – no incluir horas extra)</div>
-      </label><br/>
-      <label>Fecha de Inicio: <input id="startDate" type="date"/></label><br/>
-      <label>Fecha de Fin: <input id="endDate" type="date"/></label><br/>
-      <label>Meta Mínima: <input id="minGoal" type="number" step="0.01" value="0"/></label><br/>
-      <label>Meta Objetivo: <input id="targetGoal" type="number" step="0.01" value="0"/></label><br/>
-      <button onclick="calculateAverages()">Calcular Promedios</button>
-      <div id="averageResults" style="margin-top: 1em; text-align: left;"></div>
-      <div id="weeklyProgressContainer" style="margin-top: 2em;"></div>
-    </div>
-  </div>
-  <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-    <h2 style="color: #0f0;">Acerca del Creador</h2>
-    <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
-      Hola, mi nombre es Andrew y trabajo como recortador profesional en NorCal Cannabis.
-      Creé la Calculadora de Trim NorCal para ayudar a simplificar los cálculos de pago extra y facilitar a los recortadores el seguimiento de su progreso diario.
+</div>
+</div>
+<div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
+<h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Promedios por Hora y Pago ▼</h2>
+<div id="payCalcSection" style="display:none;">
+<p>Ingresa tu pago por hora y las horas trabajadas, luego elige un rango de fechas:</p>
+<label>Pago por hora: <input id="hourlyRate" step="0.01" type="number"/></label><br/>
+<label>Horas extra: <input id="overtimeHours" step="0.1" type="number"/></label><br/><label>Total de horas trabajadas: <input id="totalHours" step="0.1" type="number"/></label><br/>
+<label>Fecha de inicio: <input id="startDate" type="date"/></label><br/>
+<label>Fecha de fin: <input id="endDate" type="date"/></label><br/>
+<button onclick="calculateAverages()">Calcular Averages</button>
+<div id="averageResults" style="margin-top: 1em; text-align: left;"></div>
+</div>
+</div><div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
+<h2 style="color: #0f0;">Sobre el Creador</h2>
+<p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
+      Hola, me llamo Andrew y trabajo como recortador profesional en NorCal Cannabis.
+      I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers
+      to track their daily progress.
       <br/><br/>
-      Esta herramienta fue diseñada para ser práctica, fácil de usar y eficiente, ayudando a los trabajadores a mantenerse organizados e informados.
-      Mi objetivo es apoyar a la comunidad de recortadores con soluciones tecnológicas simples que realmente marquen una diferencia en el trabajo.
+      Esta herramienta fue diseñada para ser práctica, fácil de usar y eficiente — ayudando a los trabajadores a mantenerse organizados e informados.
+      Mi objetivo es apoyar a la comunidad de recortadores con soluciones tecnológicas simples que marquen una verdadera diferencia en el trabajo.
     </p>
-  </div>
-  <script>
+</div>
+<script>
     function calculateBonus(grams) {
       let bonusPay = 0;
       if (grams > 1587) {
@@ -199,10 +217,11 @@
       }
       return bonusPay;
     }
+
     function calculate() {
       const grams = parseFloat(document.getElementById('grams').value);
       if (isNaN(grams) || grams <= 0) {
-        document.getElementById('result').innerText = 'Por favor ingresa un número válido de gramos.';
+        document.getElementById('result').innerText = 'Por favor, ingresa un número válido de gramos.';
         return;
       }
       const bonusPay = calculateBonus(grams);
@@ -215,10 +234,13 @@
       history.push(entry);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+
       const scrollTarget = document.getElementById('sessionTable');
       if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
       document.getElementById('grams').value = '';
     }
+
     function updateSessionTable() {
       const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
@@ -226,17 +248,19 @@
       let totalBonusPay = 0;
       history.forEach((entry, index) => {
         const row = document.createElement('tr');
+
         const dateCell = document.createElement('td');
         dateCell.textContent = entry.date;
         dateCell.contentEditable = true;
         dateCell.addEventListener('blur', function () {
-          const updatedFecha = this.textContent.trim();
-          if (updatedFecha) {
-            history[index].date = updatedFecha;
+          const updatedDate = this.textContent.trim();
+          if (updatedDate) {
+            history[index].date = updatedDate;
             localStorage.setItem('trimHistory', JSON.stringify(history));
           }
         });
         row.appendChild(dateCell);
+
         const gramsCell = document.createElement('td');
         gramsCell.textContent = entry.grams;
         gramsCell.contentEditable = true;
@@ -249,15 +273,27 @@
             history[index].bonusPay = newBonus.toFixed(2);
             localStorage.setItem('trimHistory', JSON.stringify(history));
             updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
           } else {
-            alert("Por favor ingresa un número válido de gramos.");
+            alert("Por favor, ingresa un número válido de gramos.");
             updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
           }
         });
         row.appendChild(gramsCell);
+
         const bonusPayCell = document.createElement('td');
         bonusPayCell.textContent = '$' + entry.bonusPay;
         row.appendChild(bonusPayCell);
+
         const actionCell = document.createElement('td');
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Eliminar';
@@ -269,33 +305,49 @@
         };
         actionCell.appendChild(deleteBtn);
         row.appendChild(actionCell);
+
         tbody.appendChild(row);
         totalBonusPay += parseFloat(entry.bonusPay);
       });
       document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
     }
+
     function deleteEntry(index) {
       let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       history.splice(index, 1);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
     }
+
     function clearAllEntries() {
       if (confirm('¿Estás seguro de que deseas borrar todas las entradas?')) {
         localStorage.removeItem('trimHistory');
         updateSessionTable();
+
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+      document.getElementById('grams').value = '';
       }
     }
+
     function exportCSV() {
       const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       if (history.length === 0) {
         alert("No hay entradas para exportar.");
         return;
       }
-      const csvRows = [['Fecha', 'Gramos', 'Pago Extra']];
+
+      const csvRows = [['Date', 'Gramos', 'Pago Extra']];
       history.forEach(entry => {
         csvRows.push([entry.date, entry.grams, '$' + entry.bonusPay]);
       });
+
       const csvContent = csvRows.map(row => row.join(',')).join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -306,108 +358,115 @@
       link.click();
       document.body.removeChild(link);
     }
-    function togglePayCalc() {
-      const section = document.getElementById("payCalcSection");
-      section.style.display = section.style.display === "none" ? "block" : "none";
-    }
-    function calculateAverages() {
-      const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
-      const totalHours = parseFloat(document.getElementById("totalHours").value);
-      const overtimeHours = parseFloat(document.getElementById("overtimeHours").value) || 0;
-      const startDate = new Date(document.getElementById("startDate").value);
-      const endDate = new Date(document.getElementById("endDate").value);
-      if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
-        alert("Por favor completa todos los campos.");
-        return;
-      }
-      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-      const filtered = history.filter(entry => {
-        const entryDate = new Date(entry.date);
-        return entryDate >= startDate && entryDate <= endDate;
-      });
-      let bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
-      let regularPay = hourlyRate * totalHours;
-      let overtimePay = hourlyRate * 1.5 * overtimeHours;
-      let totalPay = regularPay + overtimePay + bonusTotal;
-      let dayDiff = Math.max(1, (endDate - startDate) / (1000 * 60 * 60 * 24) + 1);
-      let totalWorkedHours = totalHours + overtimeHours;
-      let results = `
-        <p><strong>Pago Extra Total:</strong> $${bonusTotal.toFixed(2)}</p>
-        <p><strong>Pago Regular:</strong> $${regularPay.toFixed(2)}</p>
-        <p><strong>Pago de Horas Extra:</strong> $${overtimePay.toFixed(2)}</p>
-        <p><strong>Pago Total:</strong> $${totalPay.toFixed(2)}</p>
-        <p><strong>Promedio Diario:</strong> $${(totalPay / dayDiff).toFixed(2)}</p>
-        <p><strong>Promedio Semanal:</strong> $${(totalPay / 7).toFixed(2)}</p>
-        <p><strong>Promedio Quincenal:</strong> $${(totalPay / 14).toFixed(2)}</p>
-        <p><strong>Tarifa Promedio por Hora (con bono):</strong> $${(totalPay / totalWorkedHours).toFixed(2)}</p>
-      `;
-      document.getElementById("averageResults").innerHTML = results;
-    }
-    function getWeekStart(date) {
-      const d = new Date(date);
-      const day = d.getDay();
-      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      return new Date(d.setDate(diff)).toISOString().split('T')[0];
-    }
-    function groupEntriesByWeek(entries) {
-      const grouped = {};
-      entries.forEach(entry => {
-        const weekStart = getWeekStart(entry.date);
-        if (!grouped[weekStart]) grouped[weekStart] = [];
-        grouped[weekStart].push(entry);
-      });
-      return grouped;
-    }
-    function renderWeeklyProgress() {
-      const container = document.getElementById("weeklyProgressContainer");
-      if (!container) return;
-      const minGoal = parseFloat(document.getElementById("minGoal").value) || 1;
-      const targetGoal = parseFloat(document.getElementById("targetGoal").value) || 1;
-      const oldBlocks = container.querySelectorAll(".goal-output");
-      oldBlocks.forEach(el => el.remove());
-      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-      const grouped = groupEntriesByWeek(history);
-      Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach(weekStart => {
-        const entries = grouped[weekStart];
-        const weekTotal = entries.reduce((sum, e) => sum + parseFloat(e.bonusPay || 0), 0);
-        const block = document.createElement('div');
-        block.className = "goal-output";
-        block.style = "margin-bottom: 1.5em;";
-        block.innerHTML = `
-          <div style="margin-bottom: 0.5em;">
-            <strong>Semana del ${weekStart}</strong> - Pago Extra Total: $${weekTotal.toFixed(2)} /
-            $${minGoal} (Mínimo) / $${targetGoal} (Objetivo)
-          </div>
-          <div style="background:#222; padding: 0.5em; border-radius: 4px;">
-            <div style="margin-bottom: 0.3em; font-size: 0.85em; color: #ccc;">Meta Mínima</div>
-            <div style="background:#444; height: 12px; position: relative; border-radius: 4px; overflow: hidden; margin-bottom: 10px;">
-              <div style="width:${Math.min(100, weekTotal / minGoal * 100)}%; background: green; height: 100%;"></div>
-            </div>
-            <div style="margin-bottom: 0.3em; font-size: 0.85em; color: #ccc;">Meta Objetivo</div>
-            <div style="background:#444; height: 12px; position: relative; border-radius: 4px; overflow: hidden;">
-              <div style="width:${Math.min(100, weekTotal / targetGoal * 100)}%; background: limegreen; height: 100%;"></div>
-            </div>
-          </div>
-        `;
-        container.appendChild(block);
-      });
-    }
-    const originalUpdate = updateSessionTable;
-    updateSessionTable = function () {
-      originalUpdate();
-      renderWeeklyProgress();
-    };
+
     window.onload = updateSessionTable;
+
     document.getElementById('import-tracker-total').addEventListener('click', () => {
       const trackerTotal = localStorage.getItem('trimTrackerDailyTotal');
       if (trackerTotal) {
         document.getElementById('grams').value = trackerTotal;
-        alert(`Importado ${trackerTotal}g desde el Registro de Trim.`);
+        alert(`Importado ${trackerTotal}g desde Trim Tracker.`);
       } else {
-        alert("No se encontró un total del Registro de Trim para hoy.");
+        alert("No se encontró un total del Trim Tracker para hoy.");
       }
     });
+
   </script>
+<script>
+function togglePayCalc() {
+  const section = document.getElementById("payCalcSection");
+  section.style.display = section.style.display === "none" ? "block" : "none";
+}
+function calculateAverages() {
+  const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
+  const totalHours = parseFloat(document.getElementById("totalHours").value);
+  const overtimeHours = parseFloat(document.getElementById("overtimeHours").value) || 0;
+  const startDate = new Date(document.getElementById("startDate").value);
+  const endDate = new Date(document.getElementById("endDate").value);
+  if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
+    alert("Please fill out all fields.");
+    return;
+  }
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const filtered = history.filter(entry => {
+    const entryDate = new Date(entry.date);
+    return entryDate >= startDate && entryDate <= endDate;
+  });
+  let bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
+  let regularPay = hourlyRate * totalHours;
+  let overtimePay = hourlyRate * 1.5 * overtimeHours;
+  let hourlyTotal = regularPay + overtimePay;
+  let totalPay = bonusTotal + hourlyTotal;
+  let dayDiff = Math.max(1, (endDate - startDate) / (1000 * 60 * 60 * 24) + 1);
+  let results = `
+    <p><strong>Total Pago Extra:</strong> $${bonusTotal.toFixed(2)}</p>
+    <p><strong>Regular Pay:</strong> $${regularPay.toFixed(2)}</p>
+<p><strong>Overtime Pay:</strong> $${overtimePay.toFixed(2)}</p>
+<p><strong>Total Hourly Pay:</strong> $${hourlyTotal.toFixed(2)}</p>
+    <p><strong>Total Pay:</strong> $${totalPay.toFixed(2)}</p>
+    <p><strong>Average Daily Pay:</strong> $${(totalPay / dayDiff).toFixed(2)}</p>
+    <p><strong>Average Weekly:</strong> $${(totalPay / 7).toFixed(2)}</p>
+    <p><strong>Average Bi-Weekly:</strong> $${(totalPay / 14).toFixed(2)}</p>
+    <p><strong>Average Hourly Rate (with bonus):</strong> $${(totalPay / (totalHours + overtimeHours)).toFixed(2)}</p>
+  `;
+  document.getElementById("averageResults").innerHTML = results;
+}
+</script>
+
+<script>
+  function updateGoalBars() {
+    const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+    const thisWeek = getCurrentWeekRange();
+    const thisWeekTotal = history
+      .filter(entry => {
+        const d = new Date(entry.date);
+        return d >= thisWeek.start && d <= thisWeek.end;
+      })
+      .reduce((sum, e) => sum + parseFloat(e.bonusPay || 0), 0);
+
+    const minGoal = parseFloat(localStorage.getItem('minGoal') || 0);
+    const targetGoal = parseFloat(localStorage.getItem('targetGoal') || 0);
+
+    const minPct = minGoal ? Math.min(100, (thisWeekTotal / minGoal) * 100) : 0;
+    const targetPct = targetGoal ? Math.min(100, (thisWeekTotal / targetGoal) * 100) : 0;
+
+    document.getElementById('minGoalProgress').style.width = minPct + '%';
+    document.getElementById('targetGoalProgress').style.width = targetPct + '%';
+    document.getElementById('minGoalText').innerText = `$${thisWeekTotal.toFixed(2)} / $${minGoal}`;
+    document.getElementById('targetGoalText').innerText = `$${thisWeekTotal.toFixed(2)} / $${targetGoal}`;
+  }
+
+  function getCurrentWeekRange() {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay() + 1); // Monday
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  }
+
+  document.getElementById('minGoalInput').addEventListener('input', e => {
+    const val = parseFloat(e.target.value) || 0;
+    localStorage.setItem('minGoal', val);
+    updateGoalBars();
+  });
+  document.getElementById('targetGoalInput').addEventListener('input', e => {
+    const val = parseFloat(e.target.value) || 0;
+    localStorage.setItem('targetGoal', val);
+    updateGoalBars();
+  });
+
+  // Load saved goal values
+  window.addEventListener('load', () => {
+    const min = localStorage.getItem('minGoal') || '';
+    const tar = localStorage.getItem('targetGoal') || '';
+    document.getElementById('minGoalInput').value = min;
+    document.getElementById('targetGoalInput').value = tar;
+    updateGoalBars();
+  });
+</script>
+
 </body>
 </html>
-
