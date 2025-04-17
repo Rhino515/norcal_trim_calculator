@@ -202,7 +202,7 @@ function calculate() {
   }
   const bonusPay = calculateBonus(grams);
   document.getElementById('result').innerText = 'Pago Extra: $' + bonusPay.toFixed(2);
-  const now = new Fecha();
+  const now = new Date();
   const dateStr = now.toISOString().split("T")[0];
   const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
   let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
@@ -307,8 +307,8 @@ function calculateAverages() {
   const hourlyRate = parseFloat(document.getElementById("hourlyRate")?.value);
   const totalHours = parseFloat(document.getElementById("totalHours")?.value);
   const overtimeHours = parseFloat(document.getElementById("overtimeHours")?.value) || 0;
-  const startFecha = new Fecha(document.getElementById("startFecha")?.value);
-  const endFecha = new Fecha(document.getElementById("endFecha")?.value);
+  const startFecha = new Date(document.getElementById("startFecha")?.value);
+  const endFecha = new Date(document.getElementById("endFecha")?.value);
   if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startFecha) || isNaN(endFecha)) {
     alert("Please fill out all fields.");
     return;
@@ -316,7 +316,7 @@ function calculateAverages() {
 
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
   const filtered = history.filter(entry => {
-    const entryFecha = new Fecha(entry.date);
+    const entryFecha = new Date(entry.date);
     return entryFecha >= startFecha && entryFecha <= endFecha;
   });
 
@@ -346,10 +346,10 @@ window.onload = updateSessionTable;
 
 <script>
 function getWeekStart(date) {
-  const d = new Fecha(date);
+  const d = new Date(date);
   const day = d.getDay();
-  const diff = d.getFecha() - day + (day === 0 ? -6 : 1);
-  return new Fecha(d.setFecha(diff)).toISOString().split('T')[0];
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff)).toISOString().split('T')[0];
 }
 
 function groupEntriesByWeek(entries) {
@@ -389,7 +389,7 @@ function renderWeeklyProgress() {
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
   const grouped = groupEntriesByWeek(history);
 
-  Object.keys(grouped).sort((a, b) => new Fecha(b) - new Fecha(a)).forEach((weekStart, i) => {
+  Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach((weekStart, i) => {
     const entries = grouped[weekStart];
     const weekTotal = entries.reduce((sum, e) => sum + parseFloat(e.bonusPay || 0), 0);
 
