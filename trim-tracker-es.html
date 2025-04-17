@@ -312,7 +312,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleLanguage() {
       window.location.href = 'trim-tracker.html';
     }
-    document.getElementById('backLink').href = 'index.html';
+      document.getElementById('backLink').href = 'index.html';
+  localStorage.removeItem('trimTrackerDailyTotal');
+  loadData();
+  setTimeout(updateDailyTotals, 200);
     localStorage.removeItem('trimTrackerDailyTotal');
     loadData();
     setTimeout(updateDailyTotals, 200);
