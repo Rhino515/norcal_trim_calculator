@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>NorCal Trim Calculator</title>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<link href="manifest.json" rel="manifest"/>
-<meta content="#000000" name="theme-color"/>
-<style>
+  <meta charset="utf-8"/>
+  <title>NorCal Trim Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#000000"/>
+  <style>
     body {
       background-color: black;
       color: white;
@@ -111,305 +110,398 @@
   </style>
 </head>
 <body>
-<div class="language-toggle">
-<a href="index.html">English</a>
-<a href="index-es.html">Español</a>
-</div>
-<img alt="NorCal Logo" src="norcal_icon.png"/>
-<p>Enter total grams trimmed:</p>
-<input id="grams" placeholder="e.g. 1200" type="number"/>
-<br/>
-<button id="import-tracker-total">Add Today’s Trim Tracker Total</button>
-<br/>
-<button onclick="calculate()">Calculate</button>
-<p id="result"></p>
-<div class="install-links">
-<a href="trim-tracker.html">Go to Trim Tracker</a>
-<a class="nav-button" href="help.html">How to Use the App</a>
-</div>
-<div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
-<strong>Note:</strong> For the Trim Tracker import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
+  <div class="language-toggle">
+    <a href="index.html">English</a>
+    <a href="index-es.html">Español</a>
   </div>
-<table id="sessionTable">
-<thead>
-<tr>
-<th>Date &amp; Day</th>
-<th>Grams</th>
-<th>Bonus Pay</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody></tbody>
-<tfoot>
-<tr>
-<td colspan="2"><strong>Total</strong></td>
-<td id="totalBonusPay">$0.00</td>
-<td><button class="clear-all-button" onclick="clearAllEntries()">Clear All</button></td>
-</tr>
-</tfoot>
-</table><div style="margin-top: 1em;">
-<button class="clear-all-button" onclick="exportCSV()">
+  <img src="norcal_icon.png" alt="NorCal Logo"/>
+  <p>Enter total grams trimmed:</p>
+  <input id="grams" type="number" placeholder="e.g. 1200"/>
+  <br/>
+  <button id="import-tracker-total">Add Today’s Trim Tracker Total</button>
+  <br/>
+  <button onclick="calculate()">Calculate</button>
+  <p id="result"></p>
+  <div class="install-links">
+    <a href="trim-tracker.html">Go to Trim Tracker</a>
+    <a class="nav-button" href="help.html">How to Use the App</a>
+  </div>
+  <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin: 1em auto 0 auto;">
+    <strong>Note:</strong> For the Trim Tracker import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
+  </div>
 
-    Export CSV</button>
-</div>
-<!-- 
+  <!-- Session History Table -->
+  <table id="sessionTable">
+    <thead>
+      <tr>
+        <th>Date &amp; Day</th>
+        <th>Grams</th>
+        <th>Bonus Pay</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2"><strong>Total</strong></td>
+        <td id="totalBonusPay">$0.00</td>
+        <td><button class="clear-all-button" onclick="clearAllEntries()">Clear All</button></td>
+      </tr>
+    </tfoot>
+  </table>
+  <div style="margin-top: 1em;">
+    <button class="clear-all-button" onclick="exportCSV()">Export CSV</button>
+  </div>
 
-    Export CSV Button -->
-<div id="weeklyProgressContainer" style="margin-top: 3em; padding: 1em; border-top: 1px solid #555; text-align: left;"><div style="margin-top:0.5em; font-size: 0.9em; color: #ccc; text-align:left;">▸ Tracking Weekly Bonus Goals (Monday–Sunday)</div>
-<div style="margin-bottom: 1em;">
-<label style="color:white;">Minimum Goal: $<input id="minGoal" style="width:80px;margin-right:1em;" type="number" value="100"/></label>
-<label style="color:white;">Target Goal: $<input id="targetGoal" style="width:80px;" type="number" value="200"/></label>
-<button onclick="renderWeeklyProgress()" style="margin-left:1em;">Update Goals</button>
-</div>
-</div>
-<div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
-<h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Hourly &amp; Pay Averages ▼</h2>
-<div id="payCalcSection" style="display:none;">
-<p>Enter your hourly pay and hours worked, then choose a date range:</p>
-<label>Hourly Rate: <input id="hourlyRate" step="0.01" type="number"/></label><br/>
-<label>Overtime Hours: <input id="overtimeHours" step="0.1" type="number"/></label><br/><label>Total Hours Worked: <input id="totalHours" step="0.1" type="number"/><div style="font-size: 0.8em; color: #aaa; margin-bottom: 0.5em;">(Regular hours only – do not include overtime)</div></label><br/>
-<label>Start Date: <input id="startDate" type="date"/></label><br/>
-<label>End Date: <input id="endDate" type="date"/></label><br/>
-<button onclick="calculateAverages()">Calculate Averages</button>
-<div id="averageResults" style="margin-top: 1em; text-align: left;"></div>
-</div>
-</div><div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-<h2 style="color: #0f0;">About the Creator</h2>
-<p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
-      Hi, my name is Andrew, and I work as a professional trimmer at NorCal Cannabis.
-      I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers
-      to track their daily progress.
-      <br/><br/>
-      This tool was designed to be practical, user-friendly, and efficient — helping workers stay organized and informed.
+  <!-- Weekly Bonus Goals Section -->
+  <div id="weeklyProgressContainer" style="margin-top: 3em; padding: 1em; border-top: 1px solid #555; text-align: left;">
+    <div style="margin-top: 0.5em; font-size: 0.9em; color: #ccc;">▸ Tracking Weekly Bonus Goals (Monday–Sunday)</div>
+    <div style="margin-bottom: 1em;">
+      <label style="color:white;">
+        Minimum Goal: $
+        <input id="minGoal" type="number" style="width:80px; margin-right:1em;" value="100"/>
+      </label>
+      <label style="color:white;">
+        Target Goal: $
+        <input id="targetGoal" type="number" style="width:80px;" value="200"/>
+      </label>
+      <button style="margin-left: 1em;" onclick="updateGoals()">Update Goals</button>
+    </div>
+    <!-- Weekly goal outputs will be appended here by renderWeeklyProgress() -->
+  </div>
+
+  <!-- Hourly Pay Averages Section -->
+  <div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
+    <h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Hourly &amp; Pay Averages ▼</h2>
+    <div id="payCalcSection" style="display:none;">
+      <p>Enter your hourly pay and hours worked, then choose a date range:</p>
+      <label>Hourly Rate: <input id="hourlyRate" type="number" step="0.01"/></label><br/>
+      <label>Overtime Hours: <input id="overtimeHours" type="number" step="0.1"/></label><br/>
+      <label>
+        Total Hours Worked: <input id="totalHours" type="number" step="0.1"/>
+        <div style="font-size: 0.8em; color: #aaa; margin-bottom: 0.5em;">
+          (Regular hours only – do not include overtime)
+        </div>
+      </label><br/>
+      <label>Start Date: <input id="startDate" type="date"/></label><br/>
+      <label>End Date: <input id="endDate" type="date"/></label><br/>
+      <button onclick="calculateAverages()">Calculate Averages</button>
+      <div id="averageResults" style="margin-top: 1em; text-align: left;"></div>
+    </div>
+  </div>
+
+  <!-- About the Creator Section -->
+  <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
+    <h2 style="color: #0f0;">About the Creator</h2>
+    <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
+      Hi, my name is Andrew, and I work as a professional trimmer at NorCal Cannabis.<br/>
+      I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers to track their daily progress.<br/><br/>
+      This tool was designed to be practical, user-friendly, and efficient — helping workers stay organized and informed. 
       My goal is to support the trimming community with simple tech solutions that make a real difference on the job.
     </p>
-</div>
-<script>
-function calculateBonus(grams) {
-  let bonusPay = 0;
-  if (grams > 1587) {
-    bonusPay += (grams - 1587) * 0.11;
-    bonusPay += (1587 - 1134) * 0.05;
-  } else if (grams > 1134) {
-    bonusPay += (grams - 1134) * 0.05;
-  }
-  return bonusPay;
-}
+  </div>
 
-function calculate() {
-  const grams = parseFloat(document.getElementById('grams').value);
-  if (isNaN(grams) || grams <= 0) {
-    document.getElementById('result').innerText = 'Please enter a valid number of grams.';
-    return;
-  }
-  const bonusPay = calculateBonus(grams);
-  document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
-  const now = new Date();
-  const dateStr = now.toISOString().split("T")[0];
-  const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
-  let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  history.push(entry);
-  localStorage.setItem('trimHistory', JSON.stringify(history));
-  updateSessionTable();
-  document.getElementById('grams').value = '';
-}
+  <!-- JavaScript Logic -->
+  <script>
+    // Utility: get ISO date (YYYY-MM-DD) for Monday of the week containing the given date
+    function getWeekStart(dateStr) {
+      const d = new Date(dateStr);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const weekStartDate = new Date(d.setDate(diff));
+      return weekStartDate.toISOString().split('T')[0];
+    }
 
-function updateSessionTable() {
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
-  tbody.innerHTML = '';
-  let totalBonusPay = 0;
-  history.forEach((entry, index) => {
-    const row = document.createElement('tr');
-    const dateCell = document.createElement('td');
-    dateCell.textContent = entry.date;
-    dateCell.contentEditable = true;
-    dateCell.addEventListener('blur', function () {
-      const updatedDate = this.textContent.trim();
-      if (updatedDate) {
-        history[index].date = updatedDate;
-        localStorage.setItem('trimHistory', JSON.stringify(history));
+    // Group an array of history entries by week (Monday-start)
+    function groupEntriesByWeek(entries) {
+      const grouped = {};
+      entries.forEach(entry => {
+        const weekKey = getWeekStart(entry.date);
+        if (!grouped[weekKey]) grouped[weekKey] = [];
+        grouped[weekKey].push(entry);
+      });
+      return grouped;
+    }
+
+    // Save and load weekly goal settings to localStorage
+    function saveGoalSettings() {
+      localStorage.setItem('minGoal', document.getElementById('minGoal').value);
+      localStorage.setItem('targetGoal', document.getElementById('targetGoal').value);
+    }
+    function loadGoalSettings() {
+      const savedMin = localStorage.getItem('minGoal');
+      const savedTarget = localStorage.getItem('targetGoal');
+      if (savedMin) document.getElementById('minGoal').value = savedMin;
+      if (savedTarget) document.getElementById('targetGoal').value = savedTarget;
+    }
+
+    // Render weekly progress bars for each week
+    function renderWeeklyProgress() {
+      const container = document.getElementById('weeklyProgressContainer');
+      if (!container) return;
+      // Use 1 as default to avoid division by zero
+      const minGoal = parseFloat(document.getElementById('minGoal').value) || 1;
+      const targetGoal = parseFloat(document.getElementById('targetGoal').value) || 1;
+      // Remove any existing output blocks
+      container.querySelectorAll('.goal-output').forEach(el => el.remove());
+      // Get history and group by week
+      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      const grouped = groupEntriesByWeek(history);
+      // Sort week keys (ISO dates) descending
+      Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach(weekStart => {
+        const entries = grouped[weekStart];
+        const weekTotal = entries.reduce((sum, e) => sum + parseFloat(e.bonusPay || 0), 0);
+        const minPercent = Math.min(100, Math.round((weekTotal / minGoal) * 100));
+        const targetPercent = Math.min(100, Math.round((weekTotal / targetGoal) * 100));
+        const block = document.createElement('div');
+        block.className = 'goal-output';
+        block.style.marginBottom = '1.5em';
+        block.innerHTML = `
+          <div style="margin-bottom: 0.5em;">
+            <strong>Week of ${weekStart}</strong> - Bonus Total: $${weekTotal.toFixed(2)} /
+            $${minGoal} (Minimum) / $${targetGoal} (Target)
+          </div>
+          <div style="background:#222; padding: 0.5em; border-radius: 4px;">
+            <div style="margin-bottom: 0.3em; font-size: 0.85em; color: #ccc;">Minimum Goal</div>
+            <div style="background:#444; height: 18px; position: relative; border-radius: 4px; overflow: hidden; margin-bottom: 10px;">
+              <div style="width:${minPercent}%; background: green; height: 100%; position: absolute; top: 0; left: 0;">
+                <span style="position: absolute; left: 5px; color: white; font-size: 0.75em; line-height: 18px;">$${weekTotal.toFixed(0)}</span>
+              </div>
+              <span style="position: absolute; right: 5px; top: 0; color: #ccc; font-size: 0.75em; line-height: 18px;">$${minGoal}</span>
+            </div>
+            <div style="margin-bottom: 0.3em; font-size: 0.85em; color: #ccc;">Target Goal</div>
+            <div style="background:#444; height: 18px; position: relative; border-radius: 4px; overflow: hidden;">
+              <div style="width:${targetPercent}%; background: limegreen; height: 100%; position: absolute; top: 0; left: 0;">
+                <span style="position: absolute; left: 5px; color: white; font-size: 0.75em; line-height: 18px;">$${weekTotal.toFixed(0)}</span>
+              </div>
+              <span style="position: absolute; right: 5px; top: 0; color: #ccc; font-size: 0.75em; line-height: 18px;">$${targetGoal}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(block);
+      });
+    }
+
+    // Handle Update Goals button: save and re-render
+    function updateGoals() {
+      saveGoalSettings();
+      renderWeeklyProgress();
+    }
+
+    // Toggle Hourly Pay Calculator section
+    function togglePayCalc() {
+      const section = document.getElementById('payCalcSection');
+      if (!section) return;
+      section.style.display = (section.style.display === 'none' || section.style.display === '') ? 'block' : 'none';
+    }
+
+    // Calculate pay averages and totals based on user inputs
+    function calculateAverages() {
+      const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+      const totalHours = parseFloat(document.getElementById('totalHours').value);
+      const overtimeHours = parseFloat(document.getElementById('overtimeHours').value) || 0;
+      const startDateValue = document.getElementById('startDate').value;
+      const endDateValue = document.getElementById('endDate').value;
+      const startDate = startDateValue ? new Date(startDateValue) : NaN;
+      const endDate = endDateValue ? new Date(endDateValue) : NaN;
+      if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
+        alert("Please fill out all fields correctly.");
+        return;
+      }
+      // Filter trim history entries within the selected date range (inclusive)
+      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      const filtered = history.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= startDate && entryDate <= endDate;
+      });
+      const bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
+      const regularPay = hourlyRate * totalHours;
+      const overtimePay = hourlyRate * 1.5 * overtimeHours;
+      const totalPay = regularPay + overtimePay + bonusTotal;
+      const totalWorkedHours = totalHours + overtimeHours;
+      const dayCount = Math.max(1, Math.floor((endDate - startDate) / (1000*60*60*24)) + 1);
+
+      let results = `
+        <p><strong>Total Bonus Pay:</strong> $${bonusTotal.toFixed(2)}</p>
+        <p><strong>Regular Pay:</strong> $${regularPay.toFixed(2)}</p>
+        <p><strong>Overtime Pay:</strong> $${overtimePay.toFixed(2)}</p>
+        <p><strong>Total Pay:</strong> $${totalPay.toFixed(2)}</p>
+        <p><strong>Average Daily Pay:</strong> $${(totalPay / dayCount).toFixed(2)}</p>
+        <p><strong>Average Weekly:</strong> $${(totalPay / 7).toFixed(2)}</p>
+        <p><strong>Average Bi-Weekly:</strong> $${(totalPay / 14).toFixed(2)}</p>
+      `;
+      if (totalWorkedHours > 0) {
+        results += `<p><strong>Average Hourly Rate (with bonus):</strong> $${(totalPay / totalWorkedHours).toFixed(2)}</p>`;
+      }
+      document.getElementById('averageResults').innerHTML = results;
+    }
+
+    // Import today's total from Trim Tracker (if available)
+    document.getElementById('import-tracker-total').addEventListener('click', () => {
+      const trackerTotal = localStorage.getItem('trimTrackerDailyTotal');
+      if (trackerTotal) {
+        document.getElementById('grams').value = trackerTotal;
+        alert(`Imported ${trackerTotal}g from Trim Tracker.`);
+      } else {
+        alert("No Trim Tracker total found for today.");
       }
     });
-    row.appendChild(dateCell);
 
-    const gramsCell = document.createElement('td');
-    gramsCell.textContent = entry.grams;
-    gramsCell.contentEditable = true;
-    gramsCell.addEventListener('blur', function () {
-      const newGrams = parseFloat(this.textContent.trim());
-      if (!isNaN(newGrams) && newGrams > 0) {
-        history[index].grams = newGrams;
-        const newBonus = calculateBonus(newGrams);
-        history[index].bonusPay = newBonus.toFixed(2);
-        localStorage.setItem('trimHistory', JSON.stringify(history));
-        updateSessionTable();
+    // Bonus pay calculation for grams trimmed
+    function calculateBonus(grams) {
+      let bonusPay = 0;
+      if (grams > 1587) {
+        bonusPay += (grams - 1587) * 0.11;
+        bonusPay += (1587 - 1134) * 0.05;
+      } else if (grams > 1134) {
+        bonusPay += (grams - 1134) * 0.05;
       }
-    });
-    row.appendChild(gramsCell);
+      return bonusPay;
+    }
 
-    const bonusPayCell = document.createElement('td');
-    bonusPayCell.textContent = '$' + entry.bonusPay;
-    row.appendChild(bonusPayCell);
+    // Main calculate function for trimming bonus
+    function calculate() {
+      const grams = parseFloat(document.getElementById('grams').value);
+      if (isNaN(grams) || grams <= 0) {
+        document.getElementById('result').innerText = 'Please enter a valid number of grams.';
+        return;
+      }
+      const bonusPay = calculateBonus(grams);
+      document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
+      const now = new Date();
+      const isoDate = now.toISOString().split('T')[0];
+      const displayDate = now.toLocaleDateString(undefined, { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      });
+      const entry = {
+        date: isoDate,
+        displayDate: displayDate,
+        grams: grams,
+        bonusPay: bonusPay.toFixed(2)
+      };
+      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      history.push(entry);
+      localStorage.setItem('trimHistory', JSON.stringify(history));
+      updateSessionTable();
+      // Scroll to the session table for visibility
+      const scrollTarget = document.getElementById('sessionTable');
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({ behavior: 'smooth' });
+      }
+      document.getElementById('grams').value = '';
+    }
 
-    const actionCell = document.createElement('td');
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.className = 'delete-button';
-    deleteBtn.onclick = function () {
+    // Update the session history table with current data
+    function updateSessionTable() {
+      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+      let totalBonusPay = 0;
+      history.forEach((entry, index) => {
+        const row = document.createElement('tr');
+
+        const dateCell = document.createElement('td');
+        dateCell.textContent = entry.displayDate || entry.date;
+        dateCell.contentEditable = true;
+        dateCell.addEventListener('blur', function () {
+          const updated = this.textContent.trim();
+          if (updated) {
+            history[index].displayDate = updated;
+            localStorage.setItem('trimHistory', JSON.stringify(history));
+          }
+        });
+        row.appendChild(dateCell);
+
+        const gramsCell = document.createElement('td');
+        gramsCell.textContent = entry.grams;
+        gramsCell.contentEditable = true;
+        gramsCell.addEventListener('blur', function () {
+          const newGrams = parseFloat(this.textContent.trim());
+          if (!isNaN(newGrams) && newGrams > 0) {
+            // Update entry with new grams and recalc bonus
+            history[index].grams = newGrams;
+            const newBonus = calculateBonus(newGrams);
+            history[index].bonusPay = newBonus.toFixed(2);
+            localStorage.setItem('trimHistory', JSON.stringify(history));
+            updateSessionTable();
+          } else {
+            alert("Please enter a valid number of grams.");
+            updateSessionTable();
+          }
+        });
+        row.appendChild(gramsCell);
+
+        const bonusCell = document.createElement('td');
+        bonusCell.textContent = '$' + entry.bonusPay;
+        row.appendChild(bonusCell);
+
+        const actionCell = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'delete-button';
+        deleteBtn.onclick = function () {
+          if (confirm('Are you sure you want to delete this entry?')) {
+            deleteEntry(index);
+          }
+        };
+        actionCell.appendChild(deleteBtn);
+        row.appendChild(actionCell);
+
+        tbody.appendChild(row);
+        totalBonusPay += parseFloat(entry.bonusPay) || 0;
+      });
+      document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+      // Update weekly goal progress bars
+      renderWeeklyProgress();
+    }
+
+    // Delete a specific entry by index and refresh the table
+    function deleteEntry(index) {
+      let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
       history.splice(index, 1);
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
+    }
+
+    // Clear all entries in history
+    function clearAllEntries() {
+      if (confirm('Are you sure you want to clear all entries?')) {
+        localStorage.removeItem('trimHistory');
+        updateSessionTable();
+      }
+    }
+
+    // Export session history to CSV file
+    function exportCSV() {
+      const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+      if (history.length === 0) {
+        alert("No entries to export.");
+        return;
+      }
+      const csvRows = [["Date", "Grams", "Bonus Pay"]];
+      history.forEach(entry => {
+        const dateField = entry.displayDate || entry.date;
+        csvRows.push([dateField, entry.grams, "$" + entry.bonusPay]);
+      });
+      // Convert to CSV format (with proper quoting)
+      const csvContent = csvRows.map(row =>
+        row.map(val => \`"\${String(val).replace(/"/g, '""')}"\`).join(',')
+      ).join("\\n");
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'trim_history.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // On page load, initialize goal inputs and table from stored data
+    window.onload = function() {
+      loadGoalSettings();
+      updateSessionTable();
     };
-    actionCell.appendChild(deleteBtn);
-    row.appendChild(actionCell);
-
-    tbody.appendChild(row);
-    totalBonusPay += parseFloat(entry.bonusPay);
-  });
-  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
-}
-
-function clearAllEntries() {
-  if (confirm('Are you sure you want to clear all entries?')) {
-    localStorage.removeItem('trimHistory');
-    updateSessionTable();
-  }
-}
-
-function exportCSV() {
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  if (history.length === 0) {
-    alert("No entries to export.");
-    return;
-  }
-
-  const csvRows = [['Date', 'Grams', 'Bonus Pay']];
-  history.forEach(entry => {
-    csvRows.push([entry.date, entry.grams, '$' + entry.bonusPay]);
-  });
-
-  const csvContent = csvRows.map(row => row.join(',')).join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'trim_history.csv';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-function togglePayCalc() {
-  const section = document.getElementById("payCalcSection");
-  section.style.display = section.style.display === "none" ? "block" : "none";
-}
-
-function calculateAverages() {
-  const hourlyRate = parseFloat(document.getElementById("hourlyRate")?.value);
-  const totalHours = parseFloat(document.getElementById("totalHours")?.value);
-  const overtimeHours = parseFloat(document.getElementById("overtimeHours")?.value) || 0;
-  const startDate = new Date(document.getElementById("startDate")?.value);
-  const endDate = new Date(document.getElementById("endDate")?.value);
-  if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
-    alert("Please fill out all fields.");
-    return;
-  }
-
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const filtered = history.filter(entry => {
-    const entryDate = new Date(entry.date);
-    return entryDate >= startDate && entryDate <= endDate;
-  });
-
-  let bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
-  let regularPay = hourlyRate * totalHours;
-  let overtimePay = hourlyRate * 1.5 * overtimeHours;
-  let totalPay = regularPay + overtimePay + bonusTotal;
-  let dayDiff = Math.max(1, (endDate - startDate) / (1000 * 60 * 60 * 24) + 1);
-  let totalWorkedHours = totalHours + overtimeHours;
-
-  let results = `
-    <p><strong>Total Bonus Pay:</strong> $${bonusTotal.toFixed(2)}</p>
-    <p><strong>Regular Pay:</strong> $${regularPay.toFixed(2)}</p>
-    <p><strong>Overtime Pay:</strong> $${overtimePay.toFixed(2)}</p>
-    <p><strong>Total Pay:</strong> $${totalPay.toFixed(2)}</p>
-    <p><strong>Average Daily Pay:</strong> $${(totalPay / dayDiff).toFixed(2)}</p>
-    <p><strong>Average Weekly:</strong> $${(totalPay / 7).toFixed(2)}</p>
-    <p><strong>Average Bi-Weekly:</strong> $${(totalPay / 14).toFixed(2)}</p>
-    <p><strong>Average Hourly Rate (with bonus):</strong> $${(totalPay / totalWorkedHours).toFixed(2)}</p>
-  `;
-  document.getElementById("averageResults").innerHTML = results;
-}
-
-window.onload = updateSessionTable;
-</script>
-
-
-<script>
-function getWeekStart(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff)).toISOString().split('T')[0];
-}
-
-function groupEntriesByWeek(entries) {
-  const grouped = {};
-  entries.forEach(entry => {
-    const weekStart = getWeekStart(entry.date);
-    if (!grouped[weekStart]) grouped[weekStart] = [];
-    grouped[weekStart].push(entry);
-  });
-  return grouped;
-}
-
-function renderWeeklyProgress() {
-  const container = document.getElementById("weeklyProgressContainer");
-  if (!container) return;
-
-  const minGoal = parseFloat(document.getElementById("minGoal")?.value) || 1;
-  const targetGoal = parseFloat(document.getElementById("targetGoal")?.value) || 1;
-
-  const oldBlocks = container.querySelectorAll(".goal-output");
-  oldBlocks.forEach(el => el.remove());
-
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const grouped = groupEntriesByWeek(history);
-
-  Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach((weekStart, i) => {
-    const entries = grouped[weekStart];
-    const weekTotal = entries.reduce((sum, e) => sum + parseFloat(e.bonusPay || 0), 0);
-    const block = document.createElement('div');
-    block.className = "goal-output";
-    block.style = "margin-bottom:1.5em;";
-    block.innerHTML = `
-      <div style="margin-bottom:0.5em;">
-        <strong>Week of ${weekStart}</strong> - Bonus Total: $${weekTotal.toFixed(2)} /
-        $${minGoal} (Minimum) / $${targetGoal} (Target)
-      </div>
-      <div style="background:#222; padding: 0.5em; border-radius: 4px;">
-        <div style="margin-bottom: 0.3em; font-size: 0.85em; color: #ccc;">Minimum Goal</div>
-        <div style="background:#444;height:12px;position:relative;border-radius:4px;overflow:hidden;margin-bottom:10px;">
-          <div style="width:${Math.min(100, weekTotal / minGoal * 100)}%;background:green;height:100%;"></div>
-        </div>
-        <div style="margin-bottom: 0.3em; font-size: 0.85em; color: #ccc;">Target Goal</div>
-        <div style="background:#444;height:12px;position:relative;border-radius:4px;overflow:hidden;">
-          <div style="width:${Math.min(100, weekTotal / targetGoal * 100)}%;background:limegreen;height:100%;"></div>
-        </div>
-      </div>
-    `;
-    container.appendChild(block);
-  });
-}
-
-const originalUpdate = updateSessionTable;
-updateSessionTable = function () {
-  originalUpdate();
-  renderWeeklyProgress();
-};
-
-window.onload = updateSessionTable;
-</script>
+  </script>
 </body>
 </html>
