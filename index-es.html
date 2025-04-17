@@ -116,19 +116,19 @@
 <a href="index-es.html">Español</a>
 </div>
 <img alt="NorCal Logo" src="norcal_icon.png"/>
-<p>Enter total grams trimmed:</p>
+<p>Ingresa el total de gramos recortados:</p>
 <input id="grams" placeholder="e.g. 1200" type="number"/>
 <br/>
 <button id="import-tracker-total">Add Today’s Rastreador de Recorte Total</button>
 <br/>
-<button onclick="calculate()">Calculate</button>
+<button onclick="calculate()">Calcular</button>
 <p id="result"></p>
 <div class="install-links">
-<a href="trim-tracker.html">Go to Rastreador de Recorte</a>
-<a class="nav-button" href="help.html">How to Use the App</a>
+<a href="trim-tracker.html">Ir al Rastreador de Recorte</a>
+<a class="nav-button" href="help.html">Cómo Usar la Aplicación</a>
 </div>
 <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
-<strong>Note:</strong> For the Rastreador de Recorte import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
+<strong>Nota:</strong> For the Rastreador de Recorte import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
   </div>
 <table id="sessionTable">
 <thead>
@@ -155,7 +155,7 @@
 <!-- 
 
     Exportar CSV Button -->
-<div id="weeklyProgressContainer" style="margin-top: 3em; padding: 1em; border-top: 1px solid #555; text-align: left;"><div style="margin-top:0.5em; font-size: 0.9em; color: #ccc; text-align:left;">▸ Tracking Weekly Bonus Goals (Monday–Sunday)</div>
+<div id="weeklyProgressContainer" style="margin-top: 3em; padding: 1em; border-top: 1px solid #555; text-align: left;"><div style="margin-top:0.5em; font-size: 0.9em; color: #ccc; text-align:left;">▸ Seguimiento de Metas Semanales de Bonificación (lunes a domingo)</div>
 <div style="margin-bottom: 1em;">
 <label style="color:white;">Meta Mínima: $<input id="minGoal" style="width:80px;margin-right:1em;" type="number" value="100"/></label>
 <label style="color:white;">Meta Objetivo: $<input id="targetGoal" style="width:80px;" type="number" value="200"/></label>
@@ -176,12 +176,12 @@
 </div><div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
 <h2 style="color: #0f0;">Acerca del Creador</h2>
 <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
-      Hi, my name is Andrew, and I work as a professional trimmer at NorCal Cannabis.
+      Hola, mi nombre es Andrew y trabajo como recortador profesional en NorCal Cannabis.
       I created the NorCal Trim Calculator to help simplify bonus pay calculations and make it easier for trimmers
       to track their daily progress.
       <br/><br/>
-      This tool was designed to be practical, user-friendly, and efficient — helping workers stay organized and informed.
-      My goal is to support the trimming community with simple tech solutions that make a real difference on the job.
+      Esta herramienta fue diseñada para ser práctica, fácil de usar y eficiente, ayudando a los trabajadores a mantenerse organizados e informados.
+      Mi objetivo es apoyar a la comunidad de recorte con soluciones tecnológicas simples que realmente marquen una diferencia en el trabajo.
     </p>
 </div>
 <script>
@@ -199,7 +199,7 @@ function calculateBonus(grams) {
 function calculate() {
   const grams = parseFloat(document.getElementById('grams').value);
   if (isNaN(grams) || grams <= 0) {
-    document.getElementById('result').innerText = 'Please enter a valid number of grams.';
+    document.getElementById('result').innerText = 'Por favor, ingresa un número válido de gramos.';
     return;
   }
   const bonusPay = calculateBonus(grams);
@@ -271,7 +271,7 @@ function updateSessionTable() {
 }
 
 function clearAllEntries() {
-  if (confirm('Are you sure you want to clear all entries?')) {
+  if (confirm('¿Estás seguro de que deseas borrar todas las entradas?')) {
     localStorage.removeItem('trimHistory');
     updateSessionTable();
   }
@@ -280,7 +280,7 @@ function clearAllEntries() {
 function exportCSV() {
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
   if (history.length === 0) {
-    alert("No entries to export.");
+    alert("No hay entradas para exportar.");
     return;
   }
 
