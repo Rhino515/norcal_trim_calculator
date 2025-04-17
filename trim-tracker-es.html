@@ -2,16 +2,7 @@
 
 <html lang="es">
 <head>
-<script>
-  const userLang = navigator.language || navigator.userLanguage;
-  if (userLang.startsWith('en') && !window.location.href.includes('index-en.html') && !window.location.href.includes('trim-tracker.html')) {
-    if (window.location.href.includes('trim-tracker')) {
-      window.location.href = 'trim-tracker.html';
-    } else {
-      window.location.href = 'index-en.html';
-    }
-  }
-</script>
+
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Rastreador de Trim</title>
@@ -46,9 +37,7 @@
 <h3>Totales Diarios</h3>
 <ul id="totalsList" style="list-style: none; padding: 0;"></ul>
 </div>
-<script>
-// The JavaScript logic remains unchanged, including translation-specific language switching and text keys
-</script>
+
 <script>
 function addRow(date = '', strain = '', grams = '', total = '', notes = '') {
   const tableBody = document.getElementById('tableBody');
@@ -69,5 +58,92 @@ function addRow(date = '', strain = '', grams = '', total = '', notes = '') {
   tableBody.appendChild(row);
   updateTotals();
 }
+
+function saveRow(button) {
+  const row = button.closest('tr');
+  const inputs = row.querySelectorAll('input');
+  const rowData = {
+    date: inputs[0].value,
+    strain: inputs[1].value,
+    grams: inputs[2].value,
+    total: row.querySelector('.row-total').textContent,
+    notes: inputs[3].value
+  };
+
+  let savedData = JSON.parse(localStorage.getItem('trimData-es') || '[]');
+  const rowIndex = Array.from(row.parentElement.children).indexOf(row);
+  savedData[rowIndex] = rowData;
+  localStorage.setItem('trimData-es', JSON.stringify(savedData));
+}
+
+function deleteRow(button) {
+  const row = button.closest('tr');
+  const rowIndex = Array.from(row.parentElement.children).indexOf(row);
+  row.remove();
+
+  let savedData = JSON.parse(localStorage.getItem('trimData-es') || '[]');
+  savedData.splice(rowIndex, 1);
+  localStorage.setItem('trimData-es', JSON.stringify(savedData));
+  updateTotals();
+}
+
+function loadTable() {
+  const savedData = JSON.parse(localStorage.getItem('trimData-es') || '[]');
+  savedData.forEach(item => {
+    addRow(item.date, item.strain, item.grams, item.total, item.notes);
+  });
+}
+
+function updateTotals() {
+  const rows = document.querySelectorAll('#tableBody tr');
+  const dailyTotals = {};
+
+  rows.forEach(row => {
+    const date = row.querySelector('input[type="date"]').value;
+    const grams = parseFloat(row.querySelector('.grams-input').value) || 0;
+    if (!dailyTotals[date]) dailyTotals[date] = 0;
+    dailyTotals[date] += grams;
+    row.querySelector('.row-total').textContent = grams.toFixed(2);
+  });
+
+  const totalsList = document.getElementById('totalsList');
+  totalsList.innerHTML = '';
+  for (const date in dailyTotals) {
+    const li = document.createElement('li');
+    li.textContent = `${date}: ${dailyTotals[date].toFixed(2)}g`;
+    totalsList.appendChild(li);
+  }
+}
+
+function clearAllRows() {
+  document.getElementById('tableBody').innerHTML = '';
+  localStorage.removeItem('trimData-es');
+  updateTotals();
+}
+
+function exportCSV() {
+  const rows = document.querySelectorAll('#sessionTable tr');
+  let csv = Array.from(rows).map(row => 
+    Array.from(row.cells).map(cell => {
+      const input = cell.querySelector('input');
+      const span = cell.querySelector('span');
+      return input ? input.value : (span ? span.textContent : cell.textContent.trim());
+    }).join(',')
+  ).join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'trim-tracker.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function toggleLanguage() {
+  window.location.href = 'trim-tracker.html';
+}
+
+window.onload = loadTable;
 </script></body>
 </html>
