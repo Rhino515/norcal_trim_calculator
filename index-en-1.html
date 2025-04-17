@@ -469,8 +469,27 @@ function moveEntry(index, direction) {
 
 
 
-function groupByWeek(history) {
-  if (!history.length) return {};
+
+function groupByPayPeriod(history) {
+  const startStr = localStorage.getItem('payPeriodStart');
+  const endStr = localStorage.getItem('payPeriodEnd');
+  if (!startStr || !endStr) return {};
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  end.setHours(23, 59, 59, 999);
+
+  const entries = history
+    .map((entry, i) => [entry, i])
+    .filter(([entry]) => {
+      const d = new Date(entry.date);
+      return d >= start && d <= end;
+    });
+
+  const label = "Pay Period: " + startStr + " – " + endStr;
+  return { [startStr]: { label, entries } };
+}
+;
 
   const sorted = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
   const firstDate = new Date(sorted[0].date);
@@ -558,7 +577,7 @@ updateSessionTable = function() {
   const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
   tbody.innerHTML = '';
   let totalBonusPay = 0;
-  const grouped = groupByWeek(history);
+  const grouped = groupByPayPeriod(history);
   
 const currentStart = localStorage.getItem('payPeriodStart');
 const currentEnd = localStorage.getItem('payPeriodEnd');
