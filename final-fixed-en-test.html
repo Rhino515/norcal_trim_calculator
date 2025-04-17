@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+
+<script>
+function getStoredPayPeriod() {
+  let startStr = localStorage.getItem('payPeriodStart');
+  let endStr = localStorage.getItem('payPeriodEnd');
+  if (!startStr || !endStr) return { start: null, end: null };
+
+  let start = new Date(startStr);
+  let end = new Date(endStr);
+  let today = new Date();
+
+  if (today > end) {
+    const nextStart = new Date(end);
+    nextStart.setDate(nextStart.getDate() + 1);
+    const nextEnd = new Date(nextStart);
+    nextEnd.setDate(nextStart.getDate() + 13);
+
+    localStorage.setItem('payPeriodStart', nextStart.toISOString().split('T')[0]);
+    localStorage.setItem('payPeriodEnd', nextEnd.toISOString().split('T')[0]);
+
+    start = nextStart;
+    end = nextEnd;
+  }
+
+  return { start, end };
+}
+
+function updatePayPeriodLabel() {
+  const { start, end } = getStoredPayPeriod();
+  if (start && end) {
+    const format = d => d.toISOString().split('T')[0];
+    document.getElementById('payPeriodStart').value = format(start);
+    document.getElementById('payPeriodEnd').value = format(end);
+    document.getElementById('payPeriodLabel').textContent = "Pay Period: " + format(start) + " – " + format(end);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updatePayPeriodLabel();
+
+  document.getElementById('payPeriodStart').addEventListener('change', e => {
+    localStorage.setItem('payPeriodStart', e.target.value);
+    updatePayPeriodLabel();
+    updateSessionTable?.();
+    updateGoalBars?.();
+  });
+
+  document.getElementById('payPeriodEnd').addEventListener('change', e => {
+    localStorage.setItem('payPeriodEnd', e.target.value);
+    updatePayPeriodLabel();
+    updateSessionTable?.();
+    updateGoalBars?.();
+  });
+});
+</script>
+
+</body>
+</html>
