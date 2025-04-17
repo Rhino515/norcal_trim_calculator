@@ -69,6 +69,39 @@ addRow = function(data) {
   const newRow = tbody.lastElementChild;
   addMoveButtons(newRow);
 }
+
+function addMoveButtons(row) {
+  const actionCell = row.querySelector('td:last-child');
+
+  const upBtn = document.createElement('button');
+  upBtn.textContent = '↑';
+  upBtn.style.backgroundColor = '#28a745';
+  upBtn.style.color = 'white';
+  upBtn.style.marginRight = '5px';
+  upBtn.onclick = () => {
+    const prev = row.previousElementSibling;
+    if (prev) {
+      row.parentNode.insertBefore(row, prev);
+      debounceSave();
+    }
+  };
+
+  const downBtn = document.createElement('button');
+  downBtn.textContent = '↓';
+  downBtn.style.backgroundColor = '#28a745';
+  downBtn.style.color = 'white';
+  downBtn.style.marginRight = '5px';
+  downBtn.onclick = () => {
+    const next = row.nextElementSibling;
+    if (next) {
+      row.parentNode.insertBefore(next, row);
+      debounceSave();
+    }
+  };
+
+  actionCell.insertBefore(downBtn, actionCell.firstChild);
+  actionCell.insertBefore(upBtn, actionCell.firstChild);
+}
 </script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -324,6 +357,9 @@ const actionCell = document.createElement('td');
       row.appendChild(actionCell);
 
       tbody.appendChild(row);
+
+  // Add move buttons
+  addMoveButtons(row);
     }
 
     function clearAllRows() {
@@ -405,7 +441,7 @@ const actionCell = document.createElement('td');
       // Save today's total to localStorage for use in Calculator
       const today = new Date().toLocaleDateString('en-CA');
       if (totalsMap[today]) {
-        localStorage.setItem('trimTrackerDailyTotal', totalsMap[today].toFixed(2));
+        localStorage.setItem('trimTrackerDailyTotal-' + today, totalsMap[today].toFixed(2));
       } else {
         localStorage.removeItem('trimTrackerDailyTotal');
       }
@@ -427,10 +463,76 @@ const actionCell = document.createElement('td');
     localStorage.removeItem('trimTrackerDailyTotal');  // Clear old total
 loadData();
 setTimeout(updateDailyTotals, 200);  // Force save today's total after loading
-  </script>
+  
+function addMoveButtons(row) {
+  const actionCell = row.querySelector('td:last-child');
+
+  const upBtn = document.createElement('button');
+  upBtn.textContent = '↑';
+  upBtn.style.backgroundColor = '#28a745';
+  upBtn.style.color = 'white';
+  upBtn.style.marginRight = '5px';
+  upBtn.onclick = () => {
+    const prev = row.previousElementSibling;
+    if (prev) {
+      row.parentNode.insertBefore(row, prev);
+      debounceSave();
+    }
+  };
+
+  const downBtn = document.createElement('button');
+  downBtn.textContent = '↓';
+  downBtn.style.backgroundColor = '#28a745';
+  downBtn.style.color = 'white';
+  downBtn.style.marginRight = '5px';
+  downBtn.onclick = () => {
+    const next = row.nextElementSibling;
+    if (next) {
+      row.parentNode.insertBefore(next, row);
+      debounceSave();
+    }
+  };
+
+  actionCell.insertBefore(downBtn, actionCell.firstChild);
+  actionCell.insertBefore(upBtn, actionCell.firstChild);
+}
+</script>
 </body>
 </html>
 <script>
     // Update totals whenever any input changes
     document.addEventListener('input', updateDailyTotals);
+
+function addMoveButtons(row) {
+  const actionCell = row.querySelector('td:last-child');
+
+  const upBtn = document.createElement('button');
+  upBtn.textContent = '↑';
+  upBtn.style.backgroundColor = '#28a745';
+  upBtn.style.color = 'white';
+  upBtn.style.marginRight = '5px';
+  upBtn.onclick = () => {
+    const prev = row.previousElementSibling;
+    if (prev) {
+      row.parentNode.insertBefore(row, prev);
+      debounceSave();
+    }
+  };
+
+  const downBtn = document.createElement('button');
+  downBtn.textContent = '↓';
+  downBtn.style.backgroundColor = '#28a745';
+  downBtn.style.color = 'white';
+  downBtn.style.marginRight = '5px';
+  downBtn.onclick = () => {
+    const next = row.nextElementSibling;
+    if (next) {
+      row.parentNode.insertBefore(next, row);
+      debounceSave();
+    }
+  };
+
+  actionCell.insertBefore(downBtn, actionCell.firstChild);
+  actionCell.insertBefore(upBtn, actionCell.firstChild);
+}
 </script>
