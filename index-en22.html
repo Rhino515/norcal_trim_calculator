@@ -829,3 +829,12 @@ window.addEventListener('load', () => {
   updateSessionTable();
 });
 </script>
+
+<script>
+function clearAll() {
+  if (confirm("Are you sure you want to clear all entries?")) {
+    localStorage.removeItem('trimHistory');
+    updateSessionTable();
+  }
+}
+</script>
