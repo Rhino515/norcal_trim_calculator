@@ -267,14 +267,15 @@ const actionCell = document.createElement('td');
       }
     }
 
+    
     function saveData() {
       const rows = document.querySelectorAll('#tableBody tr');
       const data = Array.from(rows).map(row => {
-        const [dateCell, strainCell, gramsCell, noteCell, totalCell, actionCell] = row.querySelectorAll('td');
-        const date = dateCell.querySelector('input').value;
-        const strain = strainCell.querySelector('input').value;
-        const grams = Array.from(gramsCell.querySelectorAll('input')).map(input => input.value);
-        return { date, strain, grams, note: noteCell.querySelector('textarea')?.value || '' };
+        const date = row.querySelector('input[type="date"]')?.value || '';
+        const strain = row.querySelector('input[type="text"]')?.value || '';
+        const grams = Array.from(row.querySelectorAll('td:nth-child(3) input[type="number"]')).map(input => input.value);
+        const note = row.querySelector('textarea')?.value || '';
+        return { date, strain, grams, note };
       });
       localStorage.setItem(storageKey, JSON.stringify(data));
     }
