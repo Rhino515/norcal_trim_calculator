@@ -11,6 +11,64 @@
       window.location.href = 'index-es.html';
     }
   }
+
+
+let sortDescending = true;
+
+function toggleDateSort() {
+  const tbody = document.getElementById('tableBody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  rows.sort((a, b) => {
+    const aDate = new Date(a.querySelector('input[type="date"]').value);
+    const bDate = new Date(b.querySelector('input[type="date"]').value);
+    return sortDescending ? bDate - aDate : aDate - bDate;
+  });
+
+  rows.forEach(row => tbody.appendChild(row));
+  sortDescending = !sortDescending;
+  document.getElementById('sortDateBtn').textContent = sortDescending ? "Sort by Date: Newest First" : "Sort by Date: Oldest First";
+  debounceSave();
+}
+
+// Add move up/down buttons to each row
+function addMoveButtons(row) {
+  const actionCell = row.querySelector('td:last-child');
+
+  const upBtn = document.createElement('button');
+  upBtn.textContent = '↑';
+  upBtn.style.marginRight = '5px';
+  upBtn.onclick = () => {
+    const prev = row.previousElementSibling;
+    if (prev) {
+      row.parentNode.insertBefore(row, prev);
+      debounceSave();
+    }
+  };
+
+  const downBtn = document.createElement('button');
+  downBtn.textContent = '↓';
+  downBtn.style.marginRight = '5px';
+  downBtn.onclick = () => {
+    const next = row.nextElementSibling;
+    if (next) {
+      row.parentNode.insertBefore(next, row);
+      debounceSave();
+    }
+  };
+
+  actionCell.insertBefore(downBtn, actionCell.firstChild);
+  actionCell.insertBefore(upBtn, actionCell.firstChild);
+}
+
+// Patch existing addRow to use addMoveButtons
+const originalAddRow = addRow;
+addRow = function(data) {
+  originalAddRow(data);
+  const tbody = document.getElementById('tableBody');
+  const newRow = tbody.lastElementChild;
+  addMoveButtons(newRow);
+}
 </script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -129,6 +187,8 @@
 <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
 <strong>Note:</strong>Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers. Please make sure to use the app in your preferred language, as data is stored separately for each language version. While this tool helps track data, we recommend backing up your information to avoid loss.
   </p>
+
+<button id="sortDateBtn" onclick="toggleDateSort()">Sort by Date: Newest First</button>
 <table id="sessionTable">
 <thead>
 <tr>
