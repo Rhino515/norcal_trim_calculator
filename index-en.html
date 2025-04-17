@@ -431,5 +431,15 @@ function calculate() {
 }
 </script>
 
+
+<script>
+function deleteEntry(index) {
+  let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  history.splice(index, 1);  // remove the entry at the specified index
+  localStorage.setItem('trimHistory', JSON.stringify(history));  // update storage
+  updateSessionTable();  // refresh the table
+}
+</script>
+
 </body>
 </html>
