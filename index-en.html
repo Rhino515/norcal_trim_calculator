@@ -205,7 +205,7 @@ function calculate() {
   const bonusPay = calculateBonus(grams);
   document.getElementById('result').innerText = 'Bonus Pay: $' + bonusPay.toFixed(2);
   const now = new Date();
-  const dateStr = now.toISOString().split("T")[0];
+  const dateStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split("T")[0];
   const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
   let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
   history.push(entry);
@@ -222,7 +222,8 @@ function updateSessionTable() {
   history.forEach((entry, index) => {
     const row = document.createElement('tr');
     const dateCell = document.createElement('td');
-    dateCell.textContent = entry.date;
+    const dayOfWeek = new Date(entry.date).toLocaleDateString(undefined, { weekday: 'long' });
+    dateCell.textContent = `${dayOfWeek}, ${entry.date}`;
     dateCell.contentEditable = true;
     dateCell.addEventListener('blur', function () {
       const updatedDate = this.textContent.trim();
