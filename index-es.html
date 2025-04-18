@@ -140,6 +140,11 @@
 <div style="margin-top: 1em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
 <strong>Nota:</strong> Para que la función de importación del Trim Tracker funcione correctamente, utiliza la calculadora y el rastreador solo en tu idioma preferido. Mezclar idiomas puede causar problemas de sincronización.
   </div>
+<div id="payPeriodInputs" style="margin-top: 1em; font-size: 1em; color: white;">
+<label>Periodo de Pago Start: <input id="payPeriodStart" type="date"/></label>
+<label style="margin-left: 1em;">End: <input id="payPeriodEnd" type="date"/></label>
+</div>
+<div id="payPeriodLabel" style="margin-top: 1em; color: #0f0; font-weight: bold;"></div>
 <table id="sessionTable">
 <thead>
 <tr>
@@ -154,7 +159,7 @@
 <tr>
 <td colspan="2"><strong>Total</strong></td>
 <td id="totalBonusPay">$0.00</td>
-<td><button class="clear-all-button" onclick="clearAllEntries()">Borrar Todo</button></td>
+<td><button onclick="clearAll()">Borrar Todo</button></td>
 </tr>
 </tfoot>
 </table>
@@ -166,24 +171,7 @@
 
     Exportar CSV</button>
 
-<div style="margin-bottom: 1em; font-size: 1.1em; color: #0f0;" id="weekRangeLabel"></div>
-<div id="goalContainer" style="margin-top: 2em; max-width: 600px; margin-left: auto; margin-right: auto;">
-  <label style="color: white;">Meta Mínima: 
-    <input id="minGoalInput" type="number" min="0" style="width: 120px; margin-bottom: 10px;" />
-  </label><br/>
-  <div id="minGoalBar" style="background-color: #003300; height: 25px; border-radius: 6px; margin-bottom: 15px; position: relative;">
-    <div id="minGoalProgress" style="background-color: #00cc00; height: 100%; width: 0%; border-radius: 6px;"></div>
-    <div id="minGoalText" style="position: absolute; left: 10px; top: 2px; color: white; font-weight: bold;"></div>
-  </div>
 
-  <label style="color: white;">Meta Objetivo: 
-    <input id="targetGoalInput" type="number" min="0" style="width: 120px; margin-bottom: 10px;" />
-  </label><br/>
-  <div id="targetGoalBar" style="background-color: #004400; height: 25px; border-radius: 6px; position: relative;">
-    <div id="targetGoalProgress" style="background-color: lime; height: 100%; width: 0%; border-radius: 6px;"></div>
-    <div id="targetGoalText" style="position: absolute; left: 10px; top: 2px; color: black; font-weight: bold;"></div>
-  </div>
-</div>
 </div>
 <div style="margin-top: 3em; border-top: 1px solid #444; padding-top: 1em;">
 <h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Promedios por Hora y Pago ▼</h2>
@@ -266,117 +254,7 @@ function updateSessionTable() {
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
     const key = monday.toISOString().split('T')[0];
-    if (!weekMap[key]) {
-      weekMap[key] = { label: "Semana del " + formatter.format(monday) + " - " + formatter.format(sunday), entries: [] };
-    }
-    weekMap[key].entries.push([entry, i]);
-  });
-
-  Object.values(weekMap).forEach((week) => {
-    const toggleRow = document.createElement('tr');
-    const toggleCell = document.createElement('td');
-    toggleCell.colSpan = 4;
-    toggleCell.style.cursor = 'pointer';
-    toggleCell.style.background = '#1a1a1a';
-    toggleCell.style.color = '#0f0';
-    toggleCell.style.fontWeight = 'bold';
-    toggleCell.textContent = week.label + " ▼";
-    let collapsed = false;
-    toggleCell.onclick = () => {
-      collapsed = !collapsed;
-      week.entries.forEach(([_, i]) => {
-        const row = document.getElementById('row-' + i);
-        if (row) row.style.display = collapsed ? 'none' : '';
-      });
-      toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
-    };
-    toggleRow.appendChild(toggleCell);
-    tbody.appendChild(toggleRow);
-
-    week.entries.forEach(([entry, index]) => {
-      const row = document.createElement('tr');
-      row.id = 'row-' + index;
-
-      const dateCell = document.createElement('td');
-      dateCell.textContent = entry.date;
-      dateCell.contentEditable = true;
-      dateCell.addEventListener('blur', function () {
-        const updatedDate = this.textContent.trim();
-        if (updatedDate) {
-          history[index].date = updatedDate;
-          localStorage.setItem('trimHistory', JSON.stringify(history));
-        }
-      });
-      row.appendChild(dateCell);
-
-      const gramsCell = document.createElement('td');
-      gramsCell.textContent = entry.grams;
-      gramsCell.contentEditable = true;
-      gramsCell.style.backgroundColor = '#222';
-      gramsCell.addEventListener('blur', function () {
-        const newGrams = parseFloat(this.textContent.trim());
-        if (!isNaN(newGrams) && newGrams > 0) {
-          history[index].grams = newGrams;
-          const newBonus = calculateBonus(newGrams);
-          history[index].bonusPay = newBonus.toFixed(2);
-          localStorage.setItem('trimHistory', JSON.stringify(history));
-          updateSessionTable();
-        } else {
-          alert("Por favor, ingresa un número válido de gramos.");
-          updateSessionTable();
-        }
-      });
-      row.appendChild(gramsCell);
-
-      const bonusPayCell = document.createElement('td');
-      bonusPayCell.textContent = '$' + entry.bonusPay;
-      row.appendChild(bonusPayCell);
-
-      const actionCell = document.createElement('td');
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Eliminar';
-      deleteBtn.className = 'delete-button';
-      deleteBtn.onclick = function () {
-        if (confirm('¿Estás seguro de que deseas eliminar esta entrada?')) {
-          deleteEntry(index);
-        }
-      };
-      actionCell.appendChild(deleteBtn);
-
-      const upBtn = document.createElement('button');
-      upBtn.textContent = '↑';
-      upBtn.style.marginLeft = '5px';
-      upBtn.style.color = 'lime';
-      upBtn.onclick = function () { moveEntry(index, -1); };
-      actionCell.appendChild(upBtn);
-
-      const downBtn = document.createElement('button');
-      downBtn.textContent = '↓';
-      downBtn.style.marginLeft = '5px';
-      downBtn.style.color = 'lime';
-      downBtn.onclick = function () { moveEntry(index, 1); };
-      actionCell.appendChild(downBtn);
-
-      row.appendChild(actionCell);
-      tbody.appendChild(row);
-      totalBonusPay += parseFloat(entry.bonusPay);
-    });
-  });
-  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
-}
-
-function calculateAverages() {
-  const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
-  const totalHours = parseFloat(document.getElementById("totalHours").value);
-  const overtimeHours = parseFloat(document.getElementById("overtimeHours").value) || 0;
-  const startDate = new Date(document.getElementById("startDate").value);
-  const endDate = new Date(document.getElementById("endDate").value);
-  if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
-    alert("Please fill out all fields.");
-    return;
-  }
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const filtered = history.filter(entry => {
+    if (!  const filtered = history.filter(entry => {
     const entryDate = new Date(entry.date);
     return entryDate >= startDate && entryDate <= endDate;
   });
@@ -402,70 +280,6 @@ function calculateAverages() {
 </script>
 
 <script>
-  
-function updateGoalBars() {
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay()); // Monday
-  startOfWeek.setHours(0, 0, 0, 0);
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
-
-  const thisWeekTotal = history
-    .filter(entry => {
-      const d = new Date(entry.date);
-      return d >= startOfWeek && d <= endOfWeek;
-    })
-    .reduce((sum, e) => sum + parseFloat(e.bonusPay || 0), 0);
-
-  const minGoal = parseFloat(localStorage.getItem('minGoal') || 0);
-  const targetGoal = parseFloat(localStorage.getItem('targetGoal') || 0);
-
-  const minPct = minGoal ? Math.min(100, (thisWeekTotal / minGoal) * 100) : 0;
-  const targetPct = targetGoal ? Math.min(100, (thisWeekTotal / targetGoal) * 100) : 0;
-
-  document.getElementById('minGoalProgress').style.width = minPct + '%';
-  document.getElementById('targetGoalProgress').style.width = targetPct + '%';
-  document.getElementById('minGoalText').innerText = `$${thisWeekTotal.toFixed(2)} / $${minGoal}`;
-  document.getElementById('targetGoalText').innerText = `$${thisWeekTotal.toFixed(2)} / $${targetGoal}`;
-}
-
-  function getCurrentWeekRange() {
-    const now = new Date();
-    const start = new Date(now);
-    start.setDate(now.getDate() - now.getDay() + 1); // Monday
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
-    return { start, end };
-  }
-
-  document.getElementById('minGoalInput').addEventListener('input', e => {
-    const val = parseFloat(e.target.value) || 0;
-    localStorage.setItem('minGoal', val);
-    updateGoalBars();
-  });
-  document.getElementById('targetGoalInput').addEventListener('input', e => {
-    const val = parseFloat(e.target.value) || 0;
-    localStorage.setItem('targetGoal', val);
-    updateGoalBars();
-  });
-
-  // Load saved goal values
-  window.addEventListener('load', () => {
-    const min = localStorage.getItem('minGoal') || '';
-    const tar = localStorage.getItem('targetGoal') || '';
-    document.getElementById('minGoalInput').value = min;
-    document.getElementById('targetGoalInput').value = tar;
-    updateGoalBars();
-  });
-</script>
-
-
-<script>
 function moveEntry(index, direction) {
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
   const newIndex = index + direction;
@@ -477,8 +291,73 @@ function moveEntry(index, direction) {
   updateSessionTable();
 }
 
-function groupByWeek(history) {
-  const weekMap = {};
+
+
+
+;
+
+  const sorted = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const firstDate = new Date(sorted[0].date);
+  firstDate.setHours(0, 0, 0, 0);
+
+  const periods = {};
+
+  for (let i = 0; i < history.length; i++) {
+    const entryDate = new Date(history[i].date);
+    entryDate.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.floor((entryDate - firstDate) / (1000 * 60 * 60 * 24));
+    const periodIndex = Math.floor(diffDays / 14);
+    const periodStart = new Date(firstDate);
+    periodStart.setDate(firstDate.getDate() + periodIndex * 14);
+
+    const periodEnd = new Date(periodStart);
+    periodEnd.setDate(periodStart.getDate() + 13);
+
+    const key = periodStart.toISOString().split('T')[0];
+    const label = "Periodo de Pago: " + key + " – " + periodEnd.toISOString().split('T')[0];
+
+    if (!periods[key]) {
+      periods[key] = { label: label, entries: [] };
+    }
+    periods[key].entries.push([history[i], i]);
+  }
+
+  return periods;
+}
+        ;
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  end.setHours(23, 59, 59, 999);
+
+  const entries = history
+    .map((entry, i) => [entry, i])
+    .filter(([entry]) => {
+      const d = new Date(entry.date);
+      return d >= start && d <= end;
+    });
+
+  const label = "Periodo de Pago: " + startStr + " – " + endStr;
+  return { [startStr]: { label, entries } };
+}
+        ;
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  end.setHours(23, 59, 59, 999);
+
+  const entries = history
+    .map((entry, i) => [entry, i])
+    .filter(([entry]) => {
+      const d = new Date(entry.date);
+      return d >= start && d <= end;
+    });
+
+  const label = "Semana del Periodo: " + startStr + " – " + endStr;
+  return { [startStr]: { label, entries } };
+}
+        ;
   const options = { month: 'long', day: 'numeric' };
   const formatter = new Intl.DateTimeFormat('es-ES', options);
   history.forEach((entry, i) => {
@@ -488,23 +367,14 @@ function groupByWeek(history) {
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
     const key = monday.toISOString().split('T')[0];
-    if (!weekMap[key]) {
-      weekMap[key] = { label: "Semana del " + formatter.format(monday) + " - " + formatter.format(sunday), entries: [] };
-    }
-    weekMap[key].entries.push([entry, i]);
-  });
-  return weekMap;
-}
-
-// PATCH updateSessionTable
-const originalUpdateSessionTable = updateSessionTable;
-updateSessionTable = function() {
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
+    if (!  const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
   tbody.innerHTML = '';
   let totalBonusPay = 0;
-  const grouped = groupByWeek(history);
-  Object.values(grouped).forEach((week, groupIndex) => {
+  const grouped = groupByPayPeriod(history);
+  
+const currentStart = localStorage.getItem('payPeriodStart');
+const currentEnd = localStorage.getItem('payPeriodEnd');
+Object.values(grouped).forEach((week, groupIndex) => {
     const toggleRow = document.createElement('tr');
     const toggleCell = document.createElement('td');
     toggleCell.colSpan = 4;
@@ -520,7 +390,12 @@ updateSessionTable = function() {
         const row = document.getElementById('row-' + i);
         if (row) row.style.display = collapsed ? 'none' : '';
       });
-      toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
+      
+if (week.label.includes(currentStart) && week.label.includes(currentEnd)) {
+  toggleCell.style.border = '2px solid lime';
+  toggleCell.style.boxShadow = '0 0 10px lime';
+}
+toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
     };
     toggleRow.appendChild(toggleCell);
     tbody.appendChild(toggleRow);
@@ -596,7 +471,6 @@ updateSessionTable = function() {
   document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
 };
 </script>
-
 <script>
 window.addEventListener('load', () => {
   let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
@@ -619,7 +493,6 @@ window.addEventListener('load', () => {
   updateSessionTable();
 });
 </script>
-
 <script>
 document.getElementById('import-tracker-total').addEventListener('click', () => {
   const todayISO = new Date().toISOString().split('T')[0];
@@ -632,23 +505,6 @@ document.getElementById('import-tracker-total').addEventListener('click', () => 
   }
 });
 </script>
-
-<script>
-function updateWeekRangeLabel() {
-  const now = new Date();
-  const start = new Date(now);
-  start.setDate(now.getDate() - now.getDay()); // Monday
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  const formatter = new Intl.DateTimeFormat('es-ES', { month: 'long', day: 'numeric' });
-  const rangeStr = "Semana actual: " + formatter.format(start) + " – " + formatter.format(end);
-  const label = document.getElementById("weekRangeLabel");
-  if (label) label.textContent = rangeStr;
-}
-
-window.addEventListener('load', updateWeekRangeLabel);
-</script>
-
 <script>
 function togglePayCalc() {
   const section = document.getElementById("payCalcSection");
@@ -657,7 +513,6 @@ function togglePayCalc() {
   }
 }
 </script>
-
 <script>
 function deleteEntry(index) {
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
@@ -667,19 +522,290 @@ function deleteEntry(index) {
 }
 </script>
 
-<script>
-function updateWeekRangeLabel() {
-  const now = new Date();
-  const start = new Date(now);
-  start.setDate(now.getDate() - now.getDay()); // Monday
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  const formatter = new Intl.DateTimeFormat('es-ES', { month: 'long', day: 'numeric' });
-  const rangeStr = "Meta de Bonificación Semanal: " + formatter.format(start) + " – " + formatter.format(end);
-  const label = document.getElementById("weekRangeLabel");
-  if (label) label.textContent = rangeStr;
-}
-window.addEventListener('load', updateWeekRangeLabel);
-</script>
+
 </body>
 </html>
+
+
+
+
+<script>
+function groupByPayPeriod(history) {
+  const startStr = localStorage.getItem('payPeriodStart');
+  const endStr = localStorage.getItem('payPeriodEnd');
+  if (!startStr || !endStr) return {};
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  end.setHours(23, 59, 59, 999);
+  const entries = history.map((entry, i) => [entry, i]).filter(([entry]) => {
+    const d = new Date(entry.date);
+    return d >= start && d <= end;
+  });
+  const label = "Periodo de Pago: " + startStr + " – " + endStr;
+  return { [startStr]: { label, entries } };
+}
+
+function updateSessionTable() {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const grouped = groupByPayPeriod(history);
+  const tbody = document.querySelector("#sessionTable tbody");
+  tbody.innerHTML = '';
+  let totalBonusPay = 0;
+
+  const currentStart = localStorage.getItem('payPeriodStart');
+  const currentEnd = localStorage.getItem('payPeriodEnd');
+
+  Object.values(grouped).forEach((week, groupIndex) => {
+    const toggleRow = document.createElement('tr');
+    const toggleCell = document.createElement('td');
+    toggleCell.colSpan = 4;
+    toggleCell.style.cursor = 'pointer';
+    toggleCell.style.background = '#1a1a1a';
+    toggleCell.style.color = '#0f0';
+    toggleCell.style.fontWeight = 'bold';
+    toggleCell.textContent = week.label + " ▼";
+    if (week.label.includes(currentStart) && week.label.includes(currentEnd)) {
+      toggleCell.style.border = '2px solid lime';
+      toggleCell.style.boxShadow = '0 0 10px lime';
+    }
+    let collapsed = false;
+    toggleCell.onclick = () => {
+      collapsed = !collapsed;
+      week.entries.forEach(([_, i]) => {
+        const row = document.getElementById('row-' + i);
+        if (row) row.style.display = collapsed ? 'none' : '';
+      });
+      toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
+    };
+    toggleRow.appendChild(toggleCell);
+    tbody.appendChild(toggleRow);
+
+    week.entries.forEach(([entry, i]) => {
+      const row = document.createElement('tr');
+      row.id = 'row-' + i;
+
+      const dateCell = document.createElement('td');
+      dateCell.textContent = entry.date;
+      dateCell.contentEditable = true;
+      dateCell.onblur = () => {
+        const updated = dateCell.textContent.trim();
+        if (updated) {
+          history[i].date = updated;
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+        }
+      };
+      row.appendChild(dateCell);
+
+      const gramsCell = document.createElement('td');
+      gramsCell.textContent = entry.grams;
+      gramsCell.contentEditable = true;
+      gramsCell.style.backgroundColor = '#222';
+      gramsCell.onblur = () => {
+        const g = parseFloat(gramsCell.textContent.trim());
+        if (!isNaN(g) && g > 0) {
+          history[i].grams = g;
+          const bonus = calculateBonus(g);
+          history[i].bonusPay = bonus.toFixed(2);
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+          updateSessionTable();
+        }
+      };
+      row.appendChild(gramsCell);
+
+      const bonusCell = document.createElement('td');
+      bonusCell.textContent = '$' + entry.bonusPay;
+      row.appendChild(bonusCell);
+
+      const actionCell = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Eliminar';
+      delBtn.className = 'delete-button';
+      delBtn.onclick = () => {
+        history.splice(i, 1);
+        localStorage.setItem('trimHistory', JSON.stringify(history));
+        updateSessionTable();
+      };
+      actionCell.appendChild(delBtn);
+
+      row.appendChild(actionCell);
+      tbody.appendChild(row);
+      totalBonusPay += parseFloat(entry.bonusPay || 0);
+    });
+  });
+  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+}
+
+window.addEventListener('load', () => {
+  const s = document.getElementById('payPeriodStart');
+  const e = document.getElementById('payPeriodEnd');
+  if (s) s.value = localStorage.getItem('payPeriodStart') || "";
+  if (e) e.value = localStorage.getItem('payPeriodEnd') || "";
+  if (s) s.onchange = () => { localStorage.setItem('payPeriodStart', s.value); updateSessionTable(); };
+  if (e) e.onchange = () => { localStorage.setItem('payPeriodEnd', e.value); updateSessionTable(); };
+  updateSessionTable();
+});
+</script>
+
+<script>
+function calculateBonus(grams) {
+  let bonusPay = 0;
+  if (grams > 1587) {
+    bonusPay += (grams - 1587) * 0.11;
+    bonusPay += (1587 - 1134) * 0.05;
+  } else if (grams > 1134) {
+    bonusPay += (grams - 1134) * 0.05;
+  }
+  return bonusPay;
+}
+
+function calculate() {
+  const grams = parseFloat(document.getElementById('grams').value);
+  if (isNaN(grams) || grams <= 0) {
+    document.getElementById('result').innerText = 'Por favor, ingresa un número válido de gramos.';
+    return;
+  }
+  const bonusPay = calculateBonus(grams);
+  document.getElementById('result').innerText = 'Pago Extra: $' + bonusPay.toFixed(2);
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+  const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
+  let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  history.push(entry);
+  localStorage.setItem('trimHistory', JSON.stringify(history));
+  updateSessionTable();
+  document.getElementById('grams').value = '';
+}
+
+function groupByPayPeriod(history) {
+  const startStr = localStorage.getItem('payPeriodStart');
+  const endStr = localStorage.getItem('payPeriodEnd');
+  if (!startStr || !endStr) return {};
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  end.setHours(23, 59, 59, 999);
+
+  const entries = history
+    .map((entry, i) => [entry, i])
+    .filter(([entry]) => {
+      const d = new Date(entry.date);
+      return d >= start && d <= end;
+    });
+
+  const label = "Periodo de Pago: " + startStr + " – " + endStr;
+  return { [startStr]: { label, entries } };
+}
+
+function updateSessionTable() {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const grouped = groupByPayPeriod(history);
+  const tbody = document.querySelector("#sessionTable tbody");
+  tbody.innerHTML = '';
+  let totalBonusPay = 0;
+  const currentStart = localStorage.getItem('payPeriodStart');
+  const currentEnd = localStorage.getItem('payPeriodEnd');
+
+  Object.values(grouped).forEach((week, groupIndex) => {
+    const toggleRow = document.createElement('tr');
+    const toggleCell = document.createElement('td');
+    toggleCell.colSpan = 4;
+    toggleCell.style.cursor = 'pointer';
+    toggleCell.style.background = '#1a1a1a';
+    toggleCell.style.color = '#0f0';
+    toggleCell.style.fontWeight = 'bold';
+    toggleCell.textContent = week.label + " ▼";
+    if (week.label.includes(currentStart) && week.label.includes(currentEnd)) {
+      toggleCell.style.border = '2px solid lime';
+      toggleCell.style.boxShadow = '0 0 10px lime';
+    }
+    let collapsed = false;
+    toggleCell.onclick = () => {
+      collapsed = !collapsed;
+      week.entries.forEach(([_, i]) => {
+        const row = document.getElementById('row-' + i);
+        if (row) row.style.display = collapsed ? 'none' : '';
+      });
+      toggleCell.textContent = week.label + (collapsed ? " ▶" : " ▼");
+    };
+    toggleRow.appendChild(toggleCell);
+    tbody.appendChild(toggleRow);
+
+    week.entries.forEach(([entry, i]) => {
+      const row = document.createElement('tr');
+      row.id = 'row-' + i;
+
+      const dateCell = document.createElement('td');
+      dateCell.textContent = entry.date;
+      dateCell.style.cursor = 'pointer';
+      dateCell.onclick = () => makeDateCellEditable(dateCell, i);
+      row.appendChild(dateCell);
+
+      const gramsCell = document.createElement('td');
+      gramsCell.textContent = entry.grams;
+      gramsCell.contentEditable = true;
+      gramsCell.style.backgroundColor = '#222';
+      gramsCell.onblur = () => {
+        const g = parseFloat(gramsCell.textContent.trim());
+        if (!isNaN(g) && g > 0) {
+          history[i].grams = g;
+          const bonus = calculateBonus(g);
+          history[i].bonusPay = bonus.toFixed(2);
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+          updateSessionTable();
+        }
+      };
+      row.appendChild(gramsCell);
+
+      const bonusCell = document.createElement('td');
+      bonusCell.textContent = '$' + entry.bonusPay;
+      row.appendChild(bonusCell);
+
+      const actionCell = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.className = 'delete-button';
+      delBtn.onclick = () => {
+        if (confirm("¿Estás seguro de que deseas eliminar esta entrada?")) {
+          history.splice(i, 1);
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+          updateSessionTable();
+        }
+      };
+      actionCell.appendChild(delBtn);
+      row.appendChild(actionCell);
+      tbody.appendChild(row);
+      totalBonusPay += parseFloat(entry.bonusPay || 0);
+    });
+  });
+  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+}
+
+window.addEventListener('load', () => {
+  const s = document.getElementById('payPeriodStart');
+  const e = document.getElementById('payPeriodEnd');
+  if (s) {
+    s.value = localStorage.getItem('payPeriodStart') || "";
+    s.onchange = () => {
+      localStorage.setItem('payPeriodStart', s.value);
+      updateSessionTable();
+    };
+  }
+  if (e) {
+    e.value = localStorage.getItem('payPeriodEnd') || "";
+    e.onchange = () => {
+      localStorage.setItem('payPeriodEnd', e.value);
+      updateSessionTable();
+    };
+  }
+  updateSessionTable();
+});
+</script>
+
+<script>
+function clearAll() {
+  if (confirm("¿Estás seguro de que deseas borrar todas las entradas?")) {
+    localStorage.removeItem('trimHistory');
+    updateSessionTable();
+  }
+}
+</script>
