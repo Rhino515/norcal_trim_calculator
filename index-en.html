@@ -117,6 +117,25 @@
       text-decoration: none;
       margin-left: 10px;
     }
+    .past-period-header {
+      background-color: #444;
+      color: white;
+      padding: 0.5em;
+      cursor: pointer;
+      margin-top: 1em;
+      border-radius: 4px;
+      text-align: left;
+    }
+    .past-period-content {
+      display: none;
+      margin-left: 1em;
+      padding: 0.5em;
+      border: 1px solid #555;
+      border-top: none;
+    }
+    .past-period-content.open {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -298,13 +317,32 @@ function getCurrentPayPeriod() {
   };
 }
 
+function getPayPeriodForDate(date) {
+  const base = new Date("2025-04-14T00:00:00"); // Base Monday
+  const timeDiff = date.getTime() - base.getTime();
+  const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  const periodOffset = Math.floor(dayDiff / 14); // Calculate how many 14-day periods away
+
+  const periodStart = new Date(base);
+  periodStart.setDate(base.getDate() + periodOffset * 14);
+  const periodEnd = new Date(periodStart);
+  periodEnd.setDate(periodStart.getDate() + 13);
+
+  return {
+    start: periodStart.toISOString().split('T')[0],
+    end: periodEnd.toISOString().split('T')[0],
+    label: (document.documentElement.lang === 'es' ? 'Periodo de Pago: ' : 'Pay Period: ') +
+           periodStart.toISOString().split('T')[0] + ' – ' + periodEnd.toISOString().split('T')[0]
+  };
+}
+
 // Replace pay period label text on load
 window.addEventListener('load', () => {
   const period = getCurrentPayPeriod();
   const label = document.getElementById("payPeriodLabel");
   if (label) label.textContent = period.label;
 
-  // Also format dates in history to YYYY-MM-DD on load if necessary
+  // Also format dates in history to<ctrl3348>-MM-DD on load if necessary
   let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
   let changed = false;
   history.forEach(entry => {
@@ -331,107 +369,141 @@ function updateSessionTable() {
   tbody.innerHTML = '';
   let totalBonusPay = 0;
 
-  // Use the final groupByPayPeriod logic
   const grouped = groupByPayPeriod(history);
 
-  // Sort the groups by date
-  const sortedGroupKeys = Object.keys(grouped).sort();
+  // Function to create a table row for an entry
+  const createEntryRow = (entry, index) => {
+    const row = document.createElement('tr');
+    row.id = 'row-' + index;
 
-  sortedGroupKeys.forEach(key => {
-    const group = grouped[key];
+    const dateCell = document.createElement('td');
+    dateCell.textContent = entry.date;
+    dateCell.contentEditable = true;
+    dateCell.addEventListener('blur', function () {
+      const updatedDate = this.textContent.trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(updatedDate)) {
+        if (history[index].date !== updatedDate) {
+          history[index].date = updatedDate;
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+          updateSessionTable();
+        }
+      } else {
+        alert(document.documentElement.lang === 'es' ? "Formato de fecha no válido. Por favor use AAAA-MM-DD." : "Invalid date format. Please use<ctrl3348>-MM-DD.");
+        this.textContent = history[index].date;
+      }
+    });
+    row.appendChild(dateCell);
 
-    // Add a header row for the pay period/week label
+    const gramsCell = document.createElement('td');
+    gramsCell.textContent = entry.grams;
+    gramsCell.contentEditable = true;
+    gramsCell.style.backgroundColor = '#222';
+    gramsCell.addEventListener('blur', function () {
+      const newGrams = parseFloat(this.textContent.trim());
+      if (!isNaN(newGrams) && newGrams >= 0) {
+        if (history[index].grams !== newGrams) {
+          history[index].grams = newGrams;
+          const newBonus = calculateBonus(newGrams);
+          history[index].bonusPay = newBonus.toFixed(2);
+          localStorage.setItem('trimHistory', JSON.stringify(history));
+          updateSessionTable();
+        }
+      } else {
+        alert(document.documentElement.lang === 'es' ? "Por favor ingrese un número de gramos válido (cero o más)." : "Please enter a valid number of grams (zero or more).");
+        this.textContent = history[index].grams;
+      }
+    });
+    row.appendChild(gramsCell);
+
+    const bonusPayCell = document.createElement('td');
+    bonusPayCell.textContent = '$' + parseFloat(entry.bonusPay || 0).toFixed(2);
+    row.appendChild(bonusPayCell);
+
+    const actionCell = document.createElement('td');
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = document.documentElement.lang === 'es' ? 'Eliminar' : 'Delete';
+    deleteBtn.className = 'delete-button';
+    deleteBtn.onclick = (function(originalIndex) {
+        return function() {
+            if (confirm(document.documentElement.lang === 'es' ? "¿Estás seguro de que deseas borrar esta entrada?" : "Are you sure you want to delete this entry?")) {
+                deleteEntry(originalIndex);
+            }
+        };
+    })(index);
+    actionCell.appendChild(deleteBtn);
+    row.appendChild(actionCell);
+    return row;
+  };
+
+  // Render current pay period
+  const currentPeriodKey = Object.keys(grouped).find(key => key === getCurrentPayPeriod().start);
+  if (currentPeriodKey && grouped[currentPeriodKey].entries.length > 0) {
     const headerRow = document.createElement('tr');
     const headerCell = document.createElement('th');
-    headerCell.setAttribute('colspan', '4'); // Span across all columns
+    headerCell.setAttribute('colspan', '4');
     headerCell.style.textAlign = 'left';
-    headerCell.textContent = group.label;
-    headerRow.appendChild(headerCell);
+    headerCell.textContent = grouped[currentPeriodKey].label;
     tbody.appendChild(headerRow);
 
-    // Sort entries within the group by date
-    const sortedEntries = group.entries.sort(([, aIndex], [, bIndex]) => {
-        const dateA = new Date(history[aIndex].date);
-        const dateB = new Date(history[bIndex].date);
-        return dateA - dateB;
+    grouped[currentPeriodKey].entries.sort(([, aIndex], [, bIndex]) => new Date(history[aIndex].date) - new Date(history[bIndex].date)).forEach(([entry, index]) => {
+      tbody.appendChild(createEntryRow(entry, index));
+      totalBonusPay += parseFloat(entry.bonusPay || 0);
+    });
+  } else if (currentPeriodKey) {
+    const headerRow = document.createElement('tr');
+    const headerCell = document.createElement('th');
+    headerCell.setAttribute('colspan', '4');
+    headerCell.style.textAlign = 'left';
+    headerCell.textContent = grouped[currentPeriodKey].label;
+    tbody.appendChild(headerRow);
+    const emptyRow = document.createElement('tr');
+    const emptyCell = document.createElement('td');
+    emptyCell.setAttribute('colspan', '4');
+    emptyCell.textContent = document.documentElement.lang === 'es' ? 'No hay entradas para este periodo.' : 'No entries for this period.';
+    emptyCell.style.textAlign = 'center';
+    emptyRow.appendChild(emptyCell);
+    tbody.appendChild(emptyRow);
+  }
+
+  // Render past pay periods in collapsible sections
+  Object.keys(grouped)
+    .filter(key => key !== currentPeriodKey)
+    .sort((a, b) => new Date(b) - new Date(a)) // Sort past periods newest first
+    .forEach(key => {
+      const periodData = grouped[key];
+      if (periodData.entries.length > 0) {
+        const header = document.createElement('div');
+        header.className = 'past-period-header';
+        header.textContent = periodData.label + ' ▼';
+        header.addEventListener('click', function() {
+          const content = this.nextElementSibling;
+          content.classList.toggle('open');
+          this.textContent = periodData.label + (content.classList.contains('open') ? ' ▲' : ' ▼');
+        });
+        document.getElementById('sessionTable').parentNode.insertBefore(header, document.getElementById('sessionTable').nextSibling);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'past-period-content';
+        periodData.entries.sort(([, aIndex], [, bIndex]) => new Date(history[aIndex].date) - new Date(history[bIndex].date)).forEach(([entry, index]) => {
+          const row = createEntryRow(entry, index);
+          contentDiv.appendChild(row);
+          totalBonusPay += parseFloat(entry.bonusPay || 0);
+        });
+        document.getElementById('sessionTable').parentNode.insertBefore(contentDiv, header.nextSibling);
+      } else {
+        const header = document.createElement('div');
+        header.className = 'past-period-header';
+        header.textContent = periodData.label + ' (No entries)';
+        document.getElementById('sessionTable').parentNode.insertBefore(header, document.getElementById('sessionTable').nextSibling);
+      }
     });
 
-    sortedEntries.forEach(([entry, index]) => {
-      const row = document.createElement('tr');
-      row.id = 'row-' + index;
-
-      const dateCell = document.createElement('td');
-      dateCell.textContent = entry.date;
-      dateCell.contentEditable = true;
-      dateCell.addEventListener('blur', function () {
-        const updatedDate = this.textContent.trim();
-        // Basic date format validation YYYY-MM-DD
-        if (/^\d{4}-\d{2}-\d{2}$/.test(updatedDate)) {
-          // Check if date changed and update history
-          if (history[index].date !== updatedDate) {
-             history[index].date = updatedDate;
-             localStorage.setItem('trimHistory', JSON.stringify(history));
-             // Re-render the table to reflect potential new grouping/sorting
-             updateSessionTable();
-          }
-        } else {
-           alert(document.documentElement.lang === 'es' ? "Formato de fecha no válido. Por favor use AAAA-MM-DD." : "Invalid date format. Please use YYYY-MM-DD.");
-           // Revert to original date if format is wrong
-           this.textContent = history[index].date;
-        }
-      });
-      row.appendChild(dateCell);
-
-      const gramsCell = document.createElement('td');
-      gramsCell.textContent = entry.grams;
-      gramsCell.contentEditable = true;
-      gramsCell.style.backgroundColor = '#222';
-      gramsCell.addEventListener('blur', function () {
-        const newGrams = parseFloat(this.textContent.trim());
-        if (!isNaN(newGrams) && newGrams >= 0) { // Allow 0 grams entry
-          // Check if grams changed
-          if (history[index].grams !== newGrams) {
-             history[index].grams = newGrams;
-             const newBonus = calculateBonus(newGrams);
-             history[index].bonusPay = newBonus.toFixed(2);
-             localStorage.setItem('trimHistory', JSON.stringify(history));
-             // Re-render the table to update bonus and total
-             updateSessionTable();
-          }
-        } else {
-          alert(document.documentElement.lang === 'es' ? "Por favor ingrese un número de gramos válido (cero o más)." : "Please enter a valid number of grams (zero or more).");
-          // Revert to original grams if invalid
-          this.textContent = history[index].grams;
-        }
-      });
-      row.appendChild(gramsCell);
-
-      const bonusPayCell = document.createElement('td');
-      bonusPayCell.textContent = '$' + parseFloat(entry.bonusPay || 0).toFixed(2); // Ensure bonus is displayed with 2 decimals
-      row.appendChild(bonusPayCell);
-
-      const actionCell = document.createElement('td');
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = document.documentElement.lang === 'es' ? 'Eliminar' : 'Delete';
-      deleteBtn.className = 'delete-button';
-      // Pass the original index from the history array
-      deleteBtn.onclick = (function(originalIndex) {
-          return function() {
-              if (confirm(document.documentElement.lang === 'es' ? "¿Estás seguro de que deseas borrar esta entrada?" : "Are you sure you want to delete this entry?")) {
-                  deleteEntry(originalIndex);
-              }
-          };
-      })(index); // Use closure to capture the correct index
-      actionCell.appendChild(deleteBtn);
-
-      row.appendChild(actionCell);
-      tbody.appendChild(row);
-      totalBonusPay += parseFloat(entry.bonusPay || 0); // Ensure bonus is treated as a number
-    });
-  });
-  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+  // Update total bonus pay
+  const tfoot = document.getElementById('sessionTable').getElementsByTagName('tfoot')[0];
+  if (tfoot) {
+    tfoot.querySelector('#totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+  }
 }
-
 </script>
 
 <script>
@@ -564,65 +636,42 @@ function importCSV(event) {
 <script>
 // This is the final, effective groupByPayPeriod function called by updateSessionTable.
 function groupByPayPeriod(history) {
-  const startStr = localStorage.getItem('payPeriodStart');
-  const endStr = localStorage.getItem('payPeriodEnd');
+  const currentPeriod = getCurrentPayPeriod();
+  const currentStart = new Date(currentPeriod.start);
+  const currentEnd = new Date(currentPeriod.end);
+  currentEnd.setHours(23, 59, 59, 999);
 
-  // If either start or end date is missing, show all entries grouped by week
-  if (!startStr || !endStr || startStr === 'null' || endStr === 'null') { // Added checks for 'null' string
-    const weekMap = {};
-    const options = { month: 'long', day: 'numeric' };
-    const formatter = new Intl.DateTimeFormat(document.documentElement.lang === 'es' ? 'es-ES' : 'en-US', options);
+  const currentPeriodEntries = [];
+  const pastPeriodGroups = {};
 
-    const sortedHistory = [...history].sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort history before grouping by week
+  history.forEach((entry, index) => {
+    const entryDate = new Date(entry.date);
+    entryDate.setHours(0, 0, 0, 0);
 
-    sortedHistory.forEach((entry, i) => {
-      const d = new Date(entry.date);
-      if (isNaN(d.getTime())) {
-          console.warn("Skipping entry with invalid date:", entry);
-          return; // Skip entries with invalid dates
+    if (entryDate >= currentStart && entryDate <= currentEnd) {
+      currentPeriodEntries.push([entry, index]);
+    } else if (entryDate < currentStart) {
+      // Group by the correct two-week pay period for past dates
+      const period = getPayPeriodForDate(entryDate);
+      const key = period.start;
+      if (!pastPeriodGroups[key]) {
+        pastPeriodGroups[key] = { label: period.label, entries: [] };
       }
-      const monday = new Date(d); // Use a copy
-      monday.setDate(d.getDate() - d.getDay()); // Adjust to the past Monday
-      monday.setHours(0, 0, 0, 0);
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
-      const key = monday.toISOString().split('T')[0];
-      if (!weekMap[key]) {
-        weekMap[key] = {
-          label: (document.documentElement.lang === 'es' ? "Semana del " : "Week of ") +
-                 formatter.format(monday) + " – " + formatter.format(sunday),
-          entries: []
-        };
-      }
-       // Find the original index in the *unsorted* history array
-       const originalIndex = history.findIndex(item => item.date === entry.date && item.grams === entry.grams && item.bonusPay === entry.bonusPay);
-       if (originalIndex !== -1) {
-            weekMap[key].entries.push([entry, originalIndex]);
-       } else {
-           // Fallback if findIndex fails (e.g., duplicate entries), push with current loop index
-            weekMap[key].entries.push([entry, i]);
-       }
-    });
+      pastPeriodGroups[key].entries.push([entry, index]);
+    }
+    // Future dates could be handled with another 'else if'
+  });
 
-    return weekMap;
-  }
+  const grouped = {};
+  grouped[currentPeriod.start] = { label: currentPeriod.label, entries: currentPeriodEntries };
 
-  // Normal grouping by stored pay period dates
-  const start = new Date(startStr);
-  const end = new Date(endStr);
-  end.setHours(23, 59, 59, 999);
+  // Sort past period groups by start date (newest first)
+  const sortedPastKeys = Object.keys(pastPeriodGroups).sort((a, b) => new Date(b) - new Date(a));
+  sortedPastKeys.forEach(key => {
+    grouped[key] = pastPeriodGroups[key];
+  });
 
-  const periodEntries = history
-    .map((entry, i) => [entry, i]) // Keep original index
-    .filter(([entry]) => {
-      const d = new Date(entry.date);
-       d.setHours(0, 0, 0, 0); // Set entry date to midnight for accurate comparison
-      return d >= start && d <= end;
-    });
-
-  const label = (document.documentElement.lang === 'es' ? "Periodo de Pago: " : "Pay Period: ") +
-                startStr + " – " + endStr;
-  return { [startStr]: { label, entries: periodEntries } };
+  return grouped;
 }
 </script>
 
