@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <script>
@@ -158,7 +159,6 @@
 <div style="margin-top: 0.6em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
 <strong>Note:</strong> For the Trim Tracker import feature to work properly, please use the calculator and tracker in your preferred language only. Mixing languages may cause data sync issues.
   </div>
-
 <div id="payPeriodLabel" style="margin-top: 0.6em; color: #0f0; font-weight: bold;"></div>
 <table id="sessionTable">
 <thead>
@@ -174,23 +174,19 @@
 <tr>
 <td colspan="2"><strong>Total</strong></td>
 <td id="totalBonusPay">$0.00</td>
-
 </tr>
 </tfoot>
 </table>
 <div style="margin-top: 0.6em;">
-  <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="importCSV(event)">
-  <button onclick="document.getElementById('csvInput').click()" style='background-color:#28a745;color:white;padding: 0.45em 1em;border:none;border-radius:4px;cursor:pointer;font-weight:bold;'>Import CSV</button>
+<input accept=".csv" id="csvInput" onchange="importCSV(event)" style="display:none" type="file"/>
+<button onclick="document.getElementById('csvInput').click()" style="background-color:#28a745;color:white;padding: 0.45em 1em;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Import CSV</button>
 </div>
-
 <div style="margin-top: 0.6em;">
-  <button onclick="downloadCSV()" style='background-color:green;color:white;padding: 0.45em 1em;border:none;border-radius:4px;cursor:pointer;font-weight:bold;'>Export CSV</button>
+<button onclick="downloadCSV()" style="background-color:green;color:white;padding: 0.45em 1em;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Export CSV</button>
 </div>
-
 <div style="margin-top: 0.6em;">
-  <button onclick="clearCurrentPayPeriod()" style='background-color:red;color:white;padding: 0.5em 1em;border:none;border-radius:4px;cursor:pointer;'>Clear Current Pay Period</button>
+<button onclick="clearCurrentPayPeriod()" style="background-color:red;color:white;padding: 0.5em 1em;border:none;border-radius:4px;cursor:pointer;">Clear Current Pay Period</button>
 </div>
-
 <div style="margin-top: 1.2em; border-top: 1px solid #444; padding-top: 1em;">
 <h2 onclick="togglePayCalc()" style="color:#0f0; cursor:pointer;">Hourly &amp; Pay Averages ▼</h2>
 <div id="payCalcSection" style="display:none;">
@@ -296,7 +292,6 @@
       updateSessionTable();
     }
 </script>
-
 <script>
 // Auto pay period starting from April 14, 2025 (Monday)
 function getCurrentPayPeriod() {
@@ -362,151 +357,6 @@ window.addEventListener('load', () => {
 </script>
 
 <script>
-// This is the effective updateSessionTable function called by calculate, deleteEntry, importCSV, and the load listener.
-function updateSessionTable() {
-  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-  const tbody = document.getElementById('sessionTable').getElementsByTagName('tbody')[0];
-  tbody.innerHTML = '';
-  let totalBonusPay = 0;
-
-  const grouped = groupByPayPeriod(history);
-
-  // Function to create a table row for an entry
-  const createEntryRow = (entry, index) => {
-    const row = document.createElement('tr');
-    row.id = 'row-' + index;
-
-    const dateCell = document.createElement('td');
-    dateCell.textContent = entry.date;
-    dateCell.contentEditable = true;
-    dateCell.addEventListener('blur', function () {
-      const updatedDate = this.textContent.trim();
-      if (/^\d{4}-\d{2}-\d{2}$/.test(updatedDate)) {
-        if (history[index].date !== updatedDate) {
-          history[index].date = updatedDate;
-          localStorage.setItem('trimHistory', JSON.stringify(history));
-          updateSessionTable();
-        }
-      } else {
-        alert(document.documentElement.lang === 'es' ? "Formato de fecha no válido. Por favor use AAAA-MM-DD." : "Invalid date format. Please use<ctrl3348>-MM-DD.");
-        this.textContent = history[index].date;
-      }
-    });
-    row.appendChild(dateCell);
-
-    const gramsCell = document.createElement('td');
-    gramsCell.textContent = entry.grams;
-    gramsCell.contentEditable = true;
-    gramsCell.style.backgroundColor = '#222';
-    gramsCell.addEventListener('blur', function () {
-      const newGrams = parseFloat(this.textContent.trim());
-      if (!isNaN(newGrams) && newGrams >= 0) {
-        if (history[index].grams !== newGrams) {
-          history[index].grams = newGrams;
-          const newBonus = calculateBonus(newGrams);
-          history[index].bonusPay = newBonus.toFixed(2);
-          localStorage.setItem('trimHistory', JSON.stringify(history));
-          updateSessionTable();
-        }
-      } else {
-        alert(document.documentElement.lang === 'es' ? "Por favor ingrese un número de gramos válido (cero o más)." : "Please enter a valid number of grams (zero or more).");
-        this.textContent = history[index].grams;
-      }
-    });
-    row.appendChild(gramsCell);
-
-    const bonusPayCell = document.createElement('td');
-    bonusPayCell.textContent = '$' + parseFloat(entry.bonusPay || 0).toFixed(2);
-    row.appendChild(bonusPayCell);
-
-    const actionCell = document.createElement('td');
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = document.documentElement.lang === 'es' ? 'Eliminar' : 'Delete';
-    deleteBtn.className = 'delete-button';
-    deleteBtn.onclick = (function(originalIndex) {
-        return function() {
-            if (confirm(document.documentElement.lang === 'es' ? "¿Estás seguro de que deseas borrar esta entrada?" : "Are you sure you want to delete this entry?")) {
-                deleteEntry(originalIndex);
-            }
-        };
-    })(index);
-    actionCell.appendChild(deleteBtn);
-    row.appendChild(actionCell);
-    return row;
-  };
-
-  // Render current pay period
-  const currentPeriodKey = Object.keys(grouped).find(key => key === getCurrentPayPeriod().start);
-  if (currentPeriodKey && grouped[currentPeriodKey].entries.length > 0) {
-    const headerRow = document.createElement('tr');
-    const headerCell = document.createElement('th');
-    headerCell.setAttribute('colspan', '4');
-    headerCell.style.textAlign = 'left';
-    headerCell.textContent = grouped[currentPeriodKey].label;
-    tbody.appendChild(headerRow);
-
-    grouped[currentPeriodKey].entries.sort(([, aIndex], [, bIndex]) => new Date(history[aIndex].date) - new Date(history[bIndex].date)).forEach(([entry, index]) => {
-      tbody.appendChild(createEntryRow(entry, index));
-      totalBonusPay += parseFloat(entry.bonusPay || 0);
-    });
-  } else if (currentPeriodKey) {
-    const headerRow = document.createElement('tr');
-    const headerCell = document.createElement('th');
-    headerCell.setAttribute('colspan', '4');
-    headerCell.style.textAlign = 'left';
-    headerCell.textContent = grouped[currentPeriodKey].label;
-    tbody.appendChild(headerRow);
-    const emptyRow = document.createElement('tr');
-    const emptyCell = document.createElement('td');
-    emptyCell.setAttribute('colspan', '4');
-    emptyCell.textContent = document.documentElement.lang === 'es' ? 'No hay entradas para este periodo.' : 'No entries for this period.';
-    emptyCell.style.textAlign = 'center';
-    emptyRow.appendChild(emptyCell);
-    tbody.appendChild(emptyRow);
-  }
-
-  // Render past pay periods in collapsible sections
-  Object.keys(grouped)
-    .filter(key => key !== currentPeriodKey)
-    .sort((a, b) => new Date(b) - new Date(a)) // Sort past periods newest first
-    .forEach(key => {
-      const periodData = grouped[key];
-      if (periodData.entries.length > 0) {
-        const header = document.createElement('div');
-        header.className = 'past-period-header';
-        header.textContent = periodData.label + ' ▼';
-        header.addEventListener('click', function() {
-          const content = this.nextElementSibling;
-          content.classList.toggle('open');
-          this.textContent = periodData.label + (content.classList.contains('open') ? ' ▲' : ' ▼');
-        });
-        document.getElementById('sessionTable').parentNode.insertBefore(header, document.getElementById('sessionTable').nextSibling);
-
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'past-period-content';
-        periodData.entries.sort(([, aIndex], [, bIndex]) => new Date(history[aIndex].date) - new Date(history[bIndex].date)).forEach(([entry, index]) => {
-          const row = createEntryRow(entry, index);
-          contentDiv.appendChild(row);
-          totalBonusPay += parseFloat(entry.bonusPay || 0);
-        });
-        document.getElementById('sessionTable').parentNode.insertBefore(contentDiv, header.nextSibling);
-      } else {
-        const header = document.createElement('div');
-        header.className = 'past-period-header';
-        header.textContent = periodData.label + ' (No entries)';
-        document.getElementById('sessionTable').parentNode.insertBefore(header, document.getElementById('sessionTable').nextSibling);
-      }
-    });
-
-  // Update total bonus pay
-  const tfoot = document.getElementById('sessionTable').getElementsByTagName('tfoot')[0];
-  if (tfoot) {
-    tfoot.querySelector('#totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
-  }
-}
-</script>
-
-<script>
 document.getElementById('import-tracker-total').addEventListener('click', () => {
   const todayISO = new Date().toISOString().split('T')[0];
   const trackerTotal = localStorage.getItem('trimTrackerDailyTotal-' + todayISO);
@@ -518,7 +368,6 @@ document.getElementById('import-tracker-total').addEventListener('click', () => 
   }
 });
 </script>
-
 <script>
 function clearCurrentPayPeriod() {
   const confirmMsg = document.documentElement.lang === 'es'
@@ -541,7 +390,6 @@ function clearCurrentPayPeriod() {
   updateSessionTable();
 }
 </script>
-
 <script>
 function downloadCSV() {
   const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
@@ -566,7 +414,6 @@ function downloadCSV() {
   document.body.removeChild(link);
 }
 </script>
-
 <script>
 function importCSV(event) {
   const file = event.target.files[0];
@@ -632,7 +479,6 @@ function importCSV(event) {
   event.target.value = '';
 }
 </script>
-
 <script>
 // This is the final, effective groupByPayPeriod function called by updateSessionTable.
 function groupByPayPeriod(history) {
@@ -674,6 +520,77 @@ function groupByPayPeriod(history) {
   return grouped;
 }
 </script>
+<script>
+function updateSessionTable() {
+  const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const tbody = document.querySelector('#sessionTable tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  let totalBonusPay = 0;
 
-</body>
+  const grouped = groupByPayPeriod(history);
+  const currentPeriod = getCurrentPayPeriod();
+  const currentStart = new Date(currentPeriod.start);
+  const currentEnd = new Date(currentPeriod.end);
+  currentEnd.setHours(23, 59, 59, 999);
+
+  const currentEntries = grouped[currentPeriod.start]?.entries || [];
+
+  // Render current pay period
+  currentEntries.forEach(([entry, index]) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${entry.date}</td>
+      <td contenteditable="true" onblur="editGrams(${index}, this)">${entry.grams}</td>
+      <td>$${parseFloat(entry.bonusPay).toFixed(2)}</td>
+      <td><button onclick="deleteEntry(${index})" class="delete-button">Delete</button></td>`;
+    tbody.appendChild(row);
+    totalBonusPay += parseFloat(entry.bonusPay || 0);
+  });
+
+  document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
+
+  // Clear previous collapsible past sections
+  document.querySelectorAll('.past-period-header, .past-period-content').forEach(el => el.remove());
+
+  Object.keys(grouped).filter(key => key !== currentPeriod.start).forEach(key => {
+    const group = grouped[key];
+    const header = document.createElement('div');
+    header.className = 'past-period-header';
+    header.textContent = group.label + ' [+]';
+    header.addEventListener('click', function () {
+      const content = this.nextElementSibling;
+      const open = content.classList.toggle('open');
+      this.textContent = group.label + (open ? ' [-]' : ' [+]');
+    });
+
+    const content = document.createElement('div');
+    content.className = 'past-period-content';
+    group.entries.forEach(([entry, index]) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${entry.date}</td>
+        <td contenteditable="true" onblur="editGrams(${index}, this)">${entry.grams}</td>
+        <td>$${parseFloat(entry.bonusPay).toFixed(2)}</td>
+        <td><button onclick="deleteEntry(${index})" class="delete-button">Delete</button></td>`;
+      content.appendChild(row);
+    });
+
+    const table = document.getElementById('sessionTable');
+    table.parentNode.insertBefore(header, table.nextSibling);
+    table.parentNode.insertBefore(content, header.nextSibling);
+  });
+}
+
+function editGrams(index, td) {
+  let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const newGrams = parseFloat(td.textContent.trim());
+  if (!isNaN(newGrams)) {
+    history[index].grams = newGrams;
+    history[index].bonusPay = calculateBonus(newGrams).toFixed(2);
+    localStorage.setItem('trimHistory', JSON.stringify(history));
+    updateSessionTable();
+  }
+}
+</script></body>
 </html>
