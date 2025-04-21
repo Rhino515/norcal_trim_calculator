@@ -536,11 +536,11 @@ function updateSessionTable() {
 
   const currentEntries = grouped[currentPeriod.start]?.entries || [];
 
-  // Render current pay period
+  // Render current pay period (now editable)
   currentEntries.forEach(([entry, index]) => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${entry.date}</td>
+      <td contenteditable="true" onblur="editDate(${index}, this)">${entry.date}</td>
       <td contenteditable="true" onblur="editGrams(${index}, this)">${entry.grams}</td>
       <td>$${parseFloat(entry.bonusPay).toFixed(2)}</td>
       <td><button onclick="deleteEntry(${index})" class="delete-button">Delete</button></td>`;
@@ -553,6 +553,7 @@ function updateSessionTable() {
   // Clear previous collapsible past sections
   document.querySelectorAll('.past-period-header, .past-period-content').forEach(el => el.remove());
 
+  // Render past pay periods
   Object.keys(grouped).filter(key => key !== currentPeriod.start).forEach(key => {
     const group = grouped[key];
     const header = document.createElement('div');
@@ -569,7 +570,7 @@ function updateSessionTable() {
     group.entries.forEach(([entry, index]) => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${entry.date}</td>
+        <td contenteditable="true" onblur="editDate(${index}, this)">${entry.date}</td>
         <td contenteditable="true" onblur="editGrams(${index}, this)">${entry.grams}</td>
         <td>$${parseFloat(entry.bonusPay).toFixed(2)}</td>
         <td><button onclick="deleteEntry(${index})" class="delete-button">Delete</button></td>`;
@@ -592,5 +593,22 @@ function editGrams(index, td) {
     updateSessionTable();
   }
 }
-</script></body>
+</script>
+<script>
+function editDate(index, td) {
+  let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+  const updatedDate = td.textContent.trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(updatedDate)) {
+    history[index].date = updatedDate;
+    localStorage.setItem('trimHistory', JSON.stringify(history));
+    updateSessionTable();
+  } else {
+    alert("Please enter a valid date format: YYYY-MM-DD");
+    td.textContent = history[index].date; // Revert to original
+  }
+}
+</script>
+
+</body>
 </html>
