@@ -295,7 +295,7 @@
 <script>
 // Auto pay period starting from April 14, 2025 (Monday)
 function getCurrentPayPeriod() {
-  const base = new Date("2025-04-14T00:00:00"); // Monday
+  const base = new Date("2025-04-13T00:00:00");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diffDays = Math.floor((today - base) / (1000 * 60 * 60 * 24));
@@ -313,7 +313,7 @@ function getCurrentPayPeriod() {
 }
 
 function getPayPeriodForDate(date) {
-  const base = new Date("2025-04-14T00:00:00"); // Base Monday
+  const base = new Date("2025-04-13T00:00:00"); // Base shifted to include 4/14 in previous pay period
   const timeDiff = date.getTime() - base.getTime();
   const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
   const periodOffset = Math.floor(dayDiff / 14); // Calculate how many 14-day periods away
