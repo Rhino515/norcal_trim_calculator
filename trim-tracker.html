@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trim Tracker</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trim Tracker</title>
+<style>
     body {
       background-color: #111;
       color: #fff;
@@ -85,39 +86,34 @@
   </style>
 </head>
 <body>
-  <button class="lang-toggle" onclick="toggleLanguage()">Español</button>
-  <img src="trim-tracker-banner.PNG" alt="Trim Tracker Banner" class="banner" />
-
-  <p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
-    <strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers.
+<button class="lang-toggle" onclick="toggleLanguage()">Español</button>
+<img alt="Trim Tracker Banner" class="banner" src="trim-tracker-banner.PNG"/>
+<p style="color: #ccc; max-width: 700px; margin: 0 auto 20px;">
+<strong>Note:</strong> Your data is saved locally in your browser and will remain available unless you clear your cache or switch devices or browsers.
   </p>
-
-  <table id="sessionTable">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Strain</th>
-        <th>Grams</th>
-        <th>Total</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-
-  <button onclick="addRow()">Add Row</button>
-  <button class="clear-all" onclick="clearAllRows()">Clear All</button>
-  <button onclick="exportCSV()">Export CSV</button>
-  <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
-  <button onclick="document.getElementById('csvFileInput').click()">Import CSV</button>
-  <a id="backLink" class="back-link" href="index.html">← Back to Calculator</a>
-
-  <div id="dailyTotals" style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
-    <h3>Daily Totals</h3>
-    <ul id="totalsList" style="list-style: none; padding: 0;"></ul>
-  </div>
-
-  <script>
+<table id="sessionTable">
+<thead>
+<tr>
+<th>Date</th>
+<th>Strain</th>
+<th>Grams</th>
+<th>Total</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+<button onclick="addRow()">Add Row</button>
+<button class="clear-all" onclick="clearAllRows()">Clear All</button>
+<button onclick="exportCSV()">Export CSV</button>
+<input accept=".csv" id="csvFileInput" onchange="importCSV(event)" style="display: none;" type="file"/>
+<button onclick="document.getElementById('csvFileInput').click()">Import CSV</button>
+<a class="back-link" href="index.html" id="backLink">← Back to Calculator</a>
+<div id="dailyTotals" style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+<h3>Daily Totals</h3>
+<ul id="totalsList" style="list-style: none; padding: 0;"></ul>
+</div>
+<script>
     const lang = document.documentElement.lang;
     const storageKey = `trimTrackerData-${lang}`;
     let saveTimeout;
@@ -137,7 +133,7 @@
       input.step = '0.01';
       input.placeholder = 'g';
       input.value = value;
-      input.oninput = () => { onChangeFunc(); debounceSave(); };
+      input.oninput = debounceSave;
       return input;
     }
 
