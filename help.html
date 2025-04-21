@@ -24,112 +24,138 @@
     ul {
       padding-left: 20px;
     }
+    .faq-item {
+      margin-bottom: 1em;
+    }
+    .faq-question {
+      width: 100%;
+      background-color: #222;
+      color: #0f0;
+      border: none;
+      padding: 0.75em;
+      font-size: 1em;
+      text-align: left;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      padding: 0 1em;
+      background-color: #333;
+      color: #fff;
+      border-left: 3px solid #0f0;
+      margin-top: 0.25em;
+      border-radius: 4px;
+    }
+    .faq-answer.open {
+      max-height: 500px;
+      padding: 0.5em 1em;
+    }
   </style>
 </head>
 <body>
   <h1>Help & How to Use</h1>
+
   
   <h2>Overview</h2>
-  <p>The NorCal Trim Calculator and Trim Tracker are tools designed to help trimmers track their daily weight and calculate bonus pay. All data is stored locally in your browser.</p>
+  <p>The NorCal Trim Tools were created to help cannabis trimmers stay organized, motivated, and accurate with their work. With the Trim Calculator and Trim Tracker, you can easily log your daily trimming weight, calculate bonus pay, and track your progress across bi-weekly pay periods — all directly in your browser with no account or login required.</p>
+  <p>All of your data is stored locally on your device, and you can export it anytime for backup or reporting. Whether you're tracking a single day or your entire pay cycle, these tools are designed to make your workflow faster, easier, and more transparent.</p>
 
-  <h2>Using the Trim Calculator</h2>
+<h2>Using the Trim Calculator</h2>
   <ul>
-    <li>Enter the total grams you trimmed for the day in the input box.</li>
-    <li>Click <strong>"Add Today's Trim Tracker Total"</strong> to automatically import your weight from the Trim Tracker if you've logged it for today.</li>
-    <li>Click <strong>"Calculate"</strong> to compute your bonus pay based on the current rate.</li>
-    <li>Your result will appear in the session board below, including the bonus amount.</li>
-    <li>Use the <strong>"Delete"</strong> or <strong>"Clear All"</strong> buttons to manage your entries.</li>
-    <li>You can also click <strong>"Export CSV"</strong> to save your records for backup.</li>
+    <li>Enter the total grams you trimmed for the day.</li>
+    <li>Click <strong>"Add Today's Trim Tracker Total"</strong> to import your saved grams from the tracker (if logged for today).</li>
+    <li>Click <strong>"Calculate"</strong> to add the entry to your session board with calculated bonus pay.</li>
+    <li>The session board now groups your entries by bi-weekly pay periods, starting every other Monday.</li>
+    <li>Past pay periods are <strong>collapsed by default</strong> to keep things clean. Click the <strong>[+]</strong> to expand and view entries.</li>
+    <li>Use <strong>"Export CSV"</strong> to save your full session history, or <strong>"Clear Current Pay Period"</strong> to reset just the active period.</li>
+  </ul>
+
+  <h2>Hourly Pay Calculator</h2>
+  <ul>
+    <li>Expand the <strong>"Hourly & Pay Averages ▼"</strong> section under the session board.</li>
+    <li>Enter your hourly rate, total hours worked, overtime hours, and select a date range.</li>
+    <li>Click <strong>"Calculate Averages"</strong> to see your full pay breakdown: bonus, overtime, total, daily/weekly/biweekly averages.</li>
   </ul>
 
   <h2>Using the Trim Tracker</h2>
   <ul>
-    <li>Use this page to log each strain you trim, along with the amount (in grams).</li>
-    <li>You can enter up to three gram totals per row, and click <strong>"+"</strong> to add more fields as needed.</li>
-    <li>The tracker calculates your daily total automatically and saves it under the current date.</li>
-    <li>Return to the calculator and click the green <strong>"Add Today's Trim Tracker Total"</strong> button to import your total for bonus calculation.</li>
+    <li>Track your grams for each strain using the <strong>Trim Tracker</strong> page.</li>
+    <li>You can add up to 3 entries per row and click <strong>"+"</strong> to add more fields.</li>
+    <li>It automatically calculates your daily total and saves it with today’s date.</li>
+    <li>Go back to the calculator and click the green button to import that total.</li>
   </ul>
 
   <h2>Tips & FAQ</h2>
   <ul>
-    <li><strong>Data is saved locally:</strong> Your entries stay saved in your browser unless you clear your cache or use a different device.</li>
-    <li><strong>Language matters:</strong> Make sure you use the app consistently in either English or Spanish — mixing them may cause your data to be saved separately.</li>
-    <li><strong>Backing up:</strong> Use the Export CSV option on either page to save a copy of your data manually.</li>
-    <li><strong>Date syncing:</strong> The calculator only imports tracker data saved under today’s date. If no data is found, double-check that the tracker entry date matches today.</li>
+    <li><strong>Everything saves automatically:</strong> Your data stays in your browser unless manually cleared.</li>
+    <li><strong>Past pay periods are now collapsible:</strong> This keeps your view tidy — just expand any previous period to view or edit entries.</li>
+    <li><strong>Date editing is supported:</strong> You can click and edit any date or gram total directly in the table. It will automatically move to the correct pay period after saving.</li>
+    <li><strong>Back up often:</strong> Use "Export CSV" to keep your data safe before clearing history.</li>
   </ul>
 
   <h2>Need More Help?</h2>
-  <p>If something isn’t working, try refreshing the page or re-entering your data. You can also contact the creator directly for support.</p>
+  <p>If something isn’t working, refresh the page or re-check your dates. You can also contact the creator for support.</p>
 
   <p><a href="index.html">← Back to Calculator</a></p>
 
-<hr>
-<h2>Frequently Asked Questions</h2>
-<div class="faq-item">
-  <button class="faq-question">Why can’t I import my Trim Tracker total?</button>
-  <div class="faq-answer">
-    <p>Make sure you’ve saved a tracker entry for today’s date. The calculator only imports the current day's total from localStorage.</p>
+  <hr>
+  <h2>Frequently Asked Questions</h2>
+
+  <div class="faq-item">
+    <button class="faq-question">Why can’t I import my Trim Tracker total?</button>
+    <div class="faq-answer">
+      <p>Make sure you've saved an entry in the Trim Tracker for today's date. The calculator only pulls in today's total.</p>
+    </div>
   </div>
-</div>
-<div class="faq-item">
-  <button class="faq-question">Where is my data saved?</button>
-  <div class="faq-answer">
-    <p>All data is saved in your browser using localStorage. It’s private and doesn’t leave your device.</p>
+
+  <div class="faq-item">
+    <button class="faq-question">Can I edit old entries?</button>
+    <div class="faq-answer">
+      <p>Yes. Click any date or gram field directly in the session board to edit it. It will automatically move to the correct pay period.</p>
+    </div>
   </div>
-</div>
-<div class="faq-item">
-  <button class="faq-question">Does this app work offline?</button>
-  <div class="faq-answer">
-    <p>Yes. Once loaded online once, it works offline thanks to built-in service worker support.</p>
+
+  <div class="faq-item">
+    <button class="faq-question">How are pay periods grouped?</button>
+    <div class="faq-answer">
+      <p>Pay periods are bi-weekly starting every other Monday. Past periods are collapsed by default to keep the page clean.</p>
+    </div>
   </div>
-</div>
-<div class="faq-item">
-  <button class="faq-question">How do I install it like an app?</button>
-  <div class="faq-answer">
-    <p>On Android or desktop Chrome, you’ll see an install prompt or a browser menu option to “Install App.” On iOS, tap the Share icon and select “Add to Home Screen.”</p>
+
+  <div class="faq-item">
+    <button class="faq-question">What is the Hourly Pay Calculator?</button>
+    <div class="faq-answer">
+      <p>This tool lets you enter your hourly rate, hours worked, and date range. It will calculate regular pay, overtime, and combine it with your bonus pay for full insights.</p>
+    </div>
   </div>
-</div>
-<div class="faq-item">
-  <button class="faq-question">What happens if I clear my browser?</button>
-  <div class="faq-answer">
-    <p>Your data will be lost if you clear localStorage or browser data. Export your CSV first to back up!</p>
+
+  <div class="faq-item">
+    <button class="faq-question">Where is my data saved?</button>
+    <div class="faq-answer">
+      <p>All data is stored in your browser (localStorage). It's private and only accessible on this device.</p>
+    </div>
   </div>
-</div>
-<style>
-  .faq-item {
-    margin-bottom: 1em;
-  }
-  .faq-question {
-    width: 100%;
-    background-color: #222;
-    color: #0f0;
-    border: none;
-    padding: 0.75em;
-    font-size: 1em;
-    text-align: left;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  .faq-answer {
-    display: none;
-    padding: 0.5em 1em;
-    background-color: #333;
-    color: #fff;
-    border-left: 3px solid #0f0;
-    margin-top: 0.25em;
-    border-radius: 4px;
-  }
-</style>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.faq-question').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const answer = btn.nextElementSibling;
-        answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+
+  <div class="faq-item">
+    <button class="faq-question">What if I clear my browser or switch phones?</button>
+    <div class="faq-answer">
+      <p>You will lose your data unless you've exported it first. Always use "Export CSV" to save a copy before switching devices or clearing data.</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.faq-question').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const answer = btn.nextElementSibling;
+          answer.classList.toggle('open');
+          btn.setAttribute('aria-expanded', answer.classList.contains('open'));
+        });
       });
     });
-  });
-</script>
-
+  </script>
 </body>
 </html>

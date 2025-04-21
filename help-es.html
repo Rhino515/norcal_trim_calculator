@@ -5,11 +5,14 @@
   <meta charset="UTF-8">
   <title>Ayuda | Herramientas NorCal Trim</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
+  
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
     body {
-      background-color: #111;
+      background-color: #000;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
       line-height: 1.6;
       padding: 20px;
       max-width: 800px;
@@ -17,12 +20,16 @@
     }
     h1, h2 {
       color: #0f0;
+      font-weight: 600;
     }
     a {
       color: #0af;
     }
     ul {
       padding-left: 20px;
+    }
+    p, li {
+      font-size: 1em;
     }
     .faq-item {
       margin-bottom: 1em;
@@ -47,75 +54,95 @@
       margin-top: 0.25em;
       border-radius: 4px;
     }
-  </style>
+    ...</style>
 </head>
 <body>
   <h1>Ayuda y Cómo Usar</h1>
 
   <h2>Resumen</h2>
-  <p>La Calculadora de Recorte NorCal y el Rastreador de Recorte son herramientas diseñadas para ayudar a los recortadores a registrar su peso diario y calcular su bono. Todos los datos se guardan localmente en tu navegador.</p>
+  <p>Las Herramientas NorCal Trim fueron creadas para ayudar a los recortadores de cannabis a mantenerse organizados, motivados y precisos en su trabajo. Con la Calculadora de Recorte y el Rastreador, puedes registrar fácilmente tu peso diario, calcular tu bono y hacer seguimiento de tu progreso a lo largo de los periodos de pago quincenales — todo directamente en tu navegador sin necesidad de cuenta ni inicio de sesión.</p>
+  <p>Todos tus datos se almacenan localmente en tu dispositivo, y puedes exportarlos en cualquier momento como respaldo. Ya sea que estés siguiendo un solo día o todo un ciclo de pago, estas herramientas están diseñadas para hacer tu trabajo más rápido, sencillo y transparente.</p>
 
   <h2>Cómo usar la Calculadora de Recorte</h2>
   <ul>
-    <li>Ingresa la cantidad total de gramos que recortaste durante el día en el campo de entrada.</li>
-    <li>Haz clic en <strong>"Agregar total del Rastreador de hoy"</strong> para importar automáticamente tu peso del Rastreador si ya lo registraste hoy.</li>
-    <li>Haz clic en <strong>"Calcular"</strong> para obtener tu bono según la tarifa actual.</li>
-    <li>Tu resultado aparecerá en la tabla de sesión, incluyendo el monto del bono.</li>
-    <li>Usa los botones <strong>"Eliminar"</strong> o <strong>"Borrar todo"</strong> para administrar tus registros.</li>
-    <li>También puedes hacer clic en <strong>"Exportar CSV"</strong> para guardar tus registros como respaldo.</li>
+    <li>Ingresa los gramos totales recortados en el día.</li>
+    <li>Haz clic en <strong>"Agregar total del Rastreador de hoy"</strong> para importar automáticamente tu peso desde el Rastreador si ya lo registraste hoy.</li>
+    <li>Haz clic en <strong>"Calcular"</strong> para agregar la entrada a la tabla con el bono calculado.</li>
+    <li>La tabla ahora agrupa tus entradas por periodos de pago quincenales que empiezan cada dos lunes.</li>
+    <li>Los periodos pasados están <strong>colapsados por defecto</strong>. Haz clic en <strong>[+]</strong> para expandir y ver entradas anteriores.</li>
+    <li>Usa <strong>"Exportar CSV"</strong> para guardar tu historial completo o <strong>"Borrar Periodo Actual"</strong> para limpiar solo el periodo activo.</li>
+  </ul>
+
+  <h2>Calculadora de Pago por Hora</h2>
+  <ul>
+    <li>Expande la sección <strong>"Promedios de Pago por Hora ▼"</strong> bajo la tabla.</li>
+    <li>Ingresa tu tarifa por hora, horas trabajadas, horas extra y selecciona un rango de fechas.</li>
+    <li>Haz clic en <strong>"Calcular Promedios"</strong> para ver tu pago completo: bono, horas extra, total, y promedios diarios/semanales/quincenales.</li>
   </ul>
 
   <h2>Cómo usar el Rastreador de Recorte</h2>
   <ul>
-    <li>Usa esta página para registrar cada variedad que recortes junto con la cantidad (en gramos).</li>
-    <li>Puedes ingresar hasta tres cantidades de gramos por fila y hacer clic en <strong>"+"</strong> para agregar más campos si es necesario.</li>
-    <li>El rastreador calcula automáticamente tu total diario y lo guarda bajo la fecha actual.</li>
-    <li>Regresa a la calculadora y haz clic en <strong>"Agregar total del Rastreador de hoy"</strong> para importar tu total y calcular tu bono.</li>
+    <li>Registra los gramos por cada variedad usando la página del <strong>Rastreador</strong>.</li>
+    <li>Puedes ingresar hasta 3 totales por fila y hacer clic en <strong>"+"</strong> para agregar más.</li>
+    <li>El rastreador calcula automáticamente tu total diario y lo guarda con la fecha actual.</li>
+    <li>Regresa a la calculadora y haz clic en el botón verde para importar ese total.</li>
   </ul>
 
   <h2>Consejos y Preguntas Frecuentes</h2>
   <ul>
-    <li><strong>Los datos se guardan localmente:</strong> Tus registros se almacenan en tu navegador a menos que borres la caché o uses otro dispositivo.</li>
-    <li><strong>El idioma importa:</strong> Usa la app de forma consistente en inglés o español — mezclar idiomas puede guardar los datos por separado.</li>
-    <li><strong>Respaldo:</strong> Usa la opción Exportar CSV en cualquier página para guardar una copia de tus datos manualmente.</li>
-    <li><strong>Sincronización de fechas:</strong> La calculadora solo importa datos del Rastreador guardados bajo la fecha de hoy. Si no se encuentra nada, verifica que la fecha coincida.</li>
+    <li><strong>Todo se guarda automáticamente:</strong> Tus datos se almacenan en tu navegador a menos que los borres manualmente.</li>
+    <li><strong>Periodos anteriores colapsables:</strong> Esto mantiene la vista limpia — solo expande cualquier periodo anterior para ver o editar entradas.</li>
+    <li><strong>Soporta edición de fechas:</strong> Puedes hacer clic y editar cualquier fecha o total de gramos directamente en la tabla. Se moverá automáticamente al periodo correspondiente.</li>
+    <li><strong>Respalda seguido:</strong> Usa "Exportar CSV" para mantener una copia segura antes de limpiar el historial.</li>
   </ul>
 
   <h2>¿Necesitas más ayuda?</h2>
-  <p>Si algo no funciona, intenta recargar la página o volver a ingresar tus datos. También puedes contactar directamente al creador para obtener ayuda.</p>
+  <p>Si algo no funciona, recarga la página o verifica tus datos. También puedes contactar al creador para soporte.</p>
 
   <p><a href="index.html">← Volver a la Calculadora</a></p>
 
   <hr>
   <h2>Preguntas Frecuentes</h2>
+
   <div class="faq-item">
     <button class="faq-question">¿Por qué no puedo importar mi total del Rastreador?</button>
     <div class="faq-answer">
-      <p>Asegúrate de haber guardado una entrada con la fecha de hoy. La calculadora solo importa el total del día actual desde localStorage.</p>
+      <p>Asegúrate de haber guardado una entrada en el Rastreador con la fecha de hoy. La calculadora solo importa el total del día actual.</p>
     </div>
   </div>
+
+  <div class="faq-item">
+    <button class="faq-question">¿Puedo editar entradas anteriores?</button>
+    <div class="faq-answer">
+      <p>Sí. Haz clic en cualquier campo de fecha o gramos en la tabla para editarlo. La entrada se moverá automáticamente al periodo correcto.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question">¿Cómo se agrupan los periodos de pago?</button>
+    <div class="faq-answer">
+      <p>Los periodos son quincenales, empezando cada dos lunes. Los periodos anteriores se colapsan automáticamente para mantener la página ordenada.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question">¿Qué es la Calculadora de Pago por Hora?</button>
+    <div class="faq-answer">
+      <p>Te permite ingresar tu tarifa, horas trabajadas y rango de fechas. Calcula tu pago regular, horas extra y lo suma a tu bono para mostrar todo.</p>
+    </div>
+  </div>
+
   <div class="faq-item">
     <button class="faq-question">¿Dónde se guardan mis datos?</button>
     <div class="faq-answer">
-      <p>Todos los datos se almacenan en tu navegador usando localStorage. Es privado y no se envía a internet.</p>
+      <p>Todos los datos se almacenan en tu navegador (localStorage). Son privados y solo accesibles desde este dispositivo.</p>
     </div>
   </div>
+
   <div class="faq-item">
-    <button class="faq-question">¿Funciona esta app sin conexión?</button>
+    <button class="faq-question">¿Qué pasa si borro mis datos o cambio de teléfono?</button>
     <div class="faq-answer">
-      <p>Sí. Una vez cargada por primera vez, funcionará sin conexión gracias al soporte de service worker.</p>
-    </div>
-  </div>
-  <div class="faq-item">
-    <button class="faq-question">¿Cómo instalo esta app?</button>
-    <div class="faq-answer">
-      <p>En Android o Chrome, verás una opción para instalar. En iOS, toca el icono de compartir y selecciona “Agregar a pantalla de inicio.”</p>
-    </div>
-  </div>
-  <div class="faq-item">
-    <button class="faq-question">¿Qué pasa si borro los datos del navegador?</button>
-    <div class="faq-answer">
-      <p>Perderás tus datos si limpias la caché o almacenamiento local. Exporta tu CSV como respaldo antes de hacerlo.</p>
+      <p>Perderás tus datos a menos que los hayas exportado. Usa "Exportar CSV" antes de borrar o cambiar de dispositivo.</p>
     </div>
   </div>
 
