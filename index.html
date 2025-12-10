@@ -122,7 +122,7 @@
 
 <img src="norcal_icon.png" alt="NorCal Logo"/>
 
-<!-- NEW: live display of today's Trim Tracker total -->
+<!-- live display of today's Trim Tracker total -->
 <div id="trackerDailyTotalDisplay"
      style="margin-top:0.4em;font-size:0.95em;color:#0f0;font-weight:bold;">
 </div>
@@ -220,10 +220,22 @@
 <div style="margin-top: 1.2em; border-top: 1px solid #444; padding-top: 1em;">
   <h2 style="color:#0f0; cursor:pointer;" onclick="togglePayCalc()">Hourly Pay Averages ▼</h2>
   <div id="payCalcSection" style="display:none;">
-    <p>Enter your hourly pay and hours worked, then choose a date range:</p>
+    <p>Enter your hourly pay and regular/overtime hours, then choose a date range:</p>
     <label>Hourly pay: <input id="hourlyRate" type="number" step="0.01"/></label><br/>
-    <label>Overtime hours: <input id="overtimeHours" type="number" step="0.1"/></label><br/>
-    <label>Total hours worked: <input id="totalHours" type="number" step="0.1"/></label><br/>
+
+    <!-- regular + overtime hours with hours + minutes -->
+    <label>
+      Regular hours:
+      <input id="regularHours" type="number" min="0" step="1" placeholder="Hours"/>
+      <input id="regularMinutes" type="number" min="0" max="59" step="1" placeholder="Minutes"/>
+    </label><br/>
+
+    <label>
+      Overtime hours:
+      <input id="overtimeHours" type="number" min="0" step="1" placeholder="Hours"/>
+      <input id="overtimeMinutes" type="number" min="0" max="59" step="1" placeholder="Minutes"/>
+    </label><br/>
+
     <label>Start date: <input id="startDate" type="date"/></label><br/>
     <label>End date: <input id="endDate" type="date"/></label><br/>
     <button onclick="calculateAverages()">Calculate averages</button>
@@ -307,15 +319,24 @@
     lastCalculated = null;
   }
 
+  // uses regular + overtime hours (hours + minutes)
   function calculateAverages() {
     const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
-    const totalHours = parseFloat(document.getElementById("totalHours").value);
+
+    const regularHours = parseFloat(document.getElementById("regularHours").value) || 0;
+    const regularMinutes = parseFloat(document.getElementById("regularMinutes").value) || 0;
     const overtimeHours = parseFloat(document.getElementById("overtimeHours").value) || 0;
+    const overtimeMinutes = parseFloat(document.getElementById("overtimeMinutes").value) || 0;
+
     const startDate = new Date(document.getElementById("startDate").value);
     const endDate = new Date(document.getElementById("endDate").value);
 
-    if (isNaN(hourlyRate) || isNaN(totalHours) || isNaN(startDate) || isNaN(endDate)) {
-      alert("Please fill out all fields.");
+    const totalRegularHours = regularHours + (regularMinutes / 60);
+    const totalOvertimeHours = overtimeHours + (overtimeMinutes / 60);
+    const totalHoursWorked = totalRegularHours + totalOvertimeHours;
+
+    if (isNaN(hourlyRate) || isNaN(startDate) || isNaN(endDate) || totalHoursWorked <= 0) {
+      alert("Please fill out all fields, including regular and overtime hours.");
       return;
     }
 
@@ -329,8 +350,9 @@
     });
 
     let bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
-    let regularPay = hourlyRate * totalHours;
-    let overtimePay = hourlyRate * 1.5 * overtimeHours;
+
+    let regularPay = hourlyRate * totalRegularHours;
+    let overtimePay = hourlyRate * 1.5 * totalOvertimeHours;
     let hourlyTotal = regularPay + overtimePay;
     let totalPay = bonusTotal + hourlyTotal;
 
@@ -345,7 +367,7 @@
       <p><strong>Average daily pay:</strong> $${(totalPay / dayDiff).toFixed(2)}</p>
       <p><strong>Average weekly pay:</strong> $${(totalPay / dayDiff * 7).toFixed(2)}</p>
       <p><strong>Average bi-weekly pay:</strong> $${(totalPay / dayDiff * 14).toFixed(2)}</p>
-      <p><strong>Average hourly rate (with bonus):</strong> $${(totalHours + overtimeHours > 0 ? (totalPay / (totalHours + overtimeHours)) : 0).toFixed(2)}</p>
+      <p><strong>Average hourly rate (with bonus):</strong> $${(totalHoursWorked > 0 ? (totalPay / totalHoursWorked) : 0).toFixed(2)}</p>
     `;
     document.getElementById("averageResults").innerHTML = results;
   }
@@ -407,7 +429,7 @@
     };
   }
 
-  // NEW: function to show today's Trim Tracker total at the top
+  // show today's Trim Tracker total at the top
   function updateTrackerDailyTotal() {
     const todayISO = new Date().toISOString().split('T')[0];
     const trackerTotal = localStorage.getItem('trimTrackerDailyTotal-' + todayISO);
