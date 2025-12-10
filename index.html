@@ -121,6 +121,12 @@
 <body>
 
 <img src="norcal_icon.png" alt="NorCal Logo"/>
+
+<!-- NEW: live display of today's Trim Tracker total -->
+<div id="trackerDailyTotalDisplay"
+     style="margin-top:0.4em;font-size:0.95em;color:#0f0;font-weight:bold;">
+</div>
+
 <p>Enter the total grams trimmed:</p>
 <input id="grams" type="number" placeholder="e.g. 1200"/>
 <br/>
@@ -401,6 +407,20 @@
     };
   }
 
+  // NEW: function to show today's Trim Tracker total at the top
+  function updateTrackerDailyTotal() {
+    const todayISO = new Date().toISOString().split('T')[0];
+    const trackerTotal = localStorage.getItem('trimTrackerDailyTotal-' + todayISO);
+    const el = document.getElementById('trackerDailyTotalDisplay');
+    if (!el) return;
+
+    if (trackerTotal) {
+      el.textContent = "Today's total trimmed in Trim Tracker: " + trackerTotal + "g";
+    } else {
+      el.textContent = "Today's total trimmed in Trim Tracker: 0g";
+    }
+  }
+
   window.addEventListener('load', () => {
     const period = getCurrentPayPeriod();
     const label = document.getElementById("payPeriodLabel");
@@ -420,6 +440,7 @@
       localStorage.setItem('trimHistory', JSON.stringify(history));
     }
     updateSessionTable();
+    updateTrackerDailyTotal();  // show today's total on load
   });
 </script>
 
@@ -433,6 +454,8 @@
     } else {
       alert("No Trim Tracker total found for today.");
     }
+    // refresh the display in case it changed
+    updateTrackerDailyTotal();
   });
 </script>
 
