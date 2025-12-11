@@ -116,6 +116,13 @@
   .past-period-content.open {
     display: block;
   }
+
+  /* ✅ NEW: green amount in the collapsed bar */
+  .past-period-total {
+    color: #0f0;
+    font-weight: bold;
+    margin-left: 8px;
+  }
 </style>
 </head>
 <body>
@@ -140,10 +147,6 @@
 <div class="install-links">
   <a href="trim-tracker.html">Go to Trim Tracker</a>
   <a class="nav-button" href="help.html">How to Use the App</a>
-</div>
-
-<div style="margin-top: 0.6em; color: #ccc; font-size: 0.95em; max-width: 600px; margin-left: auto; margin-right: auto;">
-  <strong>Note:</strong> For the Trim Tracker import function to work correctly, use the calculator and the tracker in the same language. Mixing languages can cause problems with data syncing.
 </div>
 
 <div id="payPeriodLabel" style="margin-top: 0.6em; color: #0f0; font-weight: bold;"></div>
@@ -653,21 +656,41 @@
 
     document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
 
+    // remove old past sections
     document.querySelectorAll('.past-period-header, .past-period-content').forEach(el => el.remove());
 
+    // ✅ Past pay periods with total in header (green)
     Object.keys(grouped).filter(key => key !== currentPeriod.start).forEach(key => {
       const group = grouped[key];
+
+      const periodTotal = group.entries.reduce((sum, pair) => {
+        const entry = pair[0];
+        return sum + parseFloat(entry.bonusPay || 0);
+      }, 0);
+
       const header = document.createElement('div');
       header.className = 'past-period-header';
-      header.textContent = group.label + ' [+]';
+
+      // store for toggling without losing the green total
+      header.dataset.label = group.label;
+      header.dataset.total = periodTotal.toFixed(2);
+
+      header.innerHTML = `
+        <span class="past-period-label">${group.label}</span>
+        <span class="past-period-total">$${header.dataset.total}</span>
+        <span class="toggle-indicator">[+]</span>
+      `;
+
       header.addEventListener('click', function () {
         const content = this.nextElementSibling;
         const open = content.classList.toggle('open');
-        this.textContent = group.label + (open ? ' [-]' : ' [+]');
+        const ind = this.querySelector('.toggle-indicator');
+        if (ind) ind.textContent = open ? '[-]' : '[+]';
       });
 
       const content = document.createElement('div');
       content.className = 'past-period-content';
+
       group.entries.forEach(([entry, index]) => {
         const row = document.createElement('tr');
         row.innerHTML = `
