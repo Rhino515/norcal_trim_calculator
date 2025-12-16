@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shift Tools</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    html { scroll-behavior: smooth; }
+
+    body { background:#000; color:#fff; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; padding:16px; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+
+    .card { background:#0b0b0b; border:1px solid #222; border-radius:16px; padding:14px; }
+    .topRow { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .title { font-weight:800; letter-spacing:.2px; opacity:.9; }
+
+    button { padding:10px 12px; border:0; border-radius:12px; cursor:pointer; font-weight:800; margin:6px 8px 0 0; }
+    .green { background:#1f8f3a; color:#fff; }
+    .red { background:#b30000; color:#fff; }
+    .gray { background:#2f2f2f; color:#fff; }
+
+    a { color:#0af; text-decoration:none; }
+    .muted { color:#9a9a9a; font-size:13px; margin-top:8px; }
+    .tiny { font-size:12px; color:#aaa; }
+    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#151515; border:1px solid #262626; font-size:12px; }
+
+    .hero {
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      text-align:center;
+      padding:18px 14px;
+    }
+    .clock {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-size: 96px;
+      font-weight: 200;
+      letter-spacing: 2px;
+      line-height: 1;
+      color:#fff;
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      cursor:pointer;
+    }
+    .ampm {
+      font-weight:600;
+      font-size:14px;
+      letter-spacing:.35em;
+      opacity:.85;
+      margin-top:6px;
+    }
+    .date {
+      color:#a8a8a8;
+      font-size:14px;
+      margin-top:4px;
+    }
+
+    .strip {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-top:8px;
+    }
+
+    /* ✅ SHIFT TOGGLE: hide shift UI when OFF */
+    body.shiftOff .shiftOnly { display:none !important; }
+
+    /* GOAL BAR */
+    .goalWrap {
+      width:min(900px, 100%);
+      margin-top:4px;
+      text-align:left;
+    }
+    .goalHeader {
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      font-size:13px;
+      color:#d0d0d0;
+      margin-bottom:6px;
+    }
+    .goalBar {
+      width:100%;
+      height:10px;
+      background:#151515;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid #262626;
+    }
+    #goalFill {
+      height:100%;
+      width:0%;
+      background:#b30000;
+      transition:width .35s ease, background .35s ease;
+    }
+    .goalHint {
+      margin-top:6px;
+      font-size:12px;
+      color:#9a9a9a;
+      line-height:1.25;
+    }
+
+    .stats {
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:10px;
+      width:min(900px, 100%);
+      margin: 6px auto 0;
+    }
+    .statBox {
+      background:#0a0a0a;
+      border:1px solid #1f1f1f;
+      border-radius:14px;
+      padding:12px;
+      text-align:left;
+    }
+    .statLabel { color:#9a9a9a; font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
+    .statValue { font-size:22px; font-weight:800; margin-top:6px; }
+    .statSub { color:#aaa; font-size:12px; margin-top:4px; }
+
+    .actions {
+      width:min(900px, 100%);
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-top:10px;
+    }
+    .bigBtn {
+      flex:1;
+      min-width: 260px;
+      padding:16px 14px;
+      border-radius:18px;
+      border:1px solid #1f8f3a;
+      background:#0f1f14;
+      color:#fff;
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .bigBtn:active { transform: scale(0.99); }
+    .bigBtn .left { display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+    .bigBtn .name { font-size:16px; }
+    .bigBtn .hint { font-size:12px; color:#cfe8d7; font-weight:700; opacity:.9; text-transform:none; letter-spacing:0; }
+    .bigBtn .right { font-size:12px; color:#dff3e6; font-weight:800; text-transform:none; letter-spacing:0; }
+
+    .bigBtn.active {
+      background:#1f8f3a;
+      border-color:#35c96f;
+      box-shadow: 0 0 0 2px rgba(31,143,58,.35);
+    }
+    .bigBtn.active .hint,
+    .bigBtn.active .right { color:#fff; }
+
+    .inlineRow { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+    .dangerBox { border:1px solid #400; background:#120; padding:12px; border-radius:12px; margin-top:10px; }
+
+    .logWrap { width:min(980px, 100%); margin:12px auto 0; }
+    .logHeader { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .logHeader h2 { margin:0; color:#fff; font-size:16px; letter-spacing:.02em; }
+    .hide { display:none !important; }
+
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { border:1px solid #2a2a2a; padding:10px; text-align:left; }
+    th { background:#0f0f0f; color:#dcdcdc; font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
+    .right { text-align:right; }
+    input, select { width:100%; padding:10px; border-radius:12px; border:1px solid #333; background:#0f0f0f; color:#fff; font-size:15px; margin-top:6px; }
+
+    .modalOverlay {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:9999;
+    }
+    .modalOverlay.open { display:flex; }
+    .modal {
+      width:min(980px, 100%);
+      max-height:90vh;
+      overflow:auto;
+      background:#070707;
+      border:1px solid #222;
+      border-radius:16px;
+      box-shadow:0 10px 40px rgba(0,0,0,.7);
+      padding:14px;
+    }
+    .modalTop {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding-bottom:10px;
+      border-bottom:1px solid #1a1a1a;
+      margin-bottom:10px;
+    }
+    .modalTop h2 { margin:0; }
+    .modalHint { color:#aaa; font-size:13px; margin-top:6px; }
+    .modalGrid { display:flex; gap:12px; flex-wrap:wrap; }
+    .modalGrid .card { min-width:290px; flex:1; }
+
+    label { display:block; margin-top:10px; color:#bbb; font-size:12px; text-transform: uppercase; letter-spacing: .08em;}
+
+    body.clockZoom .hero { padding: 28px 14px; }
+    body.clockZoom .clock {
+      font-size: clamp(120px, 24vw, 220px);
+      letter-spacing: 4px;
+      font-weight: 200;
+    }
+    body.clockZoom .stats { width:min(900px, 100%); }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="card">
+    <div class="topRow">
+      <div class="title">Shift Tools</div>
+      <div>
+        <!-- ✅ ADDED -->
+        <button class="gray" id="toggleShift">🕒 Shift: ON</button>
+        <button class="gray" id="toggleLog">📒 Log</button>
+        <button class="gray" id="openSettings">⚙️ Settings</button>
+      </div>
+    </div>
+
+    <div class="hero" id="hero">
+      <div id="clock" class="clock" title="Tap to expand">--:--</div>
+      <div id="ampm" class="ampm">—</div>
+      <div id="date" class="date">---</div>
+
+      <!-- ✅ shift-only -->
+      <div class="strip shiftOnly">
+        <span class="pill"><b>Status:</b> <span id="phaseText">—</span></span>
+        <span class="pill" id="phasePill">⚫</span>
+        <span class="pill" id="activePill">No active serving</span>
+      </div>
+
+      <!-- ✅ shift-only -->
+      <div class="strip shiftOnly">
+        <span class="pill" id="countdown">—</span>
+        <span class="pill" id="nextUp">—</span>
+      </div>
+
+      <!-- ✅ shift-only -->
+      <div class="goalWrap shiftOnly">
+        <div class="goalHeader">
+          <span id="goalLabel">Goal: —</span>
+          <span id="goalDelta">—</span>
+        </div>
+        <div class="goalBar">
+          <div id="goalFill"></div>
+        </div>
+        <div class="goalHint" id="goalHint">Set goals in Settings to track your pace.</div>
+      </div>
+
+      <div class="stats">
+        <div class="statBox">
+          <div class="statLabel">Total grams today</div>
+          <div class="statValue"><span id="totalGrams">0</span> g</div>
+          <div class="statSub">Pace: <span id="paceGph">0</span> g/hour</div>
+        </div>
+        <div class="statBox">
+          <div class="statLabel">Bucked</div>
+          <div class="statValue"><span id="countBucked">0</span></div>
+          <div class="statSub">Avg: <span id="avgMinBucked">0</span> min/serving</div>
+        </div>
+        <div class="statBox">
+          <div class="statLabel">Branch</div>
+          <div class="statValue"><span id="countBranch">0</span></div>
+          <div class="statSub">Avg: <span id="avgMinBranch">0</span> min/serving</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="bigBtn" id="btnBucked">
+          <div class="left">
+            <div class="name">BUCKED</div>
+            <div class="hint" id="hintBucked">Tap to start</div>
+          </div>
+          <div class="right" id="presetBucked">Preset: Standard</div>
+        </button>
+
+        <button class="bigBtn" id="btnBranch">
+          <div class="left">
+            <div class="name">BRANCH</div>
+            <div class="hint" id="hintBranch">Tap to start</div>
+          </div>
+          <div class="right" id="presetBranch">Preset: Standard</div>
+        </button>
+      </div>
+
+      <div class="inlineRow" id="activeRow" style="margin-top:6px;">
+        <button class="red hide" id="cancelActive">Cancel Active</button>
+      </div>
+
+      <div class="muted">
+        Saves locally on your phone (no login). If you clear “Website Data”, it will erase it.
+        <div style="margin-top:6px"><a href="index.html">← Back to Calculator</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="logWrap" id="logSection">
+    <div class="card">
+      <div class="logHeader">
+        <h2>Today’s Serving Log</h2>
+        <div class="tiny">Grams are editable after the fact.</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Finished</th>
+            <th>Type</th>
+            <th class="right">Minutes</th>
+            <th class="right">Grams (editable)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+
+      <div class="dangerBox">
+        <button class="red" id="clearToday">Clear Today’s Log</button>
+        <span class="tiny">Only clears today on this device.</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modalOverlay" id="settingsOverlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="modalTop">
+      <div>
+        <h2>Settings</h2>
+        <div class="modalHint">Schedule, goals, and presets live here — main screen stays simple.</div>
+      </div>
+      <div>
+        <button class="gray" id="closeSettings">Close</button>
+      </div>
+    </div>
+
+    <div class="modalGrid">
+      <div class="card">
+        <h2 style="margin:0 0 8px; color:#fff; font-size:16px;">Serving Presets</h2>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:240px;">
+            <label>Bucked default preset</label>
+            <select id="defaultPresetBucked"></select>
+          </div>
+          <div style="flex:1; min-width:240px;">
+            <label>Branch default preset</label>
+            <select id="defaultPresetBranch"></select>
+          </div>
+        </div>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:240px;">
+            <label>Manage type</label>
+            <select id="presetTypeManage">
+              <option value="bucked">Bucked</option>
+              <option value="branch">Branch</option>
+            </select>
+          </div>
+          <div style="flex:2; min-width:240px;">
+            <label>Preset list</label>
+            <select id="presetSelectManage"></select>
+          </div>
+        </div>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:220px;">
+            <label>Goal minutes</label>
+            <input id="presetGoalMin" type="number" step="1" min="1" />
+          </div>
+          <div style="flex:1; min-width:220px;">
+            <label>Estimated grams</label>
+            <input id="presetGrams" type="number" step="1" min="0" />
+          </div>
+        </div>
+
+        <div>
+          <button class="gray" id="saveServingPreset">Save as Preset</button>
+          <button class="red" id="deleteServingPreset">Delete Preset</button>
+        </div>
+
+        <div class="muted">Defaults control what the big buttons use on the main screen.</div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 8px; color:#fff; font-size:16px;">Schedule</h2>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:210px;">
+            <label>Trim 1 start</label>
+            <input id="w1s" type="time" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Trim 1 end (Break 1 starts)</label>
+            <input id="w1e" type="time" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Break 1 minutes</label>
+            <input id="b1m" type="number" step="1" min="0" />
+          </div>
+        </div>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:210px;">
+            <label>Trim 2 start</label>
+            <input id="w2s" type="time" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Trim 2 end (Lunch starts)</label>
+            <input id="w2e" type="time" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Lunch minutes</label>
+            <input id="lm" type="number" step="1" min="0" />
+          </div>
+        </div>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:210px;">
+            <label>Trim 3 start</label>
+            <input id="w3s" type="time" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Trim 3 end (Break 2 starts)</label>
+            <input id="w3e" type="time" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Break 2 minutes</label>
+            <input id="b2m" type="number" step="1" min="0" />
+          </div>
+        </div>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:210px;">
+            <label>Final trim start</label>
+            <input id="w4s" type="time" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Trimming ends</label>
+            <input id="w4e" type="time" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Shift end (Clock out)</label>
+            <input id="shiftEnd" type="time" />
+          </div>
+        </div>
+
+        <button class="green" id="saveSchedule" style="width:100%">Save Schedule</button>
+        <div class="muted">If they tell you to start later, edit start times and save.</div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 8px; color:#fff; font-size:16px;">Goals by Checkpoint</h2>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:210px;">
+            <label>Goal by Break 1</label>
+            <input id="gB1" type="number" step="1" min="0" placeholder="grams" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Goal by Lunch</label>
+            <input id="gL" type="number" step="1" min="0" placeholder="grams" />
+          </div>
+        </div>
+
+        <div class="row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:210px;">
+            <label>Goal by Break 2</label>
+            <input id="gB2" type="number" step="1" min="0" placeholder="grams" />
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <label>Goal by End</label>
+            <input id="gE" type="number" step="1" min="0" placeholder="grams" />
+          </div>
+        </div>
+
+        <button class="green" id="saveGoals" style="width:100%">Save Goals</button>
+
+        <div class="card" style="margin-top:10px; padding:12px">
+          <div id="goalStatusSettings" class="tiny">Goal status appears on the main screen.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const STORE_KEY = "shiftTools_v3_goalBar";
+
+function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || null; } catch(e) { return null; } }
+function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+const defaultState = {
+  /* ✅ ADDED: shift mode toggle */
+  shiftEnabled: true,
+
+  schedule: {
+    w1s: "06:00", w1e: "08:30", b1m: 10,
+    w2s: "08:40", w2e: "10:30", lm: 30,
+    w3s: "11:00", w3e: "13:30", b2m: 10,
+    w4s: "13:40", w4e: "14:15",
+    shiftEnd: "14:30"
+  },
+  goals: { gB1: 0, gL: 0, gB2: 0, gE: 0 },
+  servingDefaults: { bucked: { goalMin: 30, grams: 400 }, branch: { goalMin: 25, grams: 200 } },
+  servingPresets: { bucked: [], branch: [] },
+  activePresetId: { bucked: "standard", branch: "standard" },
+  activeServing: null,
+  today: {}
+};
+
+let state = loadState() || defaultState;
+
+(function migrate() {
+  if (typeof state.shiftEnabled !== "boolean") state.shiftEnabled = true; /* ✅ ADDED */
+  if (!state.servingDefaults) state.servingDefaults = defaultState.servingDefaults;
+  if (!state.servingPresets) state.servingPresets = { bucked: [], branch: [] };
+  if (!state.activePresetId) state.activePresetId = { bucked: "standard", branch: "standard" };
+  if (!state.schedule?.shiftEnd) state.schedule.shiftEnd = defaultState.schedule.shiftEnd;
+  if (!state.today) state.today = {};
+  saveState();
+})();
+
+const el = (id) => document.getElementById(id);
+function pad2(n){ return String(n).padStart(2, "0"); }
+
+function timeToDateToday(hhmm) {
+  const [h,m] = hhmm.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+function fmtTime(d) {
+  let h = d.getHours();
+  const m = pad2(d.getMinutes());
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  return `${h}:${m} ${ampm}`;
+}
+
+function fmtMMSS(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const m = pad2(Math.floor(total / 60));
+  const s = pad2(total % 60);
+  return `${m}:${s}`;
+}
+
+function todayKey() { return new Date().toISOString().slice(0,10); }
+
+function getTodayLog() {
+  const k = todayKey();
+  if (!state.today[k]) state.today[k] = { servings: [], firstStartMs: null };
+  return state.today[k];
+}
+
+function uid() {
+  return (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2));
+}
+
+function toggleClockZoom() { document.body.classList.toggle("clockZoom"); }
+el("clock").addEventListener("click", toggleClockZoom);
+
+function openSettings() {
+  const o = el("settingsOverlay");
+  o.classList.add("open");
+  o.setAttribute("aria-hidden", "false");
+}
+function closeSettings() {
+  const o = el("settingsOverlay");
+  o.classList.remove("open");
+  o.setAttribute("aria-hidden", "true");
+}
+el("openSettings").addEventListener("click", openSettings);
+el("closeSettings").addEventListener("click", closeSettings);
+el("settingsOverlay").addEventListener("click", (e) => { if (e.target === el("settingsOverlay")) closeSettings(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && el("settingsOverlay").classList.contains("open")) closeSettings(); });
+
+el("toggleLog").addEventListener("click", () => {
+  el("logSection").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+/* ✅ SHIFT TOGGLE LOGIC */
+function applyShiftUI() {
+  const on = state.shiftEnabled !== false;
+  document.body.classList.toggle("shiftOff", !on);
+  el("toggleShift").textContent = on ? "🕒 Shift: ON" : "🕒 Shift: OFF";
+}
+el("toggleShift").addEventListener("click", () => {
+  state.shiftEnabled = !(state.shiftEnabled !== false);
+  saveState();
+  applyShiftUI();
+
+  // refresh goal UI when turning ON
+  if (state.shiftEnabled) {
+    const log = getTodayLog();
+    const total = log.servings.reduce((sum,x)=>sum+Number(x.grams||0),0);
+    updateGoalUI(total);
+  }
+});
+
+function buildPresetLabel(p) { return `${p.name} — ${p.goalMin}m / ${p.grams}g`; }
+
+function getStandardPreset(type) {
+  return {
+    id: "standard",
+    name: "Standard",
+    goalMin: Number(state.servingDefaults?.[type]?.goalMin || 0),
+    grams: Number(state.servingDefaults?.[type]?.grams || 0)
+  };
+}
+
+function getPresetsForType(type) {
+  const standard = getStandardPreset(type);
+  const custom = (state.servingPresets?.[type] || []).slice();
+  return [standard, ...custom];
+}
+
+function getPresetById(type, id) {
+  const list = getPresetsForType(type);
+  return list.find(p => p.id === id) || getStandardPreset(type);
+}
+
+function renderDefaultPresetDropdowns() {
+  ["bucked","branch"].forEach(type => {
+    const sel = el(type === "bucked" ? "defaultPresetBucked" : "defaultPresetBranch");
+    const presets = getPresetsForType(type);
+
+    sel.innerHTML = "";
+    presets.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = buildPresetLabel(p);
+      sel.appendChild(opt);
+    });
+
+    sel.value = presets.some(p => p.id === state.activePresetId[type]) ? state.activePresetId[type] : "standard";
+  });
+
+  updateMainPresetLabels();
+}
+
+function updateMainPresetLabels() {
+  const pB = getPresetById("bucked", state.activePresetId.bucked || "standard");
+  const pR = getPresetById("branch", state.activePresetId.branch || "standard");
+  el("presetBucked").textContent = `Preset: ${pB.name} (${pB.goalMin}m / ${pB.grams}g)`;
+  el("presetBranch").textContent = `Preset: ${pR.name} (${pR.goalMin}m / ${pR.grams}g)`;
+}
+
+el("defaultPresetBucked").addEventListener("change", () => {
+  state.activePresetId.bucked = el("defaultPresetBucked").value;
+  saveState();
+  updateMainPresetLabels();
+});
+el("defaultPresetBranch").addEventListener("change", () => {
+  state.activePresetId.branch = el("defaultPresetBranch").value;
+  saveState();
+  updateMainPresetLabels();
+});
+
+function renderPresetManageList() {
+  const type = el("presetTypeManage").value;
+  const sel = el("presetSelectManage");
+  const presets = getPresetsForType(type);
+
+  const current = sel.value || "standard";
+  sel.innerHTML = "";
+
+  presets.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = buildPresetLabel(p);
+    sel.appendChild(opt);
+  });
+
+  sel.value = presets.some(p => p.id === current) ? current : "standard";
+  applyManagePresetToInputs();
+  syncManageDelete();
+}
+
+function applyManagePresetToInputs() {
+  const type = el("presetTypeManage").value;
+  const id = el("presetSelectManage").value;
+  const p = getPresetById(type, id);
+  el("presetGoalMin").value = p.goalMin;
+  el("presetGrams").value = p.grams;
+}
+
+function syncManageDelete() {
+  el("deleteServingPreset").disabled = (el("presetSelectManage").value === "standard");
+}
+
+el("presetTypeManage").addEventListener("change", renderPresetManageList);
+el("presetSelectManage").addEventListener("change", () => {
+  applyManagePresetToInputs();
+  syncManageDelete();
+});
+
+el("saveServingPreset").addEventListener("click", () => {
+  const type = el("presetTypeManage").value;
+  const goalMin = Number(el("presetGoalMin").value || 0);
+  const grams = Number(el("presetGrams").value || 0);
+
+  if (goalMin <= 0) { alert("Enter a valid goal minutes number."); return; }
+  if (grams < 0) { alert("Enter a valid estimated grams number."); return; }
+
+  const name = (prompt("Preset name (example: My Average, Small Nugs, Fast Pace):") || "").trim();
+  if (!name) return;
+
+  const preset = { id: uid(), name, goalMin: Math.round(goalMin), grams: Math.round(grams) };
+  state.servingPresets[type].push(preset);
+  saveState();
+
+  renderPresetManageList();
+  renderDefaultPresetDropdowns();
+
+  el("presetSelectManage").value = preset.id;
+  applyManagePresetToInputs();
+  syncManageDelete();
+
+  alert("Preset saved.");
+});
+
+el("deleteServingPreset").addEventListener("click", () => {
+  const type = el("presetTypeManage").value;
+  const id = el("presetSelectManage").value;
+  if (id === "standard") return;
+  if (!confirm("Delete this preset?")) return;
+
+  state.servingPresets[type] = (state.servingPresets[type] || []).filter(p => p.id !== id);
+  if (state.activePresetId[type] === id) state.activePresetId[type] = "standard";
+
+  saveState();
+  renderPresetManageList();
+  renderDefaultPresetDropdowns();
+});
+
+function buildBlocksFromSchedule(s) {
+  const w1s = timeToDateToday(s.w1s), w1e = timeToDateToday(s.w1e);
+  const b1e = new Date(w1e.getTime() + Number(s.b1m||0)*60000);
+
+  const w2s = timeToDateToday(s.w2s), w2e = timeToDateToday(s.w2e);
+  const le  = new Date(w2e.getTime() + Number(s.lm||0)*60000);
+
+  const w3s = timeToDateToday(s.w3s), w3e = timeToDateToday(s.w3e);
+  const b2e = new Date(w3e.getTime() + Number(s.b2m||0)*60000);
+
+  const w4s = timeToDateToday(s.w4s), w4e = timeToDateToday(s.w4e);
+  const shiftEnd = timeToDateToday(s.shiftEnd || s.w4e);
+
+  return [
+    { key:"WORK",  label:"TRIM",  start:w1s, end:w1e, checkpoint:"gB1" },
+    { key:"BREAK", label:"BREAK 1", start:w1e, end:b1e },
+    { key:"WORK",  label:"TRIM",  start:w2s, end:w2e, checkpoint:"gL" },
+    { key:"LUNCH", label:"LUNCH", start:w2e, end:le },
+    { key:"WORK",  label:"TRIM",  start:w3s, end:w3e, checkpoint:"gB2" },
+    { key:"BREAK", label:"BREAK 2", start:w3e, end:b2e },
+    { key:"WORK",  label:"TRIM",  start:w4s, end:w4e, checkpoint:"gE" },
+    { key:"CLEANUP", label:"CLEAN UP / CLOCK OUT", start:w4e, end:shiftEnd }
+  ];
+}
+
+function currentBlock(blocks, now) {
+  for (const b of blocks) if (now >= b.start && now < b.end) return b;
+  if (now < blocks[0].start) return { key:"OFF", label:"BEFORE SHIFT", start: now, end: blocks[0].start };
+  const last = blocks[blocks.length-1];
+  if (now >= last.end) return { key:"OFF", label:"SHIFT ENDED", start: last.end, end: now };
+  return { key:"OFF", label:"OFF", start: now, end: now };
+}
+
+function phaseLabel(key, label) {
+  if (key === "WORK") return ["TRIM", "🟢"];
+  if (key === "BREAK") return [label, "🟡"];
+  if (key === "LUNCH") return ["LUNCH", "🔵"];
+  if (key === "CLEANUP") return [label, "🟣"];
+  return [label || "OFF", "⚫"];
+}
+
+function getActiveServing() { return state.activeServing; }
+
+function setActiveServing(obj) { state.activeServing = obj; saveState(); syncActiveUI(); }
+function clearActiveServing() { state.activeServing = null; saveState(); syncActiveUI(); }
+
+function startServing(type) {
+  if (getActiveServing()) return;
+
+  const presetId = state.activePresetId?.[type] || "standard";
+  const p = getPresetById(type, presetId);
+
+  const log = getTodayLog();
+  if (!log.firstStartMs) { log.firstStartMs = Date.now(); saveState(); }
+
+  setActiveServing({
+    type,
+    startedAt: Date.now(),
+    goalMin: Math.round(Number(p.goalMin || 0)),
+    grams: Math.round(Number(p.grams || 0)),
+    presetName: p.name
+  });
+}
+
+function finishServing() {
+  const a = getActiveServing();
+  if (!a) return;
+
+  const ms = Date.now() - a.startedAt;
+  if (ms <= 0) { clearActiveServing(); return; }
+
+  const entry = {
+    id: uid(),
+    finishedAt: new Date().toISOString(),
+    type: a.type,
+    minutes: +(ms / 60000).toFixed(2),
+    grams: Math.max(0, Math.round(a.grams || 0))
+  };
+
+  const log = getTodayLog();
+  log.servings.push(entry);
+  saveState();
+
+  clearActiveServing();
+  renderLogAndTotals();
+}
+
+function handleTap(type) {
+  const a = getActiveServing();
+  if (!a) { startServing(type); return; }
+  if (a.type === type) { finishServing(); return; }
+
+  const ok = confirm(`You have an active ${a.type.toUpperCase()} running.\n\nFinish it and start ${type.toUpperCase()}?`);
+  if (!ok) return;
+
+  finishServing();
+  startServing(type);
+}
+
+el("btnBucked").addEventListener("click", () => handleTap("bucked"));
+el("btnBranch").addEventListener("click", () => handleTap("branch"));
+
+el("cancelActive").addEventListener("click", () => {
+  if (!getActiveServing()) return;
+  if (!confirm("Cancel the active serving (no log entry)?")) return;
+  clearActiveServing();
+});
+
+function syncActiveUI() {
+  const a = getActiveServing();
+
+  el("btnBucked").classList.remove("active");
+  el("btnBranch").classList.remove("active");
+  el("hintBucked").textContent = "Tap to start";
+  el("hintBranch").textContent = "Tap to start";
+  el("activePill").textContent = "No active serving";
+  el("cancelActive").classList.add("hide");
+
+  if (!a) return;
+
+  const ms = Date.now() - a.startedAt;
+  const elapsed = fmtMMSS(ms);
+  const goalMs = (a.goalMin || 0) * 60000;
+  let delta = "";
+  if (goalMs > 0) {
+    const diff = ms - goalMs;
+    const sign = diff > 0 ? "+" : "-";
+    delta = ` • ${sign}${fmtMMSS(Math.abs(diff))} vs ${a.goalMin}:00`;
+  }
+
+  el("activePill").textContent = `${a.type.toUpperCase()} • ${elapsed}${delta} • ${a.grams}g (${a.presetName})`;
+
+  if (a.type === "bucked") {
+    el("btnBucked").classList.add("active");
+    el("hintBucked").textContent = "Tap again to finish";
+  } else {
+    el("btnBranch").classList.add("active");
+    el("hintBranch").textContent = "Tap again to finish";
+  }
+
+  el("cancelActive").classList.remove("hide");
+}
+
+/* GOAL BAR COLOR */
+function lerp(a,b,t){ return a + (b-a)*t; }
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function rgb(r,g,b){ return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`; }
+function colorForProgress(p) {
+  p = clamp01(p);
+  if (p <= 0.6) {
+    const t = p / 0.6;
+    return rgb(lerp(179,240,t), lerp(0,200,t), lerp(0,0,t));
+  } else {
+    const t = (p - 0.6) / 0.4;
+    return rgb(lerp(240,31,t), lerp(200,143,t), lerp(0,58,t));
+  }
+}
+
+function renderLogAndTotals() {
+  const log = getTodayLog();
+  const body = el("logBody");
+  body.innerHTML = "";
+
+  let totalGrams = 0;
+
+  let countB = 0, countBr = 0;
+  let minsB = 0, minsBr = 0;
+
+  log.servings.forEach((s) => {
+    totalGrams += Number(s.grams || 0);
+
+    if (s.type === "bucked") { countB++; minsB += Number(s.minutes || 0); }
+    if (s.type === "branch") { countBr++; minsBr += Number(s.minutes || 0); }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fmtTime(new Date(s.finishedAt))}</td>
+      <td>${s.type === "bucked" ? "Bucked" : "Branch"}</td>
+      <td class="right">${Number(s.minutes).toFixed(2)}</td>
+      <td class="right">
+        <input data-id="${s.id}" class="gramsEdit" type="number" step="1" min="0" value="${s.grams}">
+      </td>
+      <td><button class="red deleteOne" data-id="${s.id}">Delete</button></td>
+    `;
+    body.appendChild(tr);
+  });
+
+  el("totalGrams").textContent = totalGrams.toFixed(0);
+  el("countBucked").textContent = countB;
+  el("countBranch").textContent = countBr;
+
+  const avgB = countB ? (minsB / countB) : 0;
+  const avgBr = countBr ? (minsBr / countBr) : 0;
+  el("avgMinBucked").textContent = avgB.toFixed(1);
+  el("avgMinBranch").textContent = avgBr.toFixed(1);
+
+  let gph = 0;
+  if (log.firstStartMs && totalGrams > 0) {
+    const hours = (Date.now() - log.firstStartMs) / (1000*60*60);
+    if (hours > 0) gph = totalGrams / hours;
+  }
+  el("paceGph").textContent = gph.toFixed(0);
+
+  updateGoalUI(totalGrams);
+
+  document.querySelectorAll(".gramsEdit").forEach(inp => {
+    inp.addEventListener("change", (e) => {
+      const id = e.target.getAttribute("data-id");
+      const val = Number(e.target.value || 0);
+      const log2 = getTodayLog();
+      const item = log2.servings.find(x => x.id === id);
+      if (item) item.grams = Math.max(0, Math.round(val));
+      saveState();
+      renderLogAndTotals();
+    });
+  });
+
+  document.querySelectorAll(".deleteOne").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const id = e.target.getAttribute("data-id");
+      if (!confirm("Delete this serving?")) return;
+      const log2 = getTodayLog();
+      log2.servings = log2.servings.filter(x => x.id !== id);
+      saveState();
+      renderLogAndTotals();
+    });
+  });
+}
+
+function updateGoalUI(totalGrams) {
+  /* ✅ SHIFT OFF: don’t show checkpoint tracking UI */
+  if (state.shiftEnabled === false) {
+    el("goalLabel").textContent = "Goal: —";
+    el("goalDelta").textContent = "";
+    el("goalFill").style.width = "0%";
+    el("goalFill").style.background = "#333";
+    el("goalHint").textContent = "Shift mode is OFF.";
+    el("goalStatusSettings").textContent = "Shift mode is OFF.";
+    return;
+  }
+
+  const s = state.schedule;
+  const now = new Date();
+
+  const checkpoints = [
+    { key:"gB1", label:"Break 1", at: timeToDateToday(s.w1e) },
+    { key:"gL",  label:"Lunch",   at: timeToDateToday(s.w2e) },
+    { key:"gB2", label:"Break 2", at: timeToDateToday(s.w3e) },
+    { key:"gE",  label:"End",     at: timeToDateToday(s.w4e) }
+  ];
+
+  const goals = state.goals || {};
+  const target = checkpoints.find(x => now < x.at) || checkpoints[checkpoints.length - 1];
+  const goal = Number(goals[target.key] || 0);
+
+  if (!goal || goal <= 0) {
+    el("goalLabel").textContent = "Goal: —";
+    el("goalDelta").textContent = "";
+    el("goalFill").style.width = "0%";
+    el("goalFill").style.background = "#333";
+    el("goalHint").textContent = "Set goals in Settings to track your pace.";
+    el("goalStatusSettings").textContent = "Set your goals and you’ll see the bar update live.";
+    return;
+  }
+
+  const rawProgress = totalGrams / goal;
+  const progressClamped = Math.min(1, Math.max(0, rawProgress));
+  const pct = Math.min(100, Math.max(0, rawProgress * 100));
+
+  el("goalFill").style.width = `${Math.min(100, pct)}%`;
+  el("goalFill").style.background = colorForProgress(progressClamped);
+
+  const diff = totalGrams - goal;
+  const ahead = diff >= 0;
+  const gramsRemaining = Math.max(0, goal - totalGrams);
+  const minsLeft = Math.max(0, Math.round((target.at - now) / 60000));
+
+  el("goalLabel").textContent = `${target.label}: ${Math.round(totalGrams)}/${Math.round(goal)}g`;
+  el("goalDelta").textContent = ahead ? `Ahead ${Math.round(diff)}g` : `Behind ${Math.round(gramsRemaining)}g`;
+
+  if (ahead) {
+    el("goalHint").textContent = "On pace ✔";
+  } else if (minsLeft <= 0) {
+    el("goalHint").textContent = `Past checkpoint • Short ${Math.round(gramsRemaining)}g`;
+  } else {
+    const paceNeeded = Math.round((gramsRemaining / minsLeft) * 60);
+    const pB = getPresetById("bucked", state.activePresetId?.bucked || "standard");
+    const pR = getPresetById("branch", state.activePresetId?.branch || "standard");
+    const buckedServ = Math.max(1, Math.ceil(gramsRemaining / Math.max(1, Number(pB.grams || 0))));
+    const branchServ = Math.max(1, Math.ceil(gramsRemaining / Math.max(1, Number(pR.grams || 0))));
+    const buckedMaxMin = (minsLeft / buckedServ);
+    const branchMaxMin = (minsLeft / branchServ);
+
+    el("goalHint").textContent =
+      `Need ~${paceNeeded} g/hr • ${minsLeft}m left • Bucked ≤ ${buckedMaxMin.toFixed(1)}m/serv • Branch ≤ ${branchMaxMin.toFixed(1)}m/serv`;
+  }
+
+  el("goalStatusSettings").textContent =
+    `Target: ${target.label} • ${minsLeft}m left • Goal ${Math.round(goal)}g`;
+}
+
+function tickClock() {
+  const now = new Date();
+
+  const h = now.getHours();
+  const m = pad2(now.getMinutes());
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = (h % 12) === 0 ? 12 : (h % 12);
+  el("clock").textContent = `${pad2(h12)}:${m}`;
+  el("ampm").textContent = ampm;
+
+  el("date").textContent = now.toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+  // ✅ If shift mode is OFF, skip phase/countdown updates entirely
+  if (state.shiftEnabled !== false) {
+    const blocks = buildBlocksFromSchedule(state.schedule);
+    const b = currentBlock(blocks, now);
+    const [label, icon] = phaseLabel(b.key, b.label);
+    el("phaseText").textContent = label;
+    el("phasePill").textContent = icon;
+
+    if (b.end && b.start && b.end > now) {
+      const msLeft = b.end - now;
+      el("countdown").textContent = `Time left: ${fmtMMSS(msLeft)}`;
+
+      const idx = blocks.findIndex(x => x.start.getTime() === b.start?.getTime() && x.end.getTime() === b.end?.getTime());
+      let next = null;
+      if (idx >= 0 && idx < blocks.length - 1) next = blocks[idx + 1];
+      if (!next && now < blocks[0].start) next = blocks[0];
+
+      el("nextUp").textContent = next ? `Next: ${next.label} @ ${fmtTime(next.start)}` : "Next: —";
+    } else {
+      if (b.label === "BEFORE SHIFT") {
+        el("countdown").textContent = `Starts in: ${fmtMMSS(b.end - now)}`;
+        el("nextUp").textContent = `Next: TRIM @ ${fmtTime(b.end)}`;
+      } else {
+        el("countdown").textContent = "—";
+        el("nextUp").textContent = "Shift ended.";
+      }
+    }
+  }
+
+  if (getActiveServing()) syncActiveUI();
+
+  if (now.getSeconds() % 2 === 0) {
+    const log = getTodayLog();
+    const total = log.servings.reduce((sum,x)=>sum+Number(x.grams||0),0);
+    updateGoalUI(total);
+  }
+}
+
+const idsSchedule = ["w1s","w1e","b1m","w2s","w2e","lm","w3s","w3e","b2m","w4s","w4e","shiftEnd"];
+const idsGoals = ["gB1","gL","gB2","gE"];
+
+function applyScheduleToInputs() {
+  const s = state.schedule;
+  idsSchedule.forEach(id => { if (el(id)) el(id).value = s[id]; });
+}
+function applyGoalsToInputs() {
+  const g = state.goals;
+  idsGoals.forEach(id => el(id).value = g[id] || 0);
+}
+
+el("saveSchedule").addEventListener("click", () => {
+  const s = {};
+  idsSchedule.forEach(id => s[id] = el(id).value);
+
+  s.b1m = Number(s.b1m || 0);
+  s.lm  = Number(s.lm || 0);
+  s.b2m = Number(s.b2m || 0);
+
+  state.schedule = s;
+  saveState();
+  alert("Schedule saved.");
+});
+
+el("saveGoals").addEventListener("click", () => {
+  const g = {};
+  idsGoals.forEach(id => g[id] = Number(el(id).value || 0));
+  state.goals = g;
+  saveState();
+  alert("Goals saved.");
+  renderLogAndTotals();
+});
+
+el("clearToday").addEventListener("click", () => {
+  if (!confirm("Clear today’s serving log?")) return;
+  const k = todayKey();
+  state.today[k] = { servings: [], firstStartMs: null };
+  saveState();
+  renderLogAndTotals();
+});
+
+/* INIT */
+applyScheduleToInputs();
+applyGoalsToInputs();
+
+renderPresetManageList();
+renderDefaultPresetDropdowns();
+syncActiveUI();
+renderLogAndTotals();
+
+/* ✅ ADDED: apply shift UI on load */
+applyShiftUI();
+
+tickClock();
+setInterval(tickClock, 250);
+</script>
+</body>
+</html>
