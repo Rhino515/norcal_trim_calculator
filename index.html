@@ -123,6 +123,32 @@
     font-weight: bold;
     margin-left: 8px;
   }
+
+  /* ✅ NEW: About the Creator lightning bolt link */
+  .creatorTitle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .secretBolt {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #111;
+    border: 1px solid #0f0;
+    color: #0f0;
+    text-decoration: none;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+  }
+  .secretBolt:hover { background:#0f0; color:#000; }
+  .secretBolt:active { transform: scale(0.98); }
 </style>
 </head>
 <body>
@@ -247,7 +273,10 @@
 </div>
 
 <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
-  <h2 style="color: #0f0;">About the Creator</h2>
+  <h2 class="creatorTitle" style="color: #0f0;">
+    About the Creator
+    <a class="secretBolt" href="shift-tools.html" title="Shift Tools">⚡</a>
+  </h2>
   <p style="max-width: 600px; margin: 0 auto; font-size: 1em; line-height: 1.6;">
     Hi, my name is Andrew and I work as a professional trimmer at NorCal Cannabis.
     I created the NorCal Trim Calculator to help simplify bonus calculations and make it easier
