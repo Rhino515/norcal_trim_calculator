@@ -230,7 +230,6 @@
     <div class="topRow">
       <div class="title">Shift Tools</div>
       <div>
-        <!-- ✅ ADDED -->
         <button class="gray" id="toggleShift">🕒 Shift: ON</button>
         <button class="gray" id="toggleLog">📒 Log</button>
         <button class="gray" id="openSettings">⚙️ Settings</button>
@@ -242,10 +241,14 @@
       <div id="ampm" class="ampm">—</div>
       <div id="date" class="date">---</div>
 
-      <!-- ✅ shift-only -->
+      <!-- ✅ shift-only: status + phase (activePill moved out so timer always shows) -->
       <div class="strip shiftOnly">
         <span class="pill"><b>Status:</b> <span id="phaseText">—</span></span>
         <span class="pill" id="phasePill">⚫</span>
+      </div>
+
+      <!-- ✅ always visible: active serving timer / preset -->
+      <div class="strip">
         <span class="pill" id="activePill">No active serving</span>
       </div>
 
@@ -513,7 +516,6 @@ function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) 
 function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
 
 const defaultState = {
-  /* ✅ ADDED: shift mode toggle */
   shiftEnabled: true,
 
   schedule: {
@@ -534,7 +536,7 @@ const defaultState = {
 let state = loadState() || defaultState;
 
 (function migrate() {
-  if (typeof state.shiftEnabled !== "boolean") state.shiftEnabled = true; /* ✅ ADDED */
+  if (typeof state.shiftEnabled !== "boolean") state.shiftEnabled = true;
   if (!state.servingDefaults) state.servingDefaults = defaultState.servingDefaults;
   if (!state.servingPresets) state.servingPresets = { bucked: [], branch: [] };
   if (!state.activePresetId) state.activePresetId = { bucked: "standard", branch: "standard" };
@@ -602,7 +604,6 @@ el("toggleLog").addEventListener("click", () => {
   el("logSection").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
-/* ✅ SHIFT TOGGLE LOGIC */
 function applyShiftUI() {
   const on = state.shiftEnabled !== false;
   document.body.classList.toggle("shiftOff", !on);
@@ -613,7 +614,6 @@ el("toggleShift").addEventListener("click", () => {
   saveState();
   applyShiftUI();
 
-  // refresh goal UI when turning ON
   if (state.shiftEnabled) {
     const log = getTodayLog();
     const total = log.servings.reduce((sum,x)=>sum+Number(x.grams||0),0);
@@ -987,7 +987,6 @@ function renderLogAndTotals() {
 }
 
 function updateGoalUI(totalGrams) {
-  /* ✅ SHIFT OFF: don’t show checkpoint tracking UI */
   if (state.shiftEnabled === false) {
     el("goalLabel").textContent = "Goal: —";
     el("goalDelta").textContent = "";
@@ -1070,7 +1069,6 @@ function tickClock() {
 
   el("date").textContent = now.toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
 
-  // ✅ If shift mode is OFF, skip phase/countdown updates entirely
   if (state.shiftEnabled !== false) {
     const blocks = buildBlocksFromSchedule(state.schedule);
     const b = currentBlock(blocks, now);
@@ -1159,7 +1157,6 @@ renderDefaultPresetDropdowns();
 syncActiveUI();
 renderLogAndTotals();
 
-/* ✅ ADDED: apply shift UI on load */
 applyShiftUI();
 
 tickClock();
