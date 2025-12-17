@@ -290,7 +290,7 @@
             <div class="name">BUCKED</div>
             <div class="hint" id="hintBucked">Tap to start</div>
           </div>
-          <div class="right" id="presetBucked">Preset: Standard</div>
+          <div class="right" id="presetBucked">Preset: —</div>
         </button>
 
         <button class="bigBtn" id="btnBranch">
@@ -298,18 +298,21 @@
             <div class="name">BRANCH</div>
             <div class="hint" id="hintBranch">Tap to start</div>
           </div>
-          <div class="right" id="presetBranch">Preset: Standard</div>
+          <div class="right" id="presetBranch">Preset: —</div>
         </button>
       </div>
 
-      <!-- ✅ ADDED: Quick Presets (simple buttons) -->
-      <div class="strip" id="quickPresets" style="margin-top:4px;">
-        <span class="pill"><b>Quick:</b></span>
-        <button class="gray" id="qpBucked454">Bucked 454 → 400g</button>
-        <button class="gray" id="qpBucked350">Bucked 350 → 250g</button>
+      <!-- ✅ NEW: Fast dropdowns (always visible, not complicated) -->
+      <div class="strip" style="margin-top:4px; width:min(900px,100%);">
+        <span class="pill"><b>Presets:</b></span>
+        <div style="flex:1; min-width:260px;">
+          <select id="quickPresetBuckedSelect"></select>
+        </div>
+        <div style="flex:1; min-width:260px;">
+          <select id="quickPresetBranchSelect"></select>
+        </div>
       </div>
 
-      <!-- ✅ UPDATED: Pause/Resume + Cancel -->
       <div class="inlineRow" id="activeRow" style="margin-top:6px;">
         <button class="gray hide" id="pauseActive">Pause</button>
         <button class="red hide" id="cancelActive">Cancel Active</button>
@@ -404,11 +407,12 @@
         </div>
 
         <div>
-          <button class="gray" id="saveServingPreset">Save as Preset</button>
+          <button class="green" id="saveServingPreset">Save Changes</button>
+          <button class="gray" id="renameServingPreset">Rename</button>
           <button class="red" id="deleteServingPreset">Delete Preset</button>
         </div>
 
-        <div class="muted">Defaults control what the big buttons use on the main screen.</div>
+        <div class="muted">Tip: choose a preset, change grams/mins, hit <b>Save Changes</b>.</div>
       </div>
 
       <div class="card">
@@ -515,14 +519,24 @@
 </div>
 
 <script>
-const STORE_KEY = "shiftTools_v3_goalBar";
+const STORE_KEY = "shiftTools_v4_presets_finishConfirm";
 
+/* ====== STATE ====== */
 function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || null; } catch(e) { return null; } }
 function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
 
+const seededPresets = {
+  bucked: [
+    { id:"bucked_454_400_30", name:"Bucked 454 → 400g", goalMin:30, grams:400 },
+    { id:"bucked_350_300_30", name:"Bucked 350 → 300g", goalMin:30, grams:300 },
+  ],
+  branch: [
+    { id:"branch_350_200_30", name:"Branch 350 → 200g", goalMin:30, grams:200 },
+  ]
+};
+
 const defaultState = {
   shiftEnabled: true,
-
   schedule: {
     w1s: "06:00", w1e: "08:30", b1m: 10,
     w2s: "08:40", w2e: "10:30", lm: 30,
@@ -531,25 +545,46 @@ const defaultState = {
     shiftEnd: "14:30"
   },
   goals: { gB1: 0, gL: 0, gB2: 0, gE: 0 },
-  servingDefaults: { bucked: { goalMin: 30, grams: 400 }, branch: { goalMin: 25, grams: 200 } },
+
+  // ✅ presets are now the source of truth
   servingPresets: { bucked: [], branch: [] },
-  activePresetId: { bucked: "standard", branch: "standard" },
+  activePresetId: { bucked: "bucked_454_400_30", branch: "branch_350_200_30" },
+
   activeServing: null,
   today: {}
 };
 
 let state = loadState() || defaultState;
 
-(function migrate() {
+/* ====== MIGRATE / SEED DEFAULT PRESETS ====== */
+(function migrateAndSeed() {
   if (typeof state.shiftEnabled !== "boolean") state.shiftEnabled = true;
-  if (!state.servingDefaults) state.servingDefaults = defaultState.servingDefaults;
   if (!state.servingPresets) state.servingPresets = { bucked: [], branch: [] };
-  if (!state.activePresetId) state.activePresetId = { bucked: "standard", branch: "standard" };
-  if (!state.schedule?.shiftEnd) state.schedule.shiftEnd = defaultState.schedule.shiftEnd;
+  if (!state.activePresetId) state.activePresetId = { bucked: seededPresets.bucked[0].id, branch: seededPresets.branch[0].id };
+  if (!state.schedule?.shiftEnd) state.schedule = defaultState.schedule;
   if (!state.today) state.today = {};
+
+  // seed if missing
+  ["bucked","branch"].forEach(type => {
+    const existing = state.servingPresets[type] || [];
+    seededPresets[type].forEach(sp => {
+      if (!existing.some(p => p.id === sp.id)) existing.push({ ...sp });
+    });
+    state.servingPresets[type] = existing;
+  });
+
+  // ensure active preset ids exist
+  ["bucked","branch"].forEach(type => {
+    const id = state.activePresetId[type];
+    if (!state.servingPresets[type].some(p => p.id === id)) {
+      state.activePresetId[type] = seededPresets[type][0].id;
+    }
+  });
+
   saveState();
 })();
 
+/* ====== HELPERS ====== */
 const el = (id) => document.getElementById(id);
 function pad2(n){ return String(n).padStart(2, "0"); }
 
@@ -590,6 +625,7 @@ function uid() {
 function toggleClockZoom() { document.body.classList.toggle("clockZoom"); }
 el("clock").addEventListener("click", toggleClockZoom);
 
+/* ====== SETTINGS OPEN/CLOSE ====== */
 function openSettings() {
   const o = el("settingsOverlay");
   o.classList.add("open");
@@ -609,6 +645,7 @@ el("toggleLog").addEventListener("click", () => {
   el("logSection").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
+/* ====== SHIFT TOGGLE ====== */
 function applyShiftUI() {
   const on = state.shiftEnabled !== false;
   document.body.classList.toggle("shiftOff", !on);
@@ -626,28 +663,63 @@ el("toggleShift").addEventListener("click", () => {
   }
 });
 
+/* ====== PRESETS ====== */
 function buildPresetLabel(p) { return `${p.name} — ${p.goalMin}m / ${p.grams}g`; }
 
-function getStandardPreset(type) {
-  return {
-    id: "standard",
-    name: "Standard",
-    goalMin: Number(state.servingDefaults?.[type]?.goalMin || 0),
-    grams: Number(state.servingDefaults?.[type]?.grams || 0)
-  };
-}
-
 function getPresetsForType(type) {
-  const standard = getStandardPreset(type);
-  const custom = (state.servingPresets?.[type] || []).slice();
-  return [standard, ...custom];
+  return (state.servingPresets?.[type] || []).slice();
 }
 
 function getPresetById(type, id) {
   const list = getPresetsForType(type);
-  return list.find(p => p.id === id) || getStandardPreset(type);
+  return list.find(p => p.id === id) || list[0] || { id:"", name:"—", goalMin:0, grams:0 };
 }
 
+function updateMainPresetLabels() {
+  const pB = getPresetById("bucked", state.activePresetId.bucked);
+  const pR = getPresetById("branch", state.activePresetId.branch);
+  el("presetBucked").textContent = `Preset: ${pB.name} (${pB.goalMin}m / ${pB.grams}g)`;
+  el("presetBranch").textContent = `Preset: ${pR.name} (${pR.goalMin}m / ${pR.grams}g)`;
+}
+
+/* ✅ Main-screen fast dropdowns */
+function renderQuickPresetSelects() {
+  const bSel = el("quickPresetBuckedSelect");
+  const rSel = el("quickPresetBranchSelect");
+
+  bSel.innerHTML = "";
+  getPresetsForType("bucked").forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = "Bucked: " + buildPresetLabel(p);
+    bSel.appendChild(opt);
+  });
+  bSel.value = state.activePresetId.bucked;
+
+  rSel.innerHTML = "";
+  getPresetsForType("branch").forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = "Branch: " + buildPresetLabel(p);
+    rSel.appendChild(opt);
+  });
+  rSel.value = state.activePresetId.branch;
+}
+
+el("quickPresetBuckedSelect").addEventListener("change", () => {
+  state.activePresetId.bucked = el("quickPresetBuckedSelect").value;
+  saveState();
+  updateMainPresetLabels();
+  syncActiveUI();
+});
+el("quickPresetBranchSelect").addEventListener("change", () => {
+  state.activePresetId.branch = el("quickPresetBranchSelect").value;
+  saveState();
+  updateMainPresetLabels();
+  syncActiveUI();
+});
+
+/* ✅ Settings dropdowns */
 function renderDefaultPresetDropdowns() {
   ["bucked","branch"].forEach(type => {
     const sel = el(type === "bucked" ? "defaultPresetBucked" : "defaultPresetBranch");
@@ -661,71 +733,35 @@ function renderDefaultPresetDropdowns() {
       sel.appendChild(opt);
     });
 
-    sel.value = presets.some(p => p.id === state.activePresetId[type]) ? state.activePresetId[type] : "standard";
+    sel.value = state.activePresetId[type];
   });
 
   updateMainPresetLabels();
-}
-
-function updateMainPresetLabels() {
-  const pB = getPresetById("bucked", state.activePresetId.bucked || "standard");
-  const pR = getPresetById("branch", state.activePresetId.branch || "standard");
-  el("presetBucked").textContent = `Preset: ${pB.name} (${pB.goalMin}m / ${pB.grams}g)`;
-  el("presetBranch").textContent = `Preset: ${pR.name} (${pR.goalMin}m / ${pR.grams}g)`;
-}
-
-/* ✅ Quick preset helper */
-function setQuickPreset(type, name, goalMin, grams) {
-  const existing = (state.servingPresets[type] || []).find(p =>
-    p.name === name && Number(p.grams) === Number(grams) && Number(p.goalMin) === Number(goalMin)
-  );
-
-  let presetId = existing?.id;
-  if (!presetId) {
-    const p = { id: uid(), name, goalMin: Math.round(goalMin), grams: Math.round(grams) };
-    state.servingPresets[type].push(p);
-    presetId = p.id;
-  }
-
-  state.activePresetId[type] = presetId;
-  saveState();
-
-  // If currently running this type, update live
-  const a = getActiveServing();
-  if (a && a.type === type) {
-    a.goalMin = Math.round(goalMin);
-    a.grams = Math.round(grams);
-    a.presetName = name;
-    saveState();
-  }
-
-  renderPresetManageList();
-  renderDefaultPresetDropdowns();
-  updateMainPresetLabels();
-  syncActiveUI();
+  renderQuickPresetSelects();
 }
 
 el("defaultPresetBucked").addEventListener("change", () => {
   state.activePresetId.bucked = el("defaultPresetBucked").value;
   saveState();
   updateMainPresetLabels();
+  renderQuickPresetSelects();
+  syncActiveUI();
 });
 el("defaultPresetBranch").addEventListener("change", () => {
   state.activePresetId.branch = el("defaultPresetBranch").value;
   saveState();
   updateMainPresetLabels();
+  renderQuickPresetSelects();
+  syncActiveUI();
 });
 
-/* ✅ Quick preset buttons */
-el("qpBucked454").addEventListener("click", () => setQuickPreset("bucked", "454 Bag", 30, 400));
-el("qpBucked350").addEventListener("click", () => setQuickPreset("bucked", "350 Bag", 30, 250));
-
+/* ✅ Settings manage list */
 function renderPresetManageList() {
   const type = el("presetTypeManage").value;
   const sel = el("presetSelectManage");
   const presets = getPresetsForType(type);
 
-  const current = sel.value || "standard";
+  const current = sel.value || presets[0]?.id;
   sel.innerHTML = "";
 
   presets.forEach(p => {
@@ -735,7 +771,7 @@ function renderPresetManageList() {
     sel.appendChild(opt);
   });
 
-  sel.value = presets.some(p => p.id === current) ? current : "standard";
+  sel.value = presets.some(p => p.id === current) ? current : (presets[0]?.id || "");
   applyManagePresetToInputs();
   syncManageDelete();
 }
@@ -749,7 +785,12 @@ function applyManagePresetToInputs() {
 }
 
 function syncManageDelete() {
-  el("deleteServingPreset").disabled = (el("presetSelectManage").value === "standard");
+  const type = el("presetTypeManage").value;
+  const id = el("presetSelectManage").value;
+  // allow delete for anything, but confirm harder for seeded ones
+  el("deleteServingPreset").disabled = !id;
+  el("renameServingPreset").disabled = !id;
+  el("saveServingPreset").disabled = !id;
 }
 
 el("presetTypeManage").addEventListener("change", renderPresetManageList);
@@ -758,45 +799,77 @@ el("presetSelectManage").addEventListener("change", () => {
   syncManageDelete();
 });
 
+/* ✅ Save Changes (edits selected preset) */
 el("saveServingPreset").addEventListener("click", () => {
   const type = el("presetTypeManage").value;
+  const id = el("presetSelectManage").value;
   const goalMin = Number(el("presetGoalMin").value || 0);
   const grams = Number(el("presetGrams").value || 0);
 
   if (goalMin <= 0) { alert("Enter a valid goal minutes number."); return; }
   if (grams < 0) { alert("Enter a valid estimated grams number."); return; }
 
-  const name = (prompt("Preset name (example: My Average, Small Nugs, Fast Pace):") || "").trim();
-  if (!name) return;
+  const list = state.servingPresets[type] || [];
+  const item = list.find(p => p.id === id);
+  if (!item) return;
 
-  const preset = { id: uid(), name, goalMin: Math.round(goalMin), grams: Math.round(grams) };
-  state.servingPresets[type].push(preset);
+  item.goalMin = Math.round(goalMin);
+  item.grams = Math.round(grams);
+
   saveState();
-
   renderPresetManageList();
   renderDefaultPresetDropdowns();
-
-  el("presetSelectManage").value = preset.id;
-  applyManagePresetToInputs();
-  syncManageDelete();
-
-  alert("Preset saved.");
+  updateMainPresetLabels();
+  syncActiveUI();
+  alert("Preset updated.");
 });
 
+/* ✅ Rename */
+el("renameServingPreset").addEventListener("click", () => {
+  const type = el("presetTypeManage").value;
+  const id = el("presetSelectManage").value;
+  const list = state.servingPresets[type] || [];
+  const item = list.find(p => p.id === id);
+  if (!item) return;
+
+  const name = (prompt("Preset name:", item.name || "") || "").trim();
+  if (!name) return;
+
+  item.name = name;
+  saveState();
+  renderPresetManageList();
+  renderDefaultPresetDropdowns();
+  updateMainPresetLabels();
+  syncActiveUI();
+});
+
+/* ✅ Delete preset */
 el("deleteServingPreset").addEventListener("click", () => {
   const type = el("presetTypeManage").value;
   const id = el("presetSelectManage").value;
-  if (id === "standard") return;
-  if (!confirm("Delete this preset?")) return;
+  if (!id) return;
+
+  const isSeed = seededPresets[type].some(p => p.id === id);
+  const msg = isSeed
+    ? "Delete this DEFAULT preset? (You can reload defaults by clearing Website Data.)"
+    : "Delete this preset?";
+  if (!confirm(msg)) return;
 
   state.servingPresets[type] = (state.servingPresets[type] || []).filter(p => p.id !== id);
-  if (state.activePresetId[type] === id) state.activePresetId[type] = "standard";
+
+  // if active preset deleted, fallback to first
+  if (state.activePresetId[type] === id) {
+    state.activePresetId[type] = (state.servingPresets[type][0]?.id || seededPresets[type][0].id);
+  }
 
   saveState();
   renderPresetManageList();
   renderDefaultPresetDropdowns();
+  updateMainPresetLabels();
+  syncActiveUI();
 });
 
+/* ====== SCHEDULE BLOCKS ====== */
 function buildBlocksFromSchedule(s) {
   const w1s = timeToDateToday(s.w1s), w1e = timeToDateToday(s.w1e);
   const b1e = new Date(w1e.getTime() + Number(s.b1m||0)*60000);
@@ -838,8 +911,8 @@ function phaseLabel(key, label) {
   return [label || "OFF", "⚫"];
 }
 
+/* ====== ACTIVE SERVING ====== */
 function getActiveServing() { return state.activeServing; }
-
 function setActiveServing(obj) { state.activeServing = obj; saveState(); syncActiveUI(); }
 function clearActiveServing() { state.activeServing = null; saveState(); syncActiveUI(); }
 
@@ -870,7 +943,7 @@ function resumeActiveServing() {
 function startServing(type) {
   if (getActiveServing()) return;
 
-  const presetId = state.activePresetId?.[type] || "standard";
+  const presetId = state.activePresetId?.[type];
   const p = getPresetById(type, presetId);
 
   const log = getTodayLog();
@@ -883,10 +956,18 @@ function startServing(type) {
     grams: Math.round(Number(p.grams || 0)),
     presetName: p.name,
 
-    // ✅ pause fields
     pausedAt: null,
     pausedMs: 0
   });
+}
+
+/* ✅ finish confirmation */
+function confirmFinish(type, elapsedMs, grams, presetName, pausedAt) {
+  const elapsed = fmtMMSS(elapsedMs);
+  const pausedTxt = pausedAt ? "\n\n(It's currently PAUSED)" : "";
+  return confirm(
+    `Finish ${type.toUpperCase()}?\n\nTime: ${elapsed}\nGrams: ${Math.round(grams||0)}g\nPreset: ${presetName || ""}${pausedTxt}`
+  );
 }
 
 function finishServing() {
@@ -914,8 +995,17 @@ function finishServing() {
 
 function handleTap(type) {
   const a = getActiveServing();
+
   if (!a) { startServing(type); return; }
-  if (a.type === type) { finishServing(); return; }
+
+  // ✅ confirm before finishing
+  if (a.type === type) {
+    const ms = getActiveElapsedMs(a);
+    const ok = confirmFinish(a.type, ms, a.grams, a.presetName, a.pausedAt);
+    if (!ok) return;
+    finishServing();
+    return;
+  }
 
   const ok = confirm(`You have an active ${a.type.toUpperCase()} running.\n\nFinish it and start ${type.toUpperCase()}?`);
   if (!ok) return;
@@ -997,6 +1087,7 @@ function colorForProgress(p) {
   }
 }
 
+/* ====== LOG + TOTALS ====== */
 function renderLogAndTotals() {
   const log = getTodayLog();
   const body = el("logBody");
@@ -1068,6 +1159,7 @@ function renderLogAndTotals() {
   });
 }
 
+/* ====== GOAL UI ====== */
 function updateGoalUI(totalGrams) {
   if (state.shiftEnabled === false) {
     el("goalLabel").textContent = "Goal: —";
@@ -1124,8 +1216,8 @@ function updateGoalUI(totalGrams) {
     el("goalHint").textContent = `Past checkpoint • Short ${Math.round(gramsRemaining)}g`;
   } else {
     const paceNeeded = Math.round((gramsRemaining / minsLeft) * 60);
-    const pB = getPresetById("bucked", state.activePresetId?.bucked || "standard");
-    const pR = getPresetById("branch", state.activePresetId?.branch || "standard");
+    const pB = getPresetById("bucked", state.activePresetId?.bucked);
+    const pR = getPresetById("branch", state.activePresetId?.branch);
     const buckedServ = Math.max(1, Math.ceil(gramsRemaining / Math.max(1, Number(pB.grams || 0))));
     const branchServ = Math.max(1, Math.ceil(gramsRemaining / Math.max(1, Number(pR.grams || 0))));
     const buckedMaxMin = (minsLeft / buckedServ);
@@ -1139,6 +1231,7 @@ function updateGoalUI(totalGrams) {
     `Target: ${target.label} • ${minsLeft}m left • Goal ${Math.round(goal)}g`;
 }
 
+/* ====== CLOCK ====== */
 function tickClock() {
   const now = new Date();
 
@@ -1188,6 +1281,7 @@ function tickClock() {
   }
 }
 
+/* ====== SETTINGS SAVE ====== */
 const idsSchedule = ["w1s","w1e","b1m","w2s","w2e","lm","w3s","w3e","b2m","w4s","w4e","shiftEnd"];
 const idsGoals = ["gB1","gL","gB2","gE"];
 
@@ -1230,12 +1324,15 @@ el("clearToday").addEventListener("click", () => {
   renderLogAndTotals();
 });
 
-/* INIT */
+/* ====== INIT ====== */
 applyScheduleToInputs();
 applyGoalsToInputs();
 
 renderPresetManageList();
 renderDefaultPresetDropdowns();
+renderQuickPresetSelects();
+updateMainPresetLabels();
+
 syncActiveUI();
 renderLogAndTotals();
 
