@@ -302,6 +302,13 @@
         </button>
       </div>
 
+      <!-- ✅ ADDED: Quick Presets (simple buttons) -->
+      <div class="strip" id="quickPresets" style="margin-top:4px;">
+        <span class="pill"><b>Quick:</b></span>
+        <button class="gray" id="qpBucked454">Bucked 454 → 400g</button>
+        <button class="gray" id="qpBucked350">Bucked 350 → 250g</button>
+      </div>
+
       <!-- ✅ UPDATED: Pause/Resume + Cancel -->
       <div class="inlineRow" id="activeRow" style="margin-top:6px;">
         <button class="gray hide" id="pauseActive">Pause</button>
@@ -667,6 +674,37 @@ function updateMainPresetLabels() {
   el("presetBranch").textContent = `Preset: ${pR.name} (${pR.goalMin}m / ${pR.grams}g)`;
 }
 
+/* ✅ Quick preset helper */
+function setQuickPreset(type, name, goalMin, grams) {
+  const existing = (state.servingPresets[type] || []).find(p =>
+    p.name === name && Number(p.grams) === Number(grams) && Number(p.goalMin) === Number(goalMin)
+  );
+
+  let presetId = existing?.id;
+  if (!presetId) {
+    const p = { id: uid(), name, goalMin: Math.round(goalMin), grams: Math.round(grams) };
+    state.servingPresets[type].push(p);
+    presetId = p.id;
+  }
+
+  state.activePresetId[type] = presetId;
+  saveState();
+
+  // If currently running this type, update live
+  const a = getActiveServing();
+  if (a && a.type === type) {
+    a.goalMin = Math.round(goalMin);
+    a.grams = Math.round(grams);
+    a.presetName = name;
+    saveState();
+  }
+
+  renderPresetManageList();
+  renderDefaultPresetDropdowns();
+  updateMainPresetLabels();
+  syncActiveUI();
+}
+
 el("defaultPresetBucked").addEventListener("change", () => {
   state.activePresetId.bucked = el("defaultPresetBucked").value;
   saveState();
@@ -677,6 +715,10 @@ el("defaultPresetBranch").addEventListener("change", () => {
   saveState();
   updateMainPresetLabels();
 });
+
+/* ✅ Quick preset buttons */
+el("qpBucked454").addEventListener("click", () => setQuickPreset("bucked", "454 Bag", 30, 400));
+el("qpBucked350").addEventListener("click", () => setQuickPreset("bucked", "350 Bag", 30, 250));
 
 function renderPresetManageList() {
   const type = el("presetTypeManage").value;
