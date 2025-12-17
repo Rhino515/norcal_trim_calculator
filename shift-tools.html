@@ -241,24 +241,20 @@
       <div id="ampm" class="ampm">—</div>
       <div id="date" class="date">---</div>
 
-      <!-- ✅ shift-only: status + phase (activePill moved out so timer always shows) -->
       <div class="strip shiftOnly">
         <span class="pill"><b>Status:</b> <span id="phaseText">—</span></span>
         <span class="pill" id="phasePill">⚫</span>
       </div>
 
-      <!-- ✅ always visible: active serving timer / preset -->
       <div class="strip">
         <span class="pill" id="activePill">No active serving</span>
       </div>
 
-      <!-- ✅ shift-only -->
       <div class="strip shiftOnly">
         <span class="pill" id="countdown">—</span>
         <span class="pill" id="nextUp">—</span>
       </div>
 
-      <!-- ✅ shift-only -->
       <div class="goalWrap shiftOnly">
         <div class="goalHeader">
           <span id="goalLabel">Goal: —</span>
@@ -306,7 +302,9 @@
         </button>
       </div>
 
+      <!-- ✅ UPDATED: Pause/Resume + Cancel -->
       <div class="inlineRow" id="activeRow" style="margin-top:6px;">
+        <button class="gray hide" id="pauseActive">Pause</button>
         <button class="red hide" id="cancelActive">Cancel Active</button>
       </div>
 
@@ -803,6 +801,30 @@ function getActiveServing() { return state.activeServing; }
 function setActiveServing(obj) { state.activeServing = obj; saveState(); syncActiveUI(); }
 function clearActiveServing() { state.activeServing = null; saveState(); syncActiveUI(); }
 
+/* ✅ PAUSE SUPPORT */
+function getActiveElapsedMs(a) {
+  if (!a) return 0;
+  const now = Date.now();
+  const pausedTotal = Number(a.pausedMs || 0);
+  const extraPaused = a.pausedAt ? (now - a.pausedAt) : 0;
+  return Math.max(0, (now - a.startedAt) - pausedTotal - extraPaused);
+}
+function pauseActiveServing() {
+  const a = getActiveServing();
+  if (!a || a.pausedAt) return;
+  a.pausedAt = Date.now();
+  saveState();
+  syncActiveUI();
+}
+function resumeActiveServing() {
+  const a = getActiveServing();
+  if (!a || !a.pausedAt) return;
+  a.pausedMs = Number(a.pausedMs || 0) + (Date.now() - a.pausedAt);
+  a.pausedAt = null;
+  saveState();
+  syncActiveUI();
+}
+
 function startServing(type) {
   if (getActiveServing()) return;
 
@@ -817,7 +839,11 @@ function startServing(type) {
     startedAt: Date.now(),
     goalMin: Math.round(Number(p.goalMin || 0)),
     grams: Math.round(Number(p.grams || 0)),
-    presetName: p.name
+    presetName: p.name,
+
+    // ✅ pause fields
+    pausedAt: null,
+    pausedMs: 0
   });
 }
 
@@ -825,7 +851,7 @@ function finishServing() {
   const a = getActiveServing();
   if (!a) return;
 
-  const ms = Date.now() - a.startedAt;
+  const ms = getActiveElapsedMs(a);
   if (ms <= 0) { clearActiveServing(); return; }
 
   const entry = {
@@ -859,6 +885,14 @@ function handleTap(type) {
 el("btnBucked").addEventListener("click", () => handleTap("bucked"));
 el("btnBranch").addEventListener("click", () => handleTap("branch"));
 
+/* ✅ Pause/Resume button */
+el("pauseActive").addEventListener("click", () => {
+  const a = getActiveServing();
+  if (!a) return;
+  if (a.pausedAt) resumeActiveServing();
+  else pauseActiveServing();
+});
+
 el("cancelActive").addEventListener("click", () => {
   if (!getActiveServing()) return;
   if (!confirm("Cancel the active serving (no log entry)?")) return;
@@ -873,11 +907,14 @@ function syncActiveUI() {
   el("hintBucked").textContent = "Tap to start";
   el("hintBranch").textContent = "Tap to start";
   el("activePill").textContent = "No active serving";
+
   el("cancelActive").classList.add("hide");
+  el("pauseActive").classList.add("hide");
+  el("pauseActive").textContent = "Pause";
 
   if (!a) return;
 
-  const ms = Date.now() - a.startedAt;
+  const ms = getActiveElapsedMs(a);
   const elapsed = fmtMMSS(ms);
   const goalMs = (a.goalMin || 0) * 60000;
   let delta = "";
@@ -887,17 +924,20 @@ function syncActiveUI() {
     delta = ` • ${sign}${fmtMMSS(Math.abs(diff))} vs ${a.goalMin}:00`;
   }
 
-  el("activePill").textContent = `${a.type.toUpperCase()} • ${elapsed}${delta} • ${a.grams}g (${a.presetName})`;
+  const pausedTag = a.pausedAt ? " • PAUSED" : "";
+  el("activePill").textContent = `${a.type.toUpperCase()} • ${elapsed}${delta}${pausedTag} • ${a.grams}g (${a.presetName})`;
 
   if (a.type === "bucked") {
     el("btnBucked").classList.add("active");
-    el("hintBucked").textContent = "Tap again to finish";
+    el("hintBucked").textContent = a.pausedAt ? "Paused" : "Tap again to finish";
   } else {
     el("btnBranch").classList.add("active");
-    el("hintBranch").textContent = "Tap again to finish";
+    el("hintBranch").textContent = a.pausedAt ? "Paused" : "Tap again to finish";
   }
 
   el("cancelActive").classList.remove("hide");
+  el("pauseActive").classList.remove("hide");
+  el("pauseActive").textContent = a.pausedAt ? "Resume" : "Pause";
 }
 
 /* GOAL BAR COLOR */
