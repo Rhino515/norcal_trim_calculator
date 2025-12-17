@@ -302,7 +302,7 @@
         </button>
       </div>
 
-      <!-- ✅ NEW: Fast dropdowns (always visible, not complicated) -->
+      <!-- ✅ Fast dropdowns -->
       <div class="strip" style="margin-top:4px; width:min(900px,100%);">
         <span class="pill"><b>Presets:</b></span>
         <div style="flex:1; min-width:260px;">
@@ -547,7 +547,6 @@ const defaultState = {
   },
   goals: { gB1: 0, gL: 0, gB2: 0, gE: 0 },
 
-  // ✅ presets are now the source of truth
   servingPresets: { bucked: [], branch: [] },
   activePresetId: { bucked: "bucked_454_400_30", branch: "branch_350_200_30" },
 
@@ -565,7 +564,6 @@ let state = loadState() || defaultState;
   if (!state.schedule?.shiftEnd) state.schedule = defaultState.schedule;
   if (!state.today) state.today = {};
 
-  // seed if missing
   ["bucked","branch"].forEach(type => {
     const existing = state.servingPresets[type] || [];
     seededPresets[type].forEach(sp => {
@@ -574,7 +572,6 @@ let state = loadState() || defaultState;
     state.servingPresets[type] = existing;
   });
 
-  // ensure active preset ids exist
   ["bucked","branch"].forEach(type => {
     const id = state.activePresetId[type];
     if (!state.servingPresets[type].some(p => p.id === id)) {
@@ -683,7 +680,7 @@ function updateMainPresetLabels() {
   el("presetBranch").textContent = `Preset: ${pR.name} (${pR.goalMin}m / ${pR.grams}g)`;
 }
 
-/* ✅ Main-screen fast dropdowns */
+/* Main-screen fast dropdowns */
 function renderQuickPresetSelects() {
   const bSel = el("quickPresetBuckedSelect");
   const rSel = el("quickPresetBranchSelect");
@@ -720,7 +717,7 @@ el("quickPresetBranchSelect").addEventListener("change", () => {
   syncActiveUI();
 });
 
-/* ✅ Settings dropdowns */
+/* Settings default preset dropdowns */
 function renderDefaultPresetDropdowns() {
   ["bucked","branch"].forEach(type => {
     const sel = el(type === "bucked" ? "defaultPresetBucked" : "defaultPresetBranch");
@@ -756,7 +753,7 @@ el("defaultPresetBranch").addEventListener("change", () => {
   syncActiveUI();
 });
 
-/* ✅ Settings manage list */
+/* Settings manage list */
 function renderPresetManageList() {
   const type = el("presetTypeManage").value;
   const sel = el("presetSelectManage");
@@ -798,7 +795,7 @@ el("presetSelectManage").addEventListener("change", () => {
   syncManageDelete();
 });
 
-/* ✅ Save Changes (edits selected preset) */
+/* Save Changes (edit selected preset) */
 el("saveServingPreset").addEventListener("click", () => {
   const type = el("presetTypeManage").value;
   const id = el("presetSelectManage").value;
@@ -824,7 +821,7 @@ el("saveServingPreset").addEventListener("click", () => {
   alert("Preset updated.");
 });
 
-/* ✅ Add New Preset */
+/* Add New Preset */
 el("addServingPreset").addEventListener("click", () => {
   const type = el("presetTypeManage").value;
   const goalMin = Number(el("presetGoalMin").value || 0);
@@ -838,8 +835,6 @@ el("addServingPreset").addEventListener("click", () => {
 
   const newPreset = { id: uid(), name, goalMin: Math.round(goalMin), grams: Math.round(grams) };
   state.servingPresets[type].push(newPreset);
-
-  // make it active immediately for that type
   state.activePresetId[type] = newPreset.id;
 
   saveState();
@@ -850,7 +845,6 @@ el("addServingPreset").addEventListener("click", () => {
   updateMainPresetLabels();
   syncActiveUI();
 
-  // select the new one in the manage dropdown
   el("presetSelectManage").value = newPreset.id;
   applyManagePresetToInputs();
   syncManageDelete();
@@ -858,7 +852,7 @@ el("addServingPreset").addEventListener("click", () => {
   alert("New preset added.");
 });
 
-/* ✅ Rename */
+/* Rename */
 el("renameServingPreset").addEventListener("click", () => {
   const type = el("presetTypeManage").value;
   const id = el("presetSelectManage").value;
@@ -878,7 +872,7 @@ el("renameServingPreset").addEventListener("click", () => {
   syncActiveUI();
 });
 
-/* ✅ Delete preset */
+/* Delete */
 el("deleteServingPreset").addEventListener("click", () => {
   const type = el("presetTypeManage").value;
   const id = el("presetSelectManage").value;
@@ -904,9 +898,7 @@ el("deleteServingPreset").addEventListener("click", () => {
   syncActiveUI();
 });
 
-/* ====== REST OF YOUR CODE (UNCHANGED) ====== */
-/* ... everything below is exactly as you already had it ... */
-
+/* ====== SCHEDULE BLOCKS ====== */
 function buildBlocksFromSchedule(s) {
   const w1s = timeToDateToday(s.w1s), w1e = timeToDateToday(s.w1e);
   const b1e = new Date(w1e.getTime() + Number(s.b1m||0)*60000);
@@ -953,7 +945,7 @@ function getActiveServing() { return state.activeServing; }
 function setActiveServing(obj) { state.activeServing = obj; saveState(); syncActiveUI(); }
 function clearActiveServing() { state.activeServing = null; saveState(); syncActiveUI(); }
 
-/* ✅ PAUSE SUPPORT */
+/* PAUSE SUPPORT */
 function getActiveElapsedMs(a) {
   if (!a) return 0;
   const now = Date.now();
@@ -992,13 +984,11 @@ function startServing(type) {
     goalMin: Math.round(Number(p.goalMin || 0)),
     grams: Math.round(Number(p.grams || 0)),
     presetName: p.name,
-
     pausedAt: null,
     pausedMs: 0
   });
 }
 
-/* ✅ finish confirmation */
 function confirmFinish(type, elapsedMs, grams, presetName, pausedAt) {
   const elapsed = fmtMMSS(elapsedMs);
   const pausedTxt = pausedAt ? "\n\n(It's currently PAUSED)" : "";
@@ -1053,7 +1043,6 @@ function handleTap(type) {
 el("btnBucked").addEventListener("click", () => handleTap("bucked"));
 el("btnBranch").addEventListener("click", () => handleTap("branch"));
 
-/* ✅ Pause/Resume button */
 el("pauseActive").addEventListener("click", () => {
   const a = getActiveServing();
   if (!a) return;
@@ -1124,17 +1113,243 @@ function colorForProgress(p) {
 }
 
 /* ====== LOG + TOTALS ====== */
-function renderLogAndTotals() { /* ... unchanged ... */ }
-function updateGoalUI(totalGrams) { /* ... unchanged ... */ }
-function tickClock() { /* ... unchanged ... */ }
+function renderLogAndTotals() {
+  const log = getTodayLog();
+  const body = el("logBody");
+  body.innerHTML = "";
 
+  let totalGrams = 0;
+
+  let countB = 0, countBr = 0;
+  let minsB = 0, minsBr = 0;
+
+  log.servings.forEach((s) => {
+    totalGrams += Number(s.grams || 0);
+
+    if (s.type === "bucked") { countB++; minsB += Number(s.minutes || 0); }
+    if (s.type === "branch") { countBr++; minsBr += Number(s.minutes || 0); }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fmtTime(new Date(s.finishedAt))}</td>
+      <td>${s.type === "bucked" ? "Bucked" : "Branch"}</td>
+      <td class="right">${Number(s.minutes).toFixed(2)}</td>
+      <td class="right">
+        <input data-id="${s.id}" class="gramsEdit" type="number" step="1" min="0" value="${s.grams}">
+      </td>
+      <td><button class="red deleteOne" data-id="${s.id}">Delete</button></td>
+    `;
+    body.appendChild(tr);
+  });
+
+  el("totalGrams").textContent = totalGrams.toFixed(0);
+  el("countBucked").textContent = countB;
+  el("countBranch").textContent = countBr;
+
+  const avgB = countB ? (minsB / countB) : 0;
+  const avgBr = countBr ? (minsBr / countBr) : 0;
+  el("avgMinBucked").textContent = avgB.toFixed(1);
+  el("avgMinBranch").textContent = avgBr.toFixed(1);
+
+  let gph = 0;
+  if (log.firstStartMs && totalGrams > 0) {
+    const hours = (Date.now() - log.firstStartMs) / (1000*60*60);
+    if (hours > 0) gph = totalGrams / hours;
+  }
+  el("paceGph").textContent = gph.toFixed(0);
+
+  updateGoalUI(totalGrams);
+
+  document.querySelectorAll(".gramsEdit").forEach(inp => {
+    inp.addEventListener("change", (e) => {
+      const id = e.target.getAttribute("data-id");
+      const val = Number(e.target.value || 0);
+      const log2 = getTodayLog();
+      const item = log2.servings.find(x => x.id === id);
+      if (item) item.grams = Math.max(0, Math.round(val));
+      saveState();
+      renderLogAndTotals();
+    });
+  });
+
+  document.querySelectorAll(".deleteOne").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const id = e.target.getAttribute("data-id");
+      if (!confirm("Delete this serving?")) return;
+      const log2 = getTodayLog();
+      log2.servings = log2.servings.filter(x => x.id !== id);
+      saveState();
+      renderLogAndTotals();
+    });
+  });
+}
+
+/* ====== GOAL UI ====== */
+function updateGoalUI(totalGrams) {
+  if (state.shiftEnabled === false) {
+    el("goalLabel").textContent = "Goal: —";
+    el("goalDelta").textContent = "";
+    el("goalFill").style.width = "0%";
+    el("goalFill").style.background = "#333";
+    el("goalHint").textContent = "Shift mode is OFF.";
+    el("goalStatusSettings").textContent = "Shift mode is OFF.";
+    return;
+  }
+
+  const s = state.schedule;
+  const now = new Date();
+
+  const checkpoints = [
+    { key:"gB1", label:"Break 1", at: timeToDateToday(s.w1e) },
+    { key:"gL",  label:"Lunch",   at: timeToDateToday(s.w2e) },
+    { key:"gB2", label:"Break 2", at: timeToDateToday(s.w3e) },
+    { key:"gE",  label:"End",     at: timeToDateToday(s.w4e) }
+  ];
+
+  const goals = state.goals || {};
+  const target = checkpoints.find(x => now < x.at) || checkpoints[checkpoints.length - 1];
+  const goal = Number(goals[target.key] || 0);
+
+  if (!goal || goal <= 0) {
+    el("goalLabel").textContent = "Goal: —";
+    el("goalDelta").textContent = "";
+    el("goalFill").style.width = "0%";
+    el("goalFill").style.background = "#333";
+    el("goalHint").textContent = "Set goals in Settings to track your pace.";
+    el("goalStatusSettings").textContent = "Set your goals and you’ll see the bar update live.";
+    return;
+  }
+
+  const rawProgress = totalGrams / goal;
+  const progressClamped = Math.min(1, Math.max(0, rawProgress));
+  const pct = Math.min(100, Math.max(0, rawProgress * 100));
+
+  el("goalFill").style.width = `${Math.min(100, pct)}%`;
+  el("goalFill").style.background = colorForProgress(progressClamped);
+
+  const diff = totalGrams - goal;
+  const ahead = diff >= 0;
+  const gramsRemaining = Math.max(0, goal - totalGrams);
+  const minsLeft = Math.max(0, Math.round((target.at - now) / 60000));
+
+  el("goalLabel").textContent = `${target.label}: ${Math.round(totalGrams)}/${Math.round(goal)}g`;
+  el("goalDelta").textContent = ahead ? `Ahead ${Math.round(diff)}g` : `Behind ${Math.round(gramsRemaining)}g`;
+
+  if (ahead) {
+    el("goalHint").textContent = "On pace ✔";
+  } else if (minsLeft <= 0) {
+    el("goalHint").textContent = `Past checkpoint • Short ${Math.round(gramsRemaining)}g`;
+  } else {
+    const paceNeeded = Math.round((gramsRemaining / minsLeft) * 60);
+    const pB = getPresetById("bucked", state.activePresetId?.bucked);
+    const pR = getPresetById("branch", state.activePresetId?.branch);
+    const buckedServ = Math.max(1, Math.ceil(gramsRemaining / Math.max(1, Number(pB.grams || 0))));
+    const branchServ = Math.max(1, Math.ceil(gramsRemaining / Math.max(1, Number(pR.grams || 0))));
+    const buckedMaxMin = (minsLeft / buckedServ);
+    const branchMaxMin = (minsLeft / branchServ);
+
+    el("goalHint").textContent =
+      `Need ~${paceNeeded} g/hr • ${minsLeft}m left • Bucked ≤ ${buckedMaxMin.toFixed(1)}m/serv • Branch ≤ ${branchMaxMin.toFixed(1)}m/serv`;
+  }
+
+  el("goalStatusSettings").textContent =
+    `Target: ${target.label} • ${minsLeft}m left • Goal ${Math.round(goal)}g`;
+}
+
+/* ====== CLOCK ====== */
+function tickClock() {
+  const now = new Date();
+
+  const h = now.getHours();
+  const m = pad2(now.getMinutes());
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = (h % 12) === 0 ? 12 : (h % 12);
+  el("clock").textContent = `${pad2(h12)}:${m}`;
+  el("ampm").textContent = ampm;
+
+  el("date").textContent = now.toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+  if (state.shiftEnabled !== false) {
+    const blocks = buildBlocksFromSchedule(state.schedule);
+    const b = currentBlock(blocks, now);
+    const [label, icon] = phaseLabel(b.key, b.label);
+    el("phaseText").textContent = label;
+    el("phasePill").textContent = icon;
+
+    if (b.end && b.start && b.end > now) {
+      const msLeft = b.end - now;
+      el("countdown").textContent = `Time left: ${fmtMMSS(msLeft)}`;
+
+      const idx = blocks.findIndex(x => x.start.getTime() === b.start?.getTime() && x.end.getTime() === b.end?.getTime());
+      let next = null;
+      if (idx >= 0 && idx < blocks.length - 1) next = blocks[idx + 1];
+      if (!next && now < blocks[0].start) next = blocks[0];
+
+      el("nextUp").textContent = next ? `Next: ${next.label} @ ${fmtTime(next.start)}` : "Next: —";
+    } else {
+      if (b.label === "BEFORE SHIFT") {
+        el("countdown").textContent = `Starts in: ${fmtMMSS(b.end - now)}`;
+        el("nextUp").textContent = `Next: TRIM @ ${fmtTime(b.end)}`;
+      } else {
+        el("countdown").textContent = "—";
+        el("nextUp").textContent = "Shift ended.";
+      }
+    }
+  }
+
+  if (getActiveServing()) syncActiveUI();
+
+  if (now.getSeconds() % 2 === 0) {
+    const log = getTodayLog();
+    const total = log.servings.reduce((sum,x)=>sum+Number(x.grams||0),0);
+    updateGoalUI(total);
+  }
+}
+
+/* ====== SETTINGS SAVE ====== */
 const idsSchedule = ["w1s","w1e","b1m","w2s","w2e","lm","w3s","w3e","b2m","w4s","w4e","shiftEnd"];
 const idsGoals = ["gB1","gL","gB2","gE"];
 
-function applyScheduleToInputs() { /* ... unchanged ... */ }
-function applyGoalsToInputs() { /* ... unchanged ... */ }
+function applyScheduleToInputs() {
+  const s = state.schedule;
+  idsSchedule.forEach(id => { if (el(id)) el(id).value = s[id]; });
+}
+function applyGoalsToInputs() {
+  const g = state.goals;
+  idsGoals.forEach(id => el(id).value = g[id] || 0);
+}
 
-/* INIT */
+el("saveSchedule").addEventListener("click", () => {
+  const s = {};
+  idsSchedule.forEach(id => s[id] = el(id).value);
+
+  s.b1m = Number(s.b1m || 0);
+  s.lm  = Number(s.lm || 0);
+  s.b2m = Number(s.b2m || 0);
+
+  state.schedule = s;
+  saveState();
+  alert("Schedule saved.");
+});
+
+el("saveGoals").addEventListener("click", () => {
+  const g = {};
+  idsGoals.forEach(id => g[id] = Number(el(id).value || 0));
+  state.goals = g;
+  saveState();
+  alert("Goals saved.");
+  renderLogAndTotals();
+});
+
+el("clearToday").addEventListener("click", () => {
+  if (!confirm("Clear today’s serving log?")) return;
+  const k = todayKey();
+  state.today[k] = { servings: [], firstStartMs: null };
+  saveState();
+  renderLogAndTotals();
+});
+
+/* ====== INIT ====== */
 applyScheduleToInputs();
 applyGoalsToInputs();
 
