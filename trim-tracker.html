@@ -104,7 +104,8 @@
 </table>
 
 <button onclick="addRow()">Add Row</button>
-<button class="clear-all" onclick="clearAllRows()">Clear All</button>
+<!-- ✅ CHANGED: Clear All -> Clear Past Entries -->
+<button class="clear-all" onclick="clearPastEntries()">Clear Past Entries</button>
 <button onclick="exportCSV()">Export CSV</button>
 <input id="csvFileInput" type="file" accept=".csv" onchange="importCSV(event)" style="display: none;"/>
 <button onclick="document.getElementById('csvFileInput').click()">Import CSV</button>
@@ -333,16 +334,35 @@
     // NOTE: we DO NOT call updateView() here
   }
 
-  function clearAllRows() {
-    const confirmMsg = 'Are you sure you want to delete all rows?';
-    if (confirm(confirmMsg)) {
-      const tbody = document.getElementById('tableBody');
-      if (tbody) tbody.innerHTML = '';
-      addRow({}, true);
-      debounceSave();
-      updateDailyTotals();
-      updateView();
+  /* ✅ NEW: Clear Past Entries (keeps today's entries) */
+  function clearPastEntries() {
+    const today = new Date().toISOString().slice(0, 10);
+    const confirmMsg = `Are you sure you want to clear ALL past entries and keep only today's (${today}) entries?`;
+    if (!confirm(confirmMsg)) return;
+
+    const tbody = document.getElementById('tableBody');
+    if (!tbody) return;
+
+    const rows = Array.from(tbody.querySelectorAll('tr'))
+      .filter(r => !r.classList.contains('collapsed-row-header'));
+
+    rows.forEach(row => {
+      const dateVal = row.querySelector('input[type="date"]')?.value;
+      if (dateVal && dateVal !== today) row.remove();
+    });
+
+    // If no rows remain for today, add one fresh row for today
+    const hasToday = Array.from(tbody.querySelectorAll('tr'))
+      .filter(r => !r.classList.contains('collapsed-row-header'))
+      .some(r => r.querySelector('input[type="date"]')?.value === today);
+
+    if (!hasToday) {
+      addRow({ date: today, strain: '', grams: ['', '', ''] }, true);
     }
+
+    debounceSave();
+    updateDailyTotals();
+    updateView();
   }
 
   function saveData() {
