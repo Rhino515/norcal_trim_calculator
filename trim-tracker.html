@@ -104,7 +104,6 @@
 </table>
 
 <button onclick="addRow()">Add Row</button>
-<!-- ✅ CHANGED: Clear All -> Clear Past Entries -->
 <button class="clear-all" onclick="clearPastEntries()">Clear Past Entries</button>
 <button onclick="exportCSV()">Export CSV</button>
 <input id="csvFileInput" type="file" accept=".csv" onchange="importCSV(event)" style="display: none;"/>
@@ -122,6 +121,21 @@
   const storageKey = `trimTrackerData-${lang}`;
   let saveTimeout;
 
+  // ✅ PST/PDT-safe ISO date (America/Los_Angeles)
+  function getLAISODate(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(date);
+
+    const y = parts.find(p => p.type === 'year').value;
+    const m = parts.find(p => p.type === 'month').value;
+    const d = parts.find(p => p.type === 'day').value;
+    return `${y}-${m}-${d}`;
+  }
+
   function debounceSave() {
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
@@ -130,7 +144,6 @@
     }, 300);
   }
 
-  // grams input now recalculates totals but does NOT rebuild table
   function createGramInput(onChangeFunc, value = '') {
     const input = document.createElement('input');
     input.type = 'number';
@@ -140,10 +153,8 @@
     input.value = value;
 
     input.oninput = () => {
-      if (typeof onChangeFunc === 'function') {
-        onChangeFunc();     // recalc this row + daily totals
-      }
-      debounceSave();       // save to localStorage
+      if (typeof onChangeFunc === 'function') onChangeFunc();
+      debounceSave();
     };
 
     return input;
@@ -155,13 +166,13 @@
 
     const dateInput = document.createElement('input');
     dateInput.type = 'date';
-    dateInput.value = data.date || new Date().toISOString().slice(0, 10);
+    dateInput.value = data.date || getLAISODate(); // ✅ PST/PDT
     if (skipViewUpdate) dateInput.dataset.skipCollapse = 'true';
     dateInput.oninput = () => {
       delete dateInput.dataset.skipCollapse;
       debounceSave();
       updateDailyTotals();
-      updateView(); // it's OK to rebuild when changing date
+      updateView();
     };
     const dateCell = document.createElement('td');
     dateCell.appendChild(dateInput);
@@ -205,7 +216,7 @@
         if (!isNaN(val)) sum += val;
       });
       totalCell.innerText = sum.toFixed(2);
-      updateDailyTotals();   // this NO LONGER calls updateView()
+      updateDailyTotals();
     }
     updateTotal();
 
@@ -229,11 +240,10 @@
 
   function updateView() {
     const tbody = document.getElementById('tableBody');
-    const rows = Array.from(
-      tbody.querySelectorAll('tr')
-    ).filter(r => !r.classList.contains('collapsed-row-header'));
+    const rows = Array.from(tbody.querySelectorAll('tr'))
+      .filter(r => !r.classList.contains('collapsed-row-header'));
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLAISODate(); // ✅ PST/PDT
     const dateGroups = {};
 
     rows.forEach(row => {
@@ -251,6 +261,7 @@
       .forEach(date => {
         const isToday = date === today;
         let totalGrams = 0;
+
         dateGroups[date].forEach(row => {
           const totalCell = row.querySelector('td:nth-child(4)');
           const grams = parseFloat(totalCell?.innerText || 0);
@@ -299,6 +310,7 @@
   function updateDailyTotals() {
     const rows = document.querySelectorAll('#tableBody tr:not(.collapsed-row-header)');
     const totalsMap = {};
+
     rows.forEach(row => {
       const date = row.querySelector('input[type="date"]')?.value;
       const total = parseFloat(row.querySelector('td:nth-child(4)')?.innerText) || 0;
@@ -308,7 +320,7 @@
       }
     });
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLAISODate(); // ✅ PST/PDT
     const todayStorageKey = 'trimTrackerDailyTotal-' + today;
 
     if (totalsMap[today] !== undefined) {
@@ -327,16 +339,11 @@
           li.textContent = `${date}: ${total.toFixed(2)}g`;
           totalsList.appendChild(li);
         });
-    } else {
-      console.warn('#totalsList element not found. Daily totals list not updated.');
     }
-
-    // NOTE: we DO NOT call updateView() here
   }
 
-  /* ✅ NEW: Clear Past Entries (keeps today's entries) */
   function clearPastEntries() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLAISODate(); // ✅ PST/PDT
     const confirmMsg = `Are you sure you want to clear ALL past entries and keep only today's (${today}) entries?`;
     if (!confirm(confirmMsg)) return;
 
@@ -351,7 +358,6 @@
       if (dateVal && dateVal !== today) row.remove();
     });
 
-    // If no rows remain for today, add one fresh row for today
     const hasToday = Array.from(tbody.querySelectorAll('tr'))
       .filter(r => !r.classList.contains('collapsed-row-header'))
       .some(r => r.querySelector('input[type="date"]')?.value === today);
@@ -372,9 +378,7 @@
       .map(row => {
         const date = row.querySelector('input[type="date"]')?.value || '';
         const strain = row.querySelector('input[type="text"]')?.value || '';
-        const grams = Array.from(
-          row.querySelectorAll('td:nth-child(3) input')
-        ).map(input => input.value);
+        const grams = Array.from(row.querySelectorAll('td:nth-child(3) input')).map(input => input.value);
         return { date, strain, grams };
       });
     localStorage.setItem(storageKey, JSON.stringify(data));
@@ -455,11 +459,9 @@
               addRow({ date, strain, grams }, true);
               importedCount++;
             } else {
-              console.warn('Skipping invalid row (date format):', line);
               skippedCount++;
             }
           } else {
-            console.warn('Skipping invalid row (column count):', line);
             skippedCount++;
           }
         });
@@ -468,9 +470,7 @@
         updateView();
 
         let feedbackMsg = `Import completed. ${importedCount} row(s) imported.`;
-        if (skippedCount > 0) {
-          feedbackMsg += ` ${skippedCount} row(s) skipped due to errors.`;
-        }
+        if (skippedCount > 0) feedbackMsg += ` ${skippedCount} row(s) skipped due to errors.`;
         alert(feedbackMsg);
       } catch (e) {
         console.error('Error importing CSV:', e);
