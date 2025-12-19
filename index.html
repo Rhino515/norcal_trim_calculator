@@ -117,7 +117,6 @@
   .secretBolt:hover { background:#0f0; color:#000; }
   .secretBolt:active { transform: scale(0.98); }
 
-  /* ✅ No big green square (no border/background box) */
   .collapsible-header {
     display: inline-flex;
     align-items: center;
@@ -132,7 +131,6 @@
     text-align: center;
   }
 
-  /* ✅ Keep the important total line green (not a big box) */
   .important-green {
     color: #0f0;
     font-weight: 800;
@@ -211,7 +209,6 @@
   </button>
 </div>
 
-<!-- ✅ Hourly Pay Averages -->
 <div style="margin-top: 1.2em; border-top: 1px solid #444; padding-top: 1em;">
   <h2 class="collapsible-header" style="color:#0f0; cursor:pointer;" onclick="togglePayCalc()">
     <span id="payCalcIndicator" class="collapse-indicator">[+]</span>
@@ -254,7 +251,6 @@
   </div>
 </div>
 
-<!-- ✅ About the Creator -->
 <div style="margin-top: 4em; padding-top: 2em; border-top: 1px solid #444;">
   <h2 class="creatorTitle" style="color: #0f0;">
     About the Creator
@@ -273,6 +269,21 @@
 
 <script>
   let lastCalculated = null;
+
+  // ✅ PST/PDT-safe ISO date (America/Los_Angeles)
+  function getLAISODate(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(date);
+
+    const y = parts.find(p => p.type === 'year').value;
+    const m = parts.find(p => p.type === 'month').value;
+    const d = parts.find(p => p.type === 'day').value;
+    return `${y}-${m}-${d}`;
+  }
 
   function calculateBonus(grams) {
     let bonusPay = 0;
@@ -311,7 +322,7 @@
     }
 
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
+    const dateStr = getLAISODate(now); // ✅ LA date
     const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
 
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
@@ -327,7 +338,6 @@
     lastCalculated = null;
   }
 
-  // ✅ OT fixed 1.5x, DT fixed 2.0x
   function calculateAverages() {
     const hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
 
@@ -408,7 +418,6 @@
   }
 </script>
 
-<!-- ✅ Auto-save Hourly Pay Averages inputs -->
 <script>
   const HOURLY_INPUTS_KEY = "hourlyPayInputs_v1";
 
@@ -490,15 +499,19 @@
 <script>
   function getCurrentPayPeriod() {
     const base = new Date("2025-04-13T00:00:00");
-    const today = new Date(); today.setHours(0,0,0,0);
-    const diffDays = Math.floor((today - base) / (1000*60*60*24));
+    const todayLA = new Date(getLAISODate() + "T00:00:00"); // ✅ LA date anchor
+    const diffDays = Math.floor((todayLA - base) / (1000*60*60*24));
     const periodIndex = Math.floor(diffDays / 14);
     const periodStart = new Date(base); periodStart.setDate(base.getDate() + periodIndex * 14);
     const periodEnd = new Date(periodStart); periodEnd.setDate(periodStart.getDate() + 13);
+
+    const start = getLAISODate(periodStart);
+    const end = getLAISODate(periodEnd);
+
     return {
-      start: periodStart.toISOString().split('T')[0],
-      end: periodEnd.toISOString().split('T')[0],
-      label: 'Pay Period: ' + periodStart.toISOString().split('T')[0] + ' – ' + periodEnd.toISOString().split('T')[0]
+      start,
+      end,
+      label: 'Pay Period: ' + start + ' – ' + end
     };
   }
 
@@ -511,15 +524,18 @@
     const periodStart = new Date(base); periodStart.setDate(base.getDate() + periodOffset * 14);
     const periodEnd = new Date(periodStart); periodEnd.setDate(periodStart.getDate() + 13);
 
+    const start = getLAISODate(periodStart);
+    const end = getLAISODate(periodEnd);
+
     return {
-      start: periodStart.toISOString().split('T')[0],
-      end: periodEnd.toISOString().split('T')[0],
-      label: 'Pay Period: ' + periodStart.toISOString().split('T')[0] + ' – ' + periodEnd.toISOString().split('T')[0]
+      start,
+      end,
+      label: 'Pay Period: ' + start + ' – ' + end
     };
   }
 
   function updateTrackerDailyTotal() {
-    const todayISO = new Date().toISOString().split('T')[0];
+    const todayISO = getLAISODate(); // ✅ LA date
     const trackerTotal = localStorage.getItem('trimTrackerDailyTotal-' + todayISO);
     const el = document.getElementById('trackerDailyTotalDisplay');
     if (!el) return;
@@ -534,14 +550,12 @@
     if (!confirm(confirmMsg)) return;
 
     const period = getCurrentPayPeriod();
-    const periodStart = new Date(period.start);
-    const periodEnd = new Date(period.end);
-    periodEnd.setHours(23, 59, 59, 999);
+    const periodStart = new Date(period.start + "T00:00:00");
+    const periodEnd = new Date(period.end + "T23:59:59");
 
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
     history = history.filter(entry => {
-      const d = new Date(entry.date);
-      d.setHours(0, 0, 0, 0);
+      const d = new Date(entry.date + "T00:00:00");
       return d < periodStart || d > periodEnd;
     });
 
@@ -556,13 +570,11 @@
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
 
     const current = getCurrentPayPeriod();
-    const currentStart = new Date(current.start);
-    const currentEnd = new Date(current.end);
-    currentEnd.setHours(23, 59, 59, 999);
+    const currentStart = new Date(current.start + "T00:00:00");
+    const currentEnd = new Date(current.end + "T23:59:59");
 
     history = history.filter(entry => {
-      const d = new Date(entry.date);
-      d.setHours(0, 0, 0, 0);
+      const d = new Date(entry.date + "T00:00:00");
       return d >= currentStart && d <= currentEnd;
     });
 
@@ -651,16 +663,14 @@
 
   function groupByPayPeriod(history) {
     const currentPeriod = getCurrentPayPeriod();
-    const currentStart = new Date(currentPeriod.start);
-    const currentEnd = new Date(currentPeriod.end);
-    currentEnd.setHours(23, 59, 59, 999);
+    const currentStart = new Date(currentPeriod.start + "T00:00:00");
+    const currentEnd = new Date(currentPeriod.end + "T23:59:59");
 
     const currentPeriodEntries = [];
     const pastPeriodGroups = {};
 
     history.forEach((entry, index) => {
-      const entryDate = new Date(entry.date);
-      entryDate.setHours(0, 0, 0, 0);
+      const entryDate = new Date(entry.date + "T00:00:00");
 
       if (entryDate >= currentStart && entryDate <= currentEnd) {
         currentPeriodEntries.push([entry, index]);
@@ -778,20 +788,21 @@
     }
   }
 
-  // ✅ Safe wiring on load
   window.addEventListener('load', () => {
     const period = getCurrentPayPeriod();
     const label = document.getElementById("payPeriodLabel");
     if (label) label.textContent = period.label;
 
-    // normalize stored dates if needed
+    // ✅ normalize stored dates WITHOUT converting to UTC
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
     let changed = false;
     history.forEach(entry => {
-      const parsed = new Date(entry.date);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date) && !isNaN(parsed.getTime())) {
-        entry.date = parsed.toISOString().split('T')[0];
-        changed = true;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) {
+        const parsed = new Date(entry.date);
+        if (!isNaN(parsed.getTime())) {
+          entry.date = getLAISODate(parsed);
+          changed = true;
+        }
       }
     });
     if (changed) localStorage.setItem('trimHistory', JSON.stringify(history));
@@ -808,7 +819,7 @@
     const importBtn = document.getElementById('import-tracker-total');
     if (importBtn) {
       importBtn.addEventListener('click', () => {
-        const todayISO = new Date().toISOString().split('T')[0];
+        const todayISO = getLAISODate(); // ✅ LA date
         const trackerTotal = localStorage.getItem('trimTrackerDailyTotal-' + todayISO);
         if (trackerTotal) {
           document.getElementById('grams').value = trackerTotal;
