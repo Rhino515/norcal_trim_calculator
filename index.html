@@ -138,7 +138,6 @@
     font-size: 1.08em;
   }
 
-  /* ✅ Pay Period: smaller + ISO badges (YYYY-MM-DD) */
   #payPeriodLabel{
     margin-top: 0.6em;
     color: #0f0;
@@ -159,7 +158,6 @@
   }
   .pp-date-badge:hover{ background:#0f0; color:#000; }
 
-  /* ✅ Compact date badge: shows YYYY- on first line, MM-DD on second */
   .date-display{
     display:inline-block;
     font-weight:bold;
@@ -215,6 +213,30 @@
     </tr>
   </tfoot>
 </table>
+
+<!-- ✅ Past Pay Periods Controls (simple) -->
+<div id="pastControls" style="width:80%; margin: 1em auto 0; text-align:left;">
+  <button id="togglePastPanelBtn" type="button" style="background:#444;">
+    View Past Pay Periods
+  </button>
+
+  <div id="pastPanel"
+       style="display:none; margin-top:0.8em; padding:0.8em; border:1px solid #555; border-radius:6px; background:#111;">
+    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+      <label style="white-space:nowrap;">
+        Month:
+        <select id="pastMonthSelect"
+                style="font-size:1em; padding:0.4em; background:#222; color:#fff; border:1px solid #555; border-radius:4px;">
+        </select>
+      </label>
+
+      <button id="applyMonthBtn" type="button" style="background:green;">Show Month</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Past Pay Periods RENDER HERE (below session table + below controls) -->
+<div id="pastPeriodsContainer"></div>
 
 <div style="margin-top: 0.6em;">
   <input id="csvInput" type="file" accept=".csv" onchange="importCSV(event)" style="display:none"/>
@@ -305,7 +327,6 @@
 <script>
   let lastCalculated = null;
 
-  /* ✅ LA date (PST/PDT safe) */
   function getLAISODate(date = new Date()) {
     const parts = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'America/Los_Angeles',
@@ -320,17 +341,12 @@
     return `${y}-${m}-${d}`;
   }
 
-  /* ✅ display as:
-     YYYY-
-     MM-DD
-  */
   function formatCompactDateHTML(iso) {
     if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || "";
     const [y,m,d] = iso.split("-");
     return `${y}-<br>${m}-${d}`;
   }
 
-  /* ✅ iPhone-friendly on-screen date picker */
   function openDatePickerOnScreen(initialValue, onPick) {
     const input = document.createElement("input");
     input.type = "date";
@@ -434,7 +450,6 @@
 </script>
 
 <script>
-  /* ✅ Hourly autosave */
   const HOURLY_INPUTS_KEY = "hourlyPayInputs_v1";
 
   function saveHourlyInputs() {
@@ -572,7 +587,6 @@
 </script>
 
 <script>
-  /* ✅ Editable pay period base (saved) */
   const PAY_PERIOD_BASE_KEY = "payPeriodBaseStartISO";
   const DEFAULT_BASE_START = "2025-04-13";
 
@@ -624,7 +638,6 @@
     return { start, end, label: `Pay Period: ${start} – ${end}` };
   }
 
-  /* ✅ Pay period shown as ISO (YYYY-MM-DD) badges (smaller + not bulky) */
   function renderPayPeriodLabel() {
     const period = getCurrentPayPeriod();
     const label = document.getElementById("payPeriodLabel");
@@ -792,6 +805,21 @@
     event.target.value = '';
   }
 
+  function monthKeyFromISO(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
+    return iso.slice(0, 7);
+  }
+  function getCurrentMonthKey() {
+    const todayISO = getLAISODate();
+    return todayISO.slice(0, 7);
+  }
+  function monthLabelFromKey(monthKey) {
+    if (!/^\d{4}-\d{2}$/.test(monthKey)) return monthKey;
+    const [y, m] = monthKey.split("-");
+    const d = new Date(`${y}-${m}-01T00:00:00`);
+    return d.toLocaleString("en-US", { month: "long", year: "numeric" });
+  }
+
   function groupByPayPeriod(history) {
     const currentPeriod = getCurrentPayPeriod();
     const currentStart = new Date(currentPeriod.start + "T00:00:00");
@@ -812,7 +840,6 @@
       }
     });
 
-    /* ✅ sort entries so edits move to correct spot */
     currentPeriodEntries.sort((a,b) => a[0].date.localeCompare(b[0].date));
     Object.keys(pastPeriodGroups).forEach(k => {
       pastPeriodGroups[k].entries.sort((a,b) => a[0].date.localeCompare(b[0].date));
@@ -826,6 +853,76 @@
       .forEach(key => grouped[key] = pastPeriodGroups[key]);
 
     return grouped;
+  }
+
+  const PAST_VIEW_MONTH_KEY = "pastPayPeriodsViewMonth_v3";
+  function getPastViewMonth() {
+    return localStorage.getItem(PAST_VIEW_MONTH_KEY) || "";
+  }
+  function setPastViewMonth(monthKey) {
+    if (!/^\d{4}-\d{2}$/.test(monthKey)) return;
+    localStorage.setItem(PAST_VIEW_MONTH_KEY, monthKey);
+  }
+
+  function buildPastMonthSelectOptions(grouped) {
+    const sel = document.getElementById("pastMonthSelect");
+    if (!sel) return;
+
+    const currentMonth = getCurrentMonthKey();
+    const currentPeriod = getCurrentPayPeriod();
+    const months = new Set();
+
+    Object.keys(grouped)
+      .filter(k => k !== currentPeriod.start)
+      .forEach(periodStartISO => {
+        const mk = monthKeyFromISO(periodStartISO);
+        if (mk && mk !== currentMonth) months.add(mk);
+      });
+
+    const sorted = Array.from(months).sort((a,b) => (a < b ? 1 : -1));
+
+    sel.innerHTML = "";
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Select a month...";
+    sel.appendChild(placeholder);
+
+    sorted.forEach(mk => {
+      const opt = document.createElement("option");
+      opt.value = mk;
+      opt.textContent = monthLabelFromKey(mk);
+      sel.appendChild(opt);
+    });
+
+    const saved = getPastViewMonth();
+    if (saved && sorted.includes(saved)) sel.value = saved;
+    else sel.value = "";
+  }
+
+  function wirePastControls() {
+    const toggleBtn = document.getElementById("togglePastPanelBtn");
+    const panel = document.getElementById("pastPanel");
+    const sel = document.getElementById("pastMonthSelect");
+    const applyBtn = document.getElementById("applyMonthBtn");
+
+    if (toggleBtn && panel) {
+      toggleBtn.addEventListener("click", () => {
+        panel.style.display = (panel.style.display === "none") ? "block" : "none";
+      });
+    }
+
+    if (applyBtn) {
+      applyBtn.addEventListener("click", () => {
+        const monthKey = sel ? sel.value : "";
+        if (!monthKey) {
+          alert("Pick a month first.");
+          return;
+        }
+        setPastViewMonth(monthKey);
+        updateSessionTable();
+      });
+    }
   }
 
   function updateSessionTable() {
@@ -842,7 +939,6 @@
 
     currentEntries.forEach(([entry, index]) => {
       const row = document.createElement('tr');
-
       row.innerHTML = `
         <td></td>
         <td contenteditable="true" onblur="editGrams(${index}, this)">${entry.grams}</td>
@@ -865,9 +961,28 @@
 
     document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
 
-    document.querySelectorAll('.past-period-header, .past-period-content').forEach(el => el.remove());
+    // ✅ render ALL past pay periods ONLY into this container (below session board)
+    const container = document.getElementById("pastPeriodsContainer");
+    if (container) container.innerHTML = "";
 
-    Object.keys(grouped).filter(key => key !== currentPeriod.start).forEach(key => {
+    buildPastMonthSelectOptions(grouped);
+
+    const currentMonth = getCurrentMonthKey();
+    const selectedPastMonth = getPastViewMonth();
+    let pastKeys = Object.keys(grouped).filter(k => k !== currentPeriod.start);
+
+    const currentMonthPastKeys = pastKeys.filter(k => monthKeyFromISO(k) === currentMonth);
+
+    let selectedMonthKeys = [];
+    if (selectedPastMonth && selectedPastMonth !== currentMonth) {
+      selectedMonthKeys = pastKeys.filter(k => monthKeyFromISO(k) === selectedPastMonth);
+    }
+
+    const keysToShow = [...currentMonthPastKeys, ...selectedMonthKeys];
+
+    if (!container) return;
+
+    keysToShow.forEach(key => {
       const group = grouped[key];
 
       const periodTotal = group.entries.reduce((sum, pair) => {
@@ -879,6 +994,9 @@
       header.className = 'past-period-header';
       header.dataset.total = periodTotal.toFixed(2);
 
+      const content = document.createElement('div');
+      content.className = 'past-period-content'; // collapsed by default
+
       header.innerHTML = `
         <span class="past-period-label">${group.label}</span>
         <span class="past-period-total">$${header.dataset.total}</span>
@@ -886,16 +1004,11 @@
       `;
 
       header.addEventListener('click', function () {
-        const content = this.nextElementSibling;
         const open = content.classList.toggle('open');
-        const ind = this.querySelector('.toggle-indicator');
+        const ind = header.querySelector('.toggle-indicator');
         if (ind) ind.textContent = open ? '[-]' : '[+]';
       });
 
-      const content = document.createElement('div');
-      content.className = 'past-period-content';
-
-      /* ✅ past period: real table (no broken layout) */
       const pastTable = document.createElement('table');
       pastTable.innerHTML = `
         <thead>
@@ -930,9 +1043,8 @@
 
       content.appendChild(pastTable);
 
-      const table = document.getElementById('sessionTable');
-      table.parentNode.insertBefore(header, table.nextSibling);
-      table.parentNode.insertBefore(content, header.nextSibling);
+      container.appendChild(header);
+      container.appendChild(content);
     });
   }
 
@@ -952,15 +1064,14 @@
     if (/^\d{4}-\d{2}-\d{2}$/.test(updatedDateISO)) {
       history[index].date = updatedDateISO;
       localStorage.setItem('trimHistory', JSON.stringify(history));
-      updateSessionTable();      // ✅ re-sorts so it moves to correct spot
-      renderPayPeriodLabel();    // ✅ pay period label stays correct
+      updateSessionTable();
+      renderPayPeriodLabel();
     }
   }
 
   window.addEventListener('load', () => {
     renderPayPeriodLabel();
 
-    /* normalize stored dates */
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
     let changed = false;
     history.forEach(entry => {
@@ -978,6 +1089,8 @@
     wireHourlyAutosave();
     updateSessionTable();
     updateTrackerDailyTotal();
+
+    wirePastControls();
 
     const section = document.getElementById("payCalcSection");
     const indicator = document.getElementById("payCalcIndicator");
