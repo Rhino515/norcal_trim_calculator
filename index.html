@@ -14,7 +14,7 @@
     text-align: center;
     padding: 2em;
   }
-  input {
+  input, select {
     font-size: 1.2em;
     padding: 0.5em;
     margin-top: 0.6em;
@@ -55,9 +55,8 @@
     border-collapse: collapse;
     width: 80%;
   }
-  th, td { border: 1px solid #555; padding: 0.5em; }
+  th, td { border: 1px solid #555; padding: 0.5em; vertical-align: top; }
   th { background-color: #333; }
-  td[contenteditable="true"] { background-color: #222; }
 
   .delete-button {
     background-color: red;
@@ -68,6 +67,17 @@
     border-radius: 4px;
   }
   .delete-button:hover { background-color: darkred; }
+
+  .adjust-button {
+    background-color: #cc8400;
+    color: white;
+    border: none;
+    padding: 0.3em 0.6em;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 6px;
+  }
+  .adjust-button:hover { background-color: #a66b00; }
 
   .past-period-header {
     background-color: #444;
@@ -169,6 +179,43 @@
     line-height: 1.05;
     white-space: normal;
   }
+
+  .grams-edit {
+    display: inline-block;
+    min-width: 60px;
+    padding: 2px 6px;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 4px;
+    outline: none;
+  }
+  .grams-edit:focus {
+    border-color: #0f0;
+  }
+
+  .weight-meta {
+    font-size: 0.82em;
+    color: #bbb;
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+
+  .duff-negative {
+    color: #ff9a9a;
+    font-weight: bold;
+  }
+
+  .final-positive {
+    color: #7dff7d;
+    font-weight: bold;
+  }
+
+  .duff-summary {
+    margin-top: 0.25em;
+    font-size: 0.95em;
+    color: #ffb366;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
@@ -177,6 +224,10 @@
 
 <div id="trackerDailyTotalDisplay"
      style="margin-top:0.4em;font-size:0.95em;color:#0f0;font-weight:bold;">
+</div>
+
+<div id="duffAverageDisplay" class="duff-summary">
+  Average Duff This Pay Period: 0g
 </div>
 
 <p>Enter the total grams trimmed:</p>
@@ -200,7 +251,7 @@
   <thead>
     <tr>
       <th>Date</th>
-      <th>Grams</th>
+      <th>Weight</th>
       <th>Bonus Pay</th>
       <th>Action</th>
     </tr>
@@ -210,11 +261,11 @@
     <tr>
       <td colspan="2"><strong>Total</strong></td>
       <td id="totalBonusPay">$0.00</td>
+      <td></td>
     </tr>
   </tfoot>
 </table>
 
-<!-- ✅ Past Pay Periods Controls (simple) -->
 <div id="pastControls" style="width:80%; margin: 1em auto 0; text-align:left;">
   <button id="togglePastPanelBtn" type="button" style="background:#444;">
     View Past Pay Periods
@@ -235,7 +286,6 @@
   </div>
 </div>
 
-<!-- ✅ Past Pay Periods RENDER HERE (below session table + below controls) -->
 <div id="pastPeriodsContainer"></div>
 
 <div style="margin-top: 0.6em;">
@@ -387,6 +437,31 @@
     return bonusPay;
   }
 
+  function getSubmittedGrams(entry) {
+    return parseFloat(entry.grams || 0) || 0;
+  }
+
+  function hasFinalWeight(entry) {
+    return entry.finalWeight !== undefined && entry.finalWeight !== null && entry.finalWeight !== "";
+  }
+
+  function getFinalGrams(entry) {
+    if (hasFinalWeight(entry)) {
+      return Math.max(0, parseFloat(entry.finalWeight || 0) || 0);
+    }
+    return getSubmittedGrams(entry);
+  }
+
+  function getDuffGrams(entry) {
+    const submitted = getSubmittedGrams(entry);
+    const finalGrams = getFinalGrams(entry);
+    return Math.max(0, submitted - finalGrams);
+  }
+
+  function recalculateEntryBonus(entry) {
+    entry.bonusPay = calculateBonus(getFinalGrams(entry)).toFixed(2);
+  }
+
   function calculate() {
     const grams = parseFloat(document.getElementById('grams').value);
     if (isNaN(grams) || grams <= 0) {
@@ -413,7 +488,12 @@
     }
 
     const dateStr = getLAISODate(new Date());
-    const entry = { date: dateStr, grams: grams, bonusPay: bonusPay.toFixed(2) };
+    const entry = {
+      date: dateStr,
+      grams: grams,
+      finalWeight: "",
+      bonusPay: bonusPay.toFixed(2)
+    };
 
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
     history.push(entry);
@@ -439,11 +519,54 @@
   }
 
   function deleteEntry(index) {
-    const confirmMsg = "Are you sure you want to delete this entry?";
-    if (!confirm(confirmMsg)) return;
+    if (!confirm("Are you sure you want to delete this entry?")) return;
 
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
     history.splice(index, 1);
+    localStorage.setItem('trimHistory', JSON.stringify(history));
+    updateSessionTable();
+  }
+
+  function setFinalWeight(index) {
+    let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+    if (!history[index]) return;
+
+    const entry = history[index];
+    const submitted = getSubmittedGrams(entry);
+    const currentFinal = hasFinalWeight(entry) ? getFinalGrams(entry) : submitted;
+
+    const response = prompt(
+      `Enter the FINAL weight after quality control.\n\nSubmitted weight: ${submitted}g\nExample final weight: 4750`,
+      currentFinal
+    );
+
+    if (response === null) return;
+
+    const finalWeight = parseFloat(response);
+    if (isNaN(finalWeight) || finalWeight < 0) {
+      alert("Please enter a valid final weight.");
+      return;
+    }
+
+    if (finalWeight > submitted) {
+      alert("Final weight cannot be higher than the submitted weight.");
+      return;
+    }
+
+    history[index].finalWeight = finalWeight;
+    recalculateEntryBonus(history[index]);
+
+    localStorage.setItem('trimHistory', JSON.stringify(history));
+    updateSessionTable();
+  }
+
+  function clearFinalWeight(index) {
+    let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
+    if (!history[index]) return;
+
+    history[index].finalWeight = "";
+    recalculateEntryBonus(history[index]);
+
     localStorage.setItem('trimHistory', JSON.stringify(history));
     updateSessionTable();
   }
@@ -559,7 +682,7 @@
       return entryDate >= s && entryDate <= e;
     });
 
-    const bonusTotal = filtered.reduce((sum, entry) => sum + parseFloat(entry.bonusPay || 0), 0);
+    const bonusTotal = filtered.reduce((sum, entry) => sum + calculateBonus(getFinalGrams(entry)), 0);
 
     const regularPay = hourlyRate * totalRegularHours;
     const overtimePay = hourlyRate * 1.5 * totalOvertimeHours;
@@ -689,9 +812,25 @@
       : "Today's Trim Tracker total: 0g";
   }
 
+  function updateDuffAverageDisplay(currentEntries) {
+    const el = document.getElementById("duffAverageDisplay");
+    if (!el) return;
+
+    const entriesWithDuff = (currentEntries || []).filter(([entry]) => hasFinalWeight(entry) && getDuffGrams(entry) > 0);
+
+    if (entriesWithDuff.length === 0) {
+      el.textContent = "Average Duff This Pay Period: 0g";
+      return;
+    }
+
+    const totalDuff = entriesWithDuff.reduce((sum, [entry]) => sum + getDuffGrams(entry), 0);
+    const avgDuff = totalDuff / entriesWithDuff.length;
+
+    el.textContent = `Average Duff This Pay Period: ${avgDuff.toFixed(2)}g`;
+  }
+
   function clearCurrentPayPeriod() {
-    const confirmMsg = "Are you sure you want to clear all entries for the current pay period?";
-    if (!confirm(confirmMsg)) return;
+    if (!confirm("Are you sure you want to clear all entries for the current pay period?")) return;
 
     const period = getCurrentPayPeriod();
     const periodStart = new Date(period.start + "T00:00:00");
@@ -708,8 +847,7 @@
   }
 
   function clearAllPastPayPeriods() {
-    const confirmMsg = "Are you sure you want to clear ALL past pay periods? This cannot be undone.";
-    if (!confirm(confirmMsg)) return;
+    if (!confirm("Are you sure you want to clear ALL past pay periods? This cannot be undone.")) return;
 
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
 
@@ -733,12 +871,21 @@
       return;
     }
 
-    const headers = ["Date", "Grams", "Bonus"];
-    const rows = history.map(entry => [
-      entry.date,
-      entry.grams,
-      parseFloat(entry.bonusPay || 0).toFixed(2)
-    ]);
+    const headers = ["Date", "Submitted Grams", "Final Grams", "Duff Grams", "Bonus"];
+    const rows = history.map(entry => {
+      const submitted = getSubmittedGrams(entry);
+      const finalGrams = getFinalGrams(entry);
+      const duff = getDuffGrams(entry);
+      const bonus = calculateBonus(finalGrams);
+
+      return [
+        entry.date,
+        submitted,
+        hasFinalWeight(entry) ? finalGrams : "",
+        hasFinalWeight(entry) ? duff : "",
+        bonus.toFixed(2)
+      ];
+    });
 
     let csvContent = "data:text/csv;charset=utf-8,"
       + headers.join(",") + "\n"
@@ -769,14 +916,43 @@
         if (!trimmedLine) continue;
 
         const columns = trimmedLine.split(',');
-        if (columns.length < 3) { errorCount++; continue; }
+        const date = columns[0]?.trim();
 
-        const date = columns[0].trim();
-        const grams = parseFloat(columns[1].trim());
-        const bonus = parseFloat(columns[2].trim());
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          errorCount++;
+          continue;
+        }
 
-        if (/^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(grams) && grams >= 0 && !isNaN(bonus) && bonus >= 0) {
-          imported.push({ date: date, grams: grams, bonusPay: bonus.toFixed(2) });
+        if (columns.length >= 5) {
+          const grams = parseFloat(columns[1].trim());
+          const finalGramsRaw = columns[2].trim();
+          const finalGrams = finalGramsRaw === "" ? "" : parseFloat(finalGramsRaw);
+
+          if (!isNaN(grams) && grams >= 0 && (finalGramsRaw === "" || (!isNaN(finalGrams) && finalGrams >= 0 && finalGrams <= grams))) {
+            const entry = {
+              date: date,
+              grams: grams,
+              finalWeight: finalGramsRaw === "" ? "" : finalGrams,
+              bonusPay: calculateBonus(finalGramsRaw === "" ? grams : finalGrams).toFixed(2)
+            };
+            imported.push(entry);
+          } else {
+            errorCount++;
+          }
+        } else if (columns.length >= 3) {
+          const grams = parseFloat(columns[1].trim());
+          const bonus = parseFloat(columns[2].trim());
+
+          if (!isNaN(grams) && grams >= 0 && !isNaN(bonus) && bonus >= 0) {
+            imported.push({
+              date: date,
+              grams: grams,
+              finalWeight: "",
+              bonusPay: bonus.toFixed(2)
+            });
+          } else {
+            errorCount++;
+          }
         } else {
           errorCount++;
         }
@@ -809,10 +985,12 @@
     if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
     return iso.slice(0, 7);
   }
+
   function getCurrentMonthKey() {
     const todayISO = getLAISODate();
     return todayISO.slice(0, 7);
   }
+
   function monthLabelFromKey(monthKey) {
     if (!/^\d{4}-\d{2}$/.test(monthKey)) return monthKey;
     const [y, m] = monthKey.split("-");
@@ -925,6 +1103,24 @@
     }
   }
 
+  function renderWeightCell(entry, index) {
+    const submitted = getSubmittedGrams(entry);
+    const finalGrams = getFinalGrams(entry);
+    const duff = getDuffGrams(entry);
+    const finalEntered = hasFinalWeight(entry);
+
+    return `
+      <span class="grams-edit" contenteditable="true" spellcheck="false" onblur="editGrams(${index}, this)">${submitted}</span>
+      <div class="weight-meta">
+        ${
+          finalEntered
+            ? `<span class="final-positive">Final: ${finalGrams}g</span><br><span class="duff-negative">Duff: ${duff.toFixed(2)}g</span>`
+            : `Final: not entered yet`
+        }
+      </div>
+    `;
+  }
+
   function updateSessionTable() {
     const history = JSON.parse(localStorage.getItem('trimHistory')) || [];
     const tbody = document.querySelector('#sessionTable tbody');
@@ -937,13 +1133,21 @@
     const currentPeriod = getCurrentPayPeriod();
     const currentEntries = grouped[currentPeriod.start]?.entries || [];
 
+    updateDuffAverageDisplay(currentEntries);
+
     currentEntries.forEach(([entry, index]) => {
+      const bonus = calculateBonus(getFinalGrams(entry));
+
       const row = document.createElement('tr');
       row.innerHTML = `
         <td></td>
-        <td contenteditable="true" onblur="editGrams(${index}, this)">${entry.grams}</td>
-        <td>$${parseFloat(entry.bonusPay).toFixed(2)}</td>
-        <td><button onclick="deleteEntry(${index})" class="delete-button">Delete</button></td>
+        <td>${renderWeightCell(entry, index)}</td>
+        <td>$${bonus.toFixed(2)}</td>
+        <td>
+          <button onclick="setFinalWeight(${index})" class="adjust-button">Set Final</button>
+          ${hasFinalWeight(entry) ? `<button onclick="clearFinalWeight(${index})" class="adjust-button" style="background:#555;">Clear Final</button>` : ``}
+          <button onclick="deleteEntry(${index})" class="delete-button">Delete</button>
+        </td>
       `;
 
       const dateTd = row.children[0];
@@ -956,12 +1160,11 @@
       dateTd.appendChild(badge);
 
       tbody.appendChild(row);
-      totalBonusPay += parseFloat(entry.bonusPay || 0);
+      totalBonusPay += bonus;
     });
 
     document.getElementById('totalBonusPay').textContent = '$' + totalBonusPay.toFixed(2);
 
-    // ✅ render ALL past pay periods ONLY into this container (below session board)
     const container = document.getElementById("pastPeriodsContainer");
     if (container) container.innerHTML = "";
 
@@ -969,7 +1172,7 @@
 
     const currentMonth = getCurrentMonthKey();
     const selectedPastMonth = getPastViewMonth();
-    let pastKeys = Object.keys(grouped).filter(k => k !== currentPeriod.start);
+    const pastKeys = Object.keys(grouped).filter(k => k !== currentPeriod.start);
 
     const currentMonthPastKeys = pastKeys.filter(k => monthKeyFromISO(k) === currentMonth);
 
@@ -987,7 +1190,7 @@
 
       const periodTotal = group.entries.reduce((sum, pair) => {
         const entry = pair[0];
-        return sum + parseFloat(entry.bonusPay || 0);
+        return sum + calculateBonus(getFinalGrams(entry));
       }, 0);
 
       const header = document.createElement('div');
@@ -995,7 +1198,7 @@
       header.dataset.total = periodTotal.toFixed(2);
 
       const content = document.createElement('div');
-      content.className = 'past-period-content'; // collapsed by default
+      content.className = 'past-period-content';
 
       header.innerHTML = `
         <span class="past-period-label">${group.label}</span>
@@ -1013,7 +1216,10 @@
       pastTable.innerHTML = `
         <thead>
           <tr>
-            <th>Date</th><th>Grams</th><th>Bonus Pay</th><th>Action</th>
+            <th>Date</th>
+            <th>Weight</th>
+            <th>Bonus Pay</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -1021,12 +1227,18 @@
       const pastTbody = pastTable.querySelector("tbody");
 
       group.entries.forEach(([entry, index]) => {
+        const bonus = calculateBonus(getFinalGrams(entry));
+
         const r = document.createElement('tr');
         r.innerHTML = `
           <td></td>
-          <td contenteditable="true" onblur="editGrams(${index}, this)">${entry.grams}</td>
-          <td>$${parseFloat(entry.bonusPay).toFixed(2)}</td>
-          <td><button onclick="deleteEntry(${index})" class="delete-button">Delete</button></td>
+          <td>${renderWeightCell(entry, index)}</td>
+          <td>$${bonus.toFixed(2)}</td>
+          <td>
+            <button onclick="setFinalWeight(${index})" class="adjust-button">Set Final</button>
+            ${hasFinalWeight(entry) ? `<button onclick="clearFinalWeight(${index})" class="adjust-button" style="background:#555;">Clear Final</button>` : ``}
+            <button onclick="deleteEntry(${index})" class="delete-button">Delete</button>
+          </td>
         `;
 
         const dateTd = r.children[0];
@@ -1042,26 +1254,41 @@
       });
 
       content.appendChild(pastTable);
-
       container.appendChild(header);
       container.appendChild(content);
     });
   }
 
-  function editGrams(index, td) {
+  function editGrams(index, el) {
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-    const newGrams = parseFloat(td.textContent.trim());
-    if (!isNaN(newGrams)) {
-      history[index].grams = newGrams;
-      history[index].bonusPay = calculateBonus(newGrams).toFixed(2);
-      localStorage.setItem('trimHistory', JSON.stringify(history));
+    if (!history[index]) return;
+
+    const newGrams = parseFloat(el.textContent.trim());
+    if (isNaN(newGrams) || newGrams < 0) {
       updateSessionTable();
+      return;
     }
+
+    const oldSubmitted = getSubmittedGrams(history[index]);
+    const currentFinal = hasFinalWeight(history[index]) ? getFinalGrams(history[index]) : null;
+
+    history[index].grams = newGrams;
+
+    if (currentFinal !== null && currentFinal > newGrams) {
+      history[index].finalWeight = newGrams;
+    }
+
+    if (oldSubmitted !== newGrams) {
+      recalculateEntryBonus(history[index]);
+    }
+
+    localStorage.setItem('trimHistory', JSON.stringify(history));
+    updateSessionTable();
   }
 
   function editDate(index, updatedDateISO) {
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
-    if (/^\d{4}-\d{2}-\d{2}$/.test(updatedDateISO)) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(updatedDateISO) && history[index]) {
       history[index].date = updatedDateISO;
       localStorage.setItem('trimHistory', JSON.stringify(history));
       updateSessionTable();
@@ -1074,6 +1301,7 @@
 
     let history = JSON.parse(localStorage.getItem('trimHistory')) || [];
     let changed = false;
+
     history.forEach(entry => {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) {
         const parsed = new Date(entry.date);
@@ -1082,7 +1310,32 @@
           changed = true;
         }
       }
+
+      if (entry.finalWeight === undefined || entry.finalWeight === null) {
+        entry.finalWeight = "";
+        changed = true;
+      }
+
+      const submitted = getSubmittedGrams(entry);
+
+      if (entry.finalWeight !== "") {
+        const finalValue = parseFloat(entry.finalWeight);
+        if (isNaN(finalValue) || finalValue < 0) {
+          entry.finalWeight = "";
+          changed = true;
+        } else if (finalValue > submitted) {
+          entry.finalWeight = submitted;
+          changed = true;
+        }
+      }
+
+      const correctBonus = calculateBonus(getFinalGrams(entry)).toFixed(2);
+      if (entry.bonusPay !== correctBonus) {
+        entry.bonusPay = correctBonus;
+        changed = true;
+      }
     });
+
     if (changed) localStorage.setItem('trimHistory', JSON.stringify(history));
 
     restoreHourlyInputs();
